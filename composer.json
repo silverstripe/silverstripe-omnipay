@@ -1,0 +1,20 @@
+{
+	"name": "burnbright/silverstripe-omnipay",
+	"description": "SilverStripe Payment Module, via omnipay",
+	"type": "silverstripe-module",
+	"license": "BSD-3-Clause",
+	"keywords": ["silverstripe","payment","omnipay"],
+	"require": {
+		"silverstripe/framework": ">=3.1.*",
+		"silverstripe/cms": ">=3.1.*",
+		"omnipay/omnipay": "1.*"
+	},
+	"authors": [
+		{
+			"name": "Jeremy Shipman",
+			"homepage": "https://github.com/jedateach",
+			"role": "Developer"
+		}
+	]
+
+}

@@ -1,0 +1,46 @@
+---
+Name: payment
+---
+Payment:
+    allowed_gateways:
+        - 'PayPal_Express'
+        - 'PaymentExpress_PxPay'
+        - 'Manual'
+    parameters:
+        PayPal_Express:
+            username: 'blah'
+            password: 'test'
+            signature: 'askl2332k32hkh'
+            headerImageUrl: 'http://www.test.com/blah.jpg'
+---
+Except:
+    environment: 'live'
+---
+Payment:
+    allowed_gateways:
+        - 'Dummy'
+---
+Only:
+    environment: 'live'
+---
+Payment:
+    parameters:
+        PayPal_Express:
+            username: 'blahlive'
+            password: 'blajeliave'
+            signature: 'blahas'
+---
+Only:
+    environment: 'test'
+---
+Payment:
+    parameters:
+        PayPal_Express:
+            username: estseasdfsd.asfsadfa.sd
+            password: 233634623462
+            signature: jlkaldsfsal235l2523j523ljk25ljk43lj3jlkgjlg43lj3jl3g4
+            testMode: 1
+        PaymentExpress_PxPay:
+            username: TESTING123
+            password: 902257525h25hk52kh253hkj2jhk23jkh2jkh263hjk62jhk62jhk6jhk6jhk63jh36jkh3jkh36jh3
+            testMode: 1

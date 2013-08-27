@@ -1,0 +1,7 @@
+---
+Name: omniroutes
+After: framework/routes#coreroutes
+---
+Director:
+  rules:
+    'omni' : 'OmniPage_Controller'

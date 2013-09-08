@@ -12,8 +12,10 @@ class OmniPage_Controller extends Page_Controller{
 	}
 
 	public function index(){
+		//Debug::show(Config::inst()->forClass('Payment')->parameters);
 		return array(
-			'Title' => 'Make a payment'
+			'Title' => 'Make a payment',
+			'Content' => 'Make a payment using the following form'
 		);
 	}
 
@@ -30,7 +32,7 @@ class OmniPage_Controller extends Page_Controller{
 	}
 
 	public function Form(){
-		$fields =  new FieldList(
+		$fields =  new FieldList(			
 			CurrencyField::create("Amount","Amount",20),
 			DropdownField::create("Gateway","Gateway",$this->gateways())
 		);
@@ -40,11 +42,14 @@ class OmniPage_Controller extends Page_Controller{
 		return new Form($this,"Form",$fields,$actions);
 	}
 
-	public function submit(){
+	public function submit($data, $form){
 		$name = $this->request->postVar("Gateway");
 		$gateway = Omnipay\Common\GatewayFactory::create($name);
 		$configs = Config::inst()->forClass('Payment')->parameters;
-		$gateway->initialize($configs[$name]);
+
+		$amount = $form->Fields()->fieldByName('Amount')->dataValue();
+
+		$gateway->initialize();
 		//$settings = $gateway->getParameters();
 		
 		$payment = $this->createPayment(
@@ -54,22 +59,32 @@ class OmniPage_Controller extends Page_Controller{
 		);
 
 		//TODO: do actual payment
-		
 		$card = new Omnipay\Common\CreditCard();
 		$card->initialize(array(
 			'firstName' => 'Joe',
-			'lastName' => 'Bloggs'
+			'lastName' => 'Bloggs',
+			'number' => '4111111111111112',
+			'expiryMonth' => '05',
+			'expiryYear' => '14',
+			'cvv' => '508'
 		));
 
+		//TODO: this URL isn't the best...we want to update the model after returning
 		$returnUrl = Controller::join_links($this->Link(),'complete',$payment->ID);
-		//TODO: this isn't the best...we want to update the model after returning
+		$cancelUrl = $returnUrl;
+		$clientIp = $this->request->getIP();
 
 		$response = $gateway->purchase(
 			array(
-				'amount' => $this->request->postVar('Amount'),
-				'currency' => 'USD',
 				'card' => $card,
-				'returnUrl' => $returnUrl
+				//'token' => $token, //TODO
+				'amount' => $amount,
+				'currency' => $currency,
+				//'description' => $description, //TODO
+				//'transactionId' => $transactionid, //TODO
+				'clientIp' => $clientip,
+				'returnUrl' => $returnUrl,
+				'cancelUrl' => $cancelUrl
 			)
 		)->send();
 
@@ -88,10 +103,12 @@ class OmniPage_Controller extends Page_Controller{
 			return;
 
 		} else {
+
+			//TODO: where is the best place to go on failure?
 			// payment failed: display message to customer
 			return array(
 				'Title' => 'Error',
-				'Content' => $response->getMessage()
+				'Form' => $response->getMessage()
 			);
 		}
 
@@ -103,6 +120,7 @@ class OmniPage_Controller extends Page_Controller{
 		//TODO: get payment data etc, if allowed
 		$payment = Payment::get()->byID($this->request->param('ID'));
 
+		Debug::show($payment);
 		//stub
 		return array(
 			'Title' => 'Payment Complete',

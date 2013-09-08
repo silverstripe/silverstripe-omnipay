@@ -1,0 +1,9 @@
+ * Test actual gateways
+ * i18n integration
+ * error handling
+ * model integration
+
+Issues to resolve:
+
+ * What should happen on failure?
+ * Should form fields be provided? Could provide fields for data that is not already provided, and is requred by gateway.

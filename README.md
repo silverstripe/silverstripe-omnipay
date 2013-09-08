@@ -51,6 +51,12 @@ Use this module to provide payment for things like:
  * Event registrations
  * Donations
 
+
+## This wrapper module provides:
+
+ * YML based gateway configuration
+ * A datamodel to work with
+
 ## Model
 
 Payable has_many payments. This is an exension that provides a has_many relationship.

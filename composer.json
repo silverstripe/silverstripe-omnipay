@@ -1,6 +1,6 @@
 {
-	"name": "burnbright/silverstripe-omnipay",
-	"description": "SilverStripe Payment Module, via omnipay",
+	"name": "silverstripe/payment",
+	"description": "SilverStripe Payment Module",
 	"type": "silverstripe-module",
 	"license": "BSD-3-Clause",
 	"keywords": ["silverstripe","payment","omnipay"],

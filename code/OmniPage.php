@@ -39,77 +39,65 @@ class OmniPage_Controller extends Page_Controller{
 		$actions = new FieldList(
 			FormAction::create("submit")
 		);
-		return new Form($this,"Form",$fields,$actions);
+		return new PaymentForm($this,"Form",$fields,$actions);
 	}
 
 	public function submit($data, $form){
-		$name = $this->request->postVar("Gateway");
-		$gateway = Omnipay\Common\GatewayFactory::create($name);
-		$configs = Config::inst()->forClass('Payment')->parameters;
 
-		$amount = $form->Fields()->fieldByName('Amount')->dataValue();
+		$data = $form->getData(); //get clean data
+		$amount = $data['Amount'];
+		$gatewayname = $data['Gateway'];
 
-		$gateway->initialize();
-		//$settings = $gateway->getParameters();
+		$gateway = Omnipay\Common\GatewayFactory::create($gatewayname);
+		$parameters = Config::inst()->forClass('Payment')->parameters; //get the yaml configuration
+		$card = new Omnipay\Common\CreditCard($data);
+
+		$gateway->initialize($parameters); //init
 		
 		$payment = $this->createPayment(
-			$name,
-			(float)$this->request->postVar('Amount'), //TODO: sanitize
+			$gatewayname,
+			$amount,
 			'NZD'
 		);
 
-		//TODO: do actual payment
-		$card = new Omnipay\Common\CreditCard();
-		$card->initialize(array(
-			'firstName' => 'Joe',
-			'lastName' => 'Bloggs',
-			'number' => '4111111111111112',
-			'expiryMonth' => '05',
-			'expiryYear' => '14',
-			'cvv' => '508'
-		));
-
 		//TODO: this URL isn't the best...we want to update the model after returning
-		$returnUrl = Controller::join_links($this->Link(),'complete',$payment->ID);
-		$cancelUrl = $returnUrl;
-		$clientIp = $this->request->getIP();
+		$returnUrl = Director::absoluteURL(
+			Controller::join_links($this->Link(),'complete',$payment->ID)
+		);
+		$cancelUrl = Director::absoluteURL($this->Link());
 
+		//do the payment
 		$response = $gateway->purchase(
 			array(
 				'card' => $card,
-				//'token' => $token, //TODO
-				'amount' => $amount,
-				'currency' => $currency,
-				//'description' => $description, //TODO
-				//'transactionId' => $transactionid, //TODO
-				'clientIp' => $clientip,
+				//'token' => $token, //TODO: allow paying with a stored card
+				'amount' => $payment->AmountAmount,
+				'currency' => $payment->AmountCurrency,
+				//'description' => $description, //TODO: what is this for?
+				'transactionId' => $payment->ID,
+				'clientIp' => $this->request->getIP(),
 				'returnUrl' => $returnUrl,
 				'cancelUrl' => $cancelUrl
 			)
 		)->send();
 
 		//TODO: store response data in payment model?
+		//$payment->Data = $response->getData();
 
 		if ($response->isSuccessful()) {
-			// payment was successful: update database
-			//print_r($response);
-			$this->redirect($returnUrl);
+			//TODO: update payment model status
+			//$payment->complete();
+			$this->redirect($returnUrl); // payment was successful
 			return;
 
-		} elseif ($response->isRedirect()) {
-			// redirect to offsite payment gateway
-			//$response->redirect();
-			$this->redirect($response->getRedirectUrl()); //ss redirect
+		} elseif ($response->isRedirect()) { // redirect to off-site payment gateway
+			$this->redirect($response->getRedirectUrl());
 			return;
 
-		} else {
-
+		} else { // payment failed: display message to customer
 			//TODO: where is the best place to go on failure?
-			// payment failed: display message to customer
-			return array(
-				'Title' => 'Error',
-				'Form' => $response->getMessage()
-			);
+			$form->sessionMessage($response->getMessage());
+			$this->redirectBack();
 		}
 
 		return;
@@ -119,6 +107,8 @@ class OmniPage_Controller extends Page_Controller{
 
 		//TODO: get payment data etc, if allowed
 		$payment = Payment::get()->byID($this->request->param('ID'));
+
+		//TODO: do post-redirect handling
 
 		Debug::show($payment);
 		//stub

@@ -1,5 +1,6 @@
 ---
 Name: payment
+# this example shows how you can have different configurations for different environments
 ---
 Payment:
     allowed_gateways:

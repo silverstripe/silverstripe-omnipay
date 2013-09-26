@@ -12,7 +12,6 @@ class OmniPage_Controller extends Page_Controller{
 	}
 
 	public function index(){
-		//Debug::show(Config::inst()->forClass('Payment')->parameters);
 		return array(
 			'Title' => 'Make a payment',
 			'Content' => 'Make a payment using the following form'
@@ -54,11 +53,7 @@ class OmniPage_Controller extends Page_Controller{
 
 		$gateway->initialize($parameters); //init
 		
-		$payment = $this->createPayment(
-			$gatewayname,
-			$amount,
-			'NZD'
-		);
+		$payment = $this->createPayment($gatewayname, $amount, 'NZD');
 
 		//TODO: this URL isn't the best...we want to update the model after returning
 		$returnUrl = Director::absoluteURL(

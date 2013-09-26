@@ -49,9 +49,9 @@ class OmniPage_Controller extends Page_Controller{
 
 		$gateway = Omnipay\Common\GatewayFactory::create($gatewayname);
 		$parameters = Config::inst()->forClass('Payment')->parameters; //get the yaml configuration
-		$card = new Omnipay\Common\CreditCard($data);
-
 		$gateway->initialize($parameters); //init
+
+		$card = new Omnipay\Common\CreditCard($data);
 		
 		$payment = $this->createPayment($gatewayname, $amount, 'NZD');
 
@@ -62,6 +62,7 @@ class OmniPage_Controller extends Page_Controller{
 		$cancelUrl = Director::absoluteURL($this->Link());
 
 		//do the payment
+		Debug::show($payment);
 		$response = $gateway->purchase(
 			array(
 				'card' => $card,
@@ -104,8 +105,6 @@ class OmniPage_Controller extends Page_Controller{
 		$payment = Payment::get()->byID($this->request->param('ID'));
 
 		//TODO: do post-redirect handling
-
-		Debug::show($payment);
 		//stub
 		return array(
 			'Title' => 'Payment Complete',
@@ -117,7 +116,8 @@ class OmniPage_Controller extends Page_Controller{
 	private function createPayment($gateway, $amount, $currency){
 		$payment = new Payment(array(
 			'Gateway' => $gateway, //TODO: require gateway?
-			'Amount' => array('Amount' => $amount, 'Currency' => $currency),
+			'AmountAmount' => $amount,
+			'AmountCurrency' => $currency,
 			'PaidByID' => Member::currentUserID()
 		));
 		$payment->write();

@@ -106,6 +106,12 @@ class Payment extends DataObject{
 
 	}
 
+	public function createTransaction($type){
+		$transaction = new PaymentTransaction();
+		
+		return $transaction;
+	}
+
 	/**
 	 * Get the omnipay gateway associated with this payment,
 	 * with configuration applied.

@@ -2,8 +2,8 @@
 
 class PaymentTransaction extends DataObject{
 	
-	//generate unique id (not sequential)
-	//type: 
+	//generate unique, non-sequential reference
+	//type
 	//gateway
 
 }

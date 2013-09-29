@@ -12,8 +12,17 @@ To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
 
 *Note:* Composer is currently the only supported way to set up this module.
 
-## Gateway Features
-You should be aware that there are a number of features available via this module, but not all gateways support them.
+## Features
+
+ * Gateway configuration via yaml config
+ * Payment / transaction model handling
+
+### Gateway Features
+
+Different gateways have different features. This means you may get a different level of functionality, depending on the gateway you choose.
+
+ * Delayed capturing. This means you can submit payment details for approval in one step of your application, and actually capture the money at a later point.
+ * Enter credit card details on site. Some gateways allow entering credit card details to a form on your website, and other require users to visit another website to enter those details.
 
 To see what features are supported, visit: `your-site-url/dev/payment`.
 
@@ -26,7 +35,8 @@ There are three different code bases to consider:
  * Omnipay Framework - gateway interaction handling.
 
 Your application is responsible for:
-* Configuration of payment gateways, via YAML
+* Configuration of payment gateways, via YAML.
+* Providing system (amount, currency, return urls, etc), and customer data (name, address, credit card details, etc).
 * Linking one, or many payments to the thing you want to pay for.
 
 This payment module is responsible for:
@@ -54,9 +64,9 @@ Payment:
             username: 'example.username.test'
             password: 'txjjllae802325'
             signature: 'wk32hkimhacsdfa'
-				PaymentExpress_PxPay:
-					username: 'EXAMPLEUSER'
-					password: '235llgwxle4tol23l'
+		PaymentExpress_PxPay:
+			username: 'EXAMPLEUSER'
+			password: '235llgwxle4tol23l'
 ```
 
 ## Data model

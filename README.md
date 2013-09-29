@@ -16,13 +16,14 @@ To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
 
  * Gateway configuration via yaml config
  * Payment / transaction model handling
+ * Detailed logging
 
 ### Gateway Features
 
 Different gateways have different features. This means you may get a different level of functionality, depending on the gateway you choose.
 
  * Delayed capturing. This means you can submit payment details for approval in one step of your application, and actually capture the money at a later point.
- * Enter credit card details on site. Some gateways allow entering credit card details to a form on your website, and other require users to visit another website to enter those details.
+ * Enter credit card details on site. Some gateways allow entering credit card details to a form on your website, and other require users to visit another website to enter those details. This is also known as "on site" vs "off site" credit card processing. It is sometimes possible to emulate on site processing using an iframe containing the off-site payment page.
 
 To see what features are supported, visit: `your-site-url/dev/payment`.
 

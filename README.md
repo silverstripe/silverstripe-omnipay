@@ -22,7 +22,7 @@ To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
 
 Different gateways have different features. This means you may get a different level of functionality, depending on the gateway you choose.
 
- * Delayed capturing. This means you can submit payment details for approval in one step of your application, and actually capture the money at a later point.
+ * Delayed capturing. This means you can submit payment details for approval in one step (authorize) of your application, and actually capture the money in a secondary step (capture).
  * Enter credit card details on site. Some gateways allow entering credit card details to a form on your website, and other require users to visit another website to enter those details. This is also known as "on site" vs "off site" credit card processing. It is sometimes possible to emulate on site processing using an iframe containing the off-site payment page.
 
 To see what features are supported, visit: `your-site-url/dev/payment`.
@@ -45,7 +45,7 @@ This payment module is responsible for:
 * Handling responses from external gateways
 * Integrating with omnipay
 
-Omnipay will send requests to the gateway servers, and parse their responses in to a fairly consistent format.
+The omnipay library is responsible sending requests to the gateway servers, and parsing responses in to a consistent format.
 
 ## Configuration
 
@@ -79,10 +79,12 @@ Here are a few ideas:
  * MyObject has_one Payment
  * ...or you could generate payments and complete them in a stand alone form.
 
-## Available methods
+## Available gateays
+
+In your application, you may want to allow users to choose between a few different payment gateways. This can be useful for users if their first attempt is declined.
 
 ```php
-$methods = Payment::get_supported_methods();
+$methods = Payment::get_supported_gateways();
 ```
 
 ## Initiating a payment
@@ -90,7 +92,7 @@ $methods = Payment::get_supported_methods();
 The following code examples are assumed to be executed inside your application's controller action, typically after a form has been submitted.
 
 ```php
-$payment = Payment::createPayment($amount, $currency, $gateway);
+$payment = Payment::create_payment($amount, $currency, $gateway);
 ```
 
 You get back a payment dataobject. Payment model at this stage can be thought of as "an intention to pay".
@@ -100,16 +102,16 @@ You can then perform some, or all of the following actions on that object:
  * **Refund** - return funds back to the payee.
  * **Void** - 
 
-To request payment authorisation, you need to pass the following data to the `authorise` function on the payment:
+To request payment authorization, you need to pass the following data to the `authorize` function on the payment:
 ```php
-$result = $payment->authorise(array(
+$result = $payment->authorize(array(
     'returnURL' => $this->Link('complete'),
     'cancelURL' => $this->Link()
 ));
 ```
 
 You will get back a response object, which is an instance of omnipay's `AbstractResponse` class.
-With this response object you can determine whether the result of the authorise request was a success, failure, or now requires you to redirect
+With this response object you can determine whether the result of the authorize request was a success, failure, or now requires you to redirect
 the user to the gateway website for further processing.
 ```php
 if($result->isSuccess()){
@@ -129,7 +131,7 @@ if($result->isSuccess()){
 Note, this payment module will handle any response data that the gateway sends, and will update the payment/transaction models accordingly.
 
 
-That concludes the handling of an authorisation request. Next you'll want to handle the actual capturing of the payment.
+That concludes the handling of an authorization request. Next you'll want to handle the actual capturing of the payment.
 Capturing payment could be done immediately, or you could wait until a later point (Such as when an item has shipped).
 
 To initiate the capture of a payment, first locate the appropriate payment dataobject, then call the `capture` function on it.
@@ -138,5 +140,9 @@ To initiate the capture of a payment, first locate the appropriate payment datao
 $result = $payment->capture();
 ```
 
+
+
+
+## Delayed capturing
 
 

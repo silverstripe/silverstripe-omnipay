@@ -9,5 +9,13 @@ Issues to resolve:
 
  * Test actual gateways
  * i18n integration
- * error handling
+ * error / exception handling
  * model integration
+ * provide a credit card entry form / page for on-site payments
+ Only allow setting amount when payment status is 'Created'. Ie...introduce futher immutability.
+
+
+ Validate credit card details for gateways that take them.
+ token billing
+ What happens if a payment gateway is no longer available.
+ update db field varchar lengths

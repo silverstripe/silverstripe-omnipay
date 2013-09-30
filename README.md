@@ -68,7 +68,30 @@ Payment:
 		PaymentExpress_PxPay:
 			username: 'EXAMPLEUSER'
 			password: '235llgwxle4tol23l'
+---
+Except:
+    environment: 'live'
+---
+Payment:
+    allowed_gateways:
+        - 'Dummy'
+---
+Only:
+    environment: 'live'
+---
+Payment:
+    parameters:
+        PayPal_Express:
+            username: 'liveexample.test'
+            password: 'livepassawe23'
+            signature: 'laivfe23235235'
+        PaymentExpress_PxPay:
+            username: 'LIVEUSER'
+            password: 'n23nl2ltwlwjle'
+---
 ```
+
+The [SilverStripe documentation](http://doc.silverstripe.com/framework/en/topics/configuration#setting-configuration-via-yaml-files) explains more about yaml config files.
 
 ## Data model
 
@@ -79,7 +102,7 @@ Here are a few ideas:
  * MyObject has_one Payment
  * ...or you could generate payments and complete them in a stand alone form.
 
-## Available gateays
+## Available gateways
 
 In your application, you may want to allow users to choose between a few different payment gateways. This can be useful for users if their first attempt is declined.
 

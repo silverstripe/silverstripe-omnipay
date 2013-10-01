@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * PaymentTransaction DataObject
+ *
+ * This class is used for storing payment transaction details.
+ * It provides a more detailed history of a payment's history.
+ */
 class PaymentTransaction extends DataObject{
 	
 	private static $db = array(

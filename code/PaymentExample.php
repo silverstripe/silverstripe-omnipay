@@ -46,7 +46,12 @@ class DonationPage_Controller extends Page_Controller{
 		$form->saveInto($donation);
 		$donation->ParentID = $this->ID;
 		$donation->write();
-		$payment = Payment::create_payment($donation->Amount,$this->Currency,$data['Gateway']);
+
+		$payment = Payment::create()
+					->setGateway($data['Gateway'])
+					->setAmount($donation->Amount)
+					->setCurrency($this->Currency);
+		$payment->write();
 
 		$response = $payment->purchase(array(
 				'returnURL' => $this->Link('complete'),

@@ -7,7 +7,6 @@ To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
 ## Requirements
 
  * silverstripe framework 3.1+
- * silverstripe cms 3.1+
  * omnipay + it's dependencies - which include guzzle and some symphony libraries
 
 *Note:* Composer is currently the only supported way to set up this module.

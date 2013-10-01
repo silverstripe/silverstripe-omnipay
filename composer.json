@@ -6,7 +6,6 @@
 	"keywords": ["silverstripe","payment","omnipay"],
 	"require": {
 		"silverstripe/framework": "~3.1",
-		"silverstripe/cms": "~3.1",
 		"omnipay/omnipay": "1.*"
 	},
 	"authors": [

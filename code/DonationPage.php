@@ -47,34 +47,12 @@ class DonationPage_Controller extends Page_Controller{
 		$donation->ParentID = $this->ID;
 		$donation->write();
 
-		$payment = Payment::create()
-					->setGateway($data['Gateway'])
-					->setAmount($donation->Amount)
-					->setCurrency($this->Currency);
-		$payment->write();
-
-		$response = $payment->purchase(array(
-				'returnUrl' => $this->Link('complete'),
-				'cancelUrl' => $this->Link()
-			),
-			$form->getData()
-		);
-
-		if ($response->isSuccessful()) {
-			$this->redirect(
-				$this->Link('complete')
-			); // payment was successful
-			return;
-		} elseif ($response->isRedirect()) { // redirect to off-site payment gateway
-			$this->redirect(
-				$response->getRedirectUrl()
-			);
-			return;
-		} else { // payment failed: display message to customer
-			$form->sessionMessage($response->getMessage());
-			$this->redirectBack();
-		}
-		return;
+		Payment::create()
+			->init($data['Gateway'],$donation->Amount,$this->Currency)
+			->setReturnUrl($this->Link('complete')."?donation=".$donation->ID)
+			->setCancelUrl($this->Link()."?message=payment cancelled")
+			->purchase($form->getData())
+			->redirect();
 	}
 
 	public function complete(){

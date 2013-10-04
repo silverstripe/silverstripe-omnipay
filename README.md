@@ -26,6 +26,10 @@ Different gateways have different features. This means you may get a different l
 
 To see what features are supported, visit: `your-site-url/dev/payment`.
 
+## Documentation
+
+See DonationPage.php for a working example.
+
 ## Responsibilities
 
 There are three different code bases to consider:
@@ -171,10 +175,6 @@ To initiate the capture of a payment, first locate the appropriate payment datao
 //locate payment
 $result = $payment->capture();
 ```
-
-## Delayed capturing
-
-
 
 ## Caveats
 

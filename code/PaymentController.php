@@ -50,10 +50,15 @@ class PaymentController extends Controller{
 			//check token
 			//call completePurchase, completeAuthorise omnipay functions
 
-		switch($this->param('Action')){
+		switch($this->param('Status')){
 			case "complete":
 
-				//$payment->completePayment();
+				//TODO: try/catch
+				try {
+					$payment->completePayment();
+				} catch (\Exception $e) {
+					
+				}
 				//update the payment transaction
 
 				return;

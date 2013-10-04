@@ -43,7 +43,7 @@ class PaymentTest extends SapphireTest{
 		 			->setGateway("Dummy")
 		 			->setAmount(1222)
 		 			->setCurrency("GBP");
-		$response = $payment->purchase(array(),array(
+		$response = $payment->purchase(array(
 			'number' => '4242424242424242',
 			'expiryMonth' => '5',
 			'expiryYear' => date("Y",strtotime("+1 year"))

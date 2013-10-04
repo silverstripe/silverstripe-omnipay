@@ -30,6 +30,8 @@ final class Payment extends DataObject{
 		'Status' => 'Created'
 	);
 
+	private $returnurl, $cancelurl;
+
 	/**
 	 * Get the available configured payment types, with i18n readable names.
 	 * @return array map of gateway short name to translated long name.
@@ -75,6 +77,10 @@ final class Payment extends DataObject{
 		return $this;
 	}
 
+	/**
+	 * Get the payment amount
+	 * @return string amount of this payment
+	 */
 	public function getAmount() {
 		return $this->MoneyAmount;
 	}
@@ -109,6 +115,24 @@ final class Payment extends DataObject{
 		return $this;
 	}
 
+	public function getReturnUrl() {
+		return $this->returnurl;
+	}
+
+	public function setReturnUrl($url) {
+		$this->returnurl = $url;
+		return $this;
+	}
+
+	public function getCancelUrl() {
+		return $this->returnurl;
+	}
+
+	public function setCancelUrl($url) {
+		$this->cancelurl = $url;
+		return $this;
+	}
+
 	/**
 	 * Get the omnipay gateway associated with this payment,
 	 * with configuration applied.
@@ -127,21 +151,28 @@ final class Payment extends DataObject{
 
 	/**
 	 * Wrap the omnipay purchase function
-	 * @param  array $system   returnUrl, cancelUrl
-	 * @param  array $customer customer creditcard and billing/shipping details.
+	 * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
 	 * @return ResponseInterface omnipay's response class, specific to the chosen gateway.
 	 */
-	public function purchase($system, $customer) {
-		$card = new Omnipay\Common\CreditCard($customer);
+	public function purchase($data) {
+		if(!$this->isInDB()){
+			$this->write();
+		}
+
+		$card = new Omnipay\Common\CreditCard($data);
 		$transaction = $this->createTransaction('Purchase');
+
+		$this->returnurl = isset($data['returnUrl']) ? $data['returnUrl'] : $this->returnurl;
+		$this->cancelurl = isset($data['cancelUrl']) ? $data['cancelUrl'] : $this->cancelurl;
+
 		$request = $this->oGateway()->purchase(array(
 			'card' => $card,
 			'amount' => (float)$this->MoneyAmount,
 			'currency' => $this->MoneyCurrency,
 			'transactionId' => $transaction->ID,
-			'clientIp' => isset($system['clientIp']) ? $system['clientIp'] : null,
-			'returnUrl' => PaymentController::get_return_url($transaction, 'complete', isset($system['returnUrl']) ? $system['returnUrl'] : null),
-			'cancelUrl' => PaymentController::get_return_url($transaction,'cancel', isset($system['cancelUrl']) ? $system['cancelUrl'] : null)
+			'clientIp' => isset($data['clientIp']) ? $data['clientIp'] : null,
+			'returnUrl' => PaymentController::get_return_url($transaction, 'complete', $this->returnurl),
+			'cancelUrl' => PaymentController::get_return_url($transaction,'cancel', $this->cancelurl)
 		));
 		$this->logRequest($request);
 		$response = $request->send();
@@ -164,7 +195,7 @@ final class Payment extends DataObject{
 			//something went wrong...record this. Update payment and/or transaction?
 		}
 
-		return $response;
+		return new PaymentResponse($response, $this);
 	}
 
 	/**

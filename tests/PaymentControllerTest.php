@@ -34,13 +34,9 @@ class PaymentControllerTest extends FunctionalTest{
 		//Note the string 'c2hvcC9jb21wbGV0ZQ%3D%3D' is just "shop/complete" base64 encoded, then url encoded
 		$response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/complete/c2hvcC9jb21wbGV0ZQ%3D%3D"); //mimic gateway update
 
-		Debug::show($response);
-
 		$transaction = PaymentTransaction::get()
 						->filter('Identifier','UNIQUEHASH23q5123tqasdf')
 						->First();
-
-
 
 		//model is appropriately updated
 		//redirect works

@@ -1,0 +1,25 @@
+Payment:
+	payment1:
+		Gateway: Manual
+		AmountAmount: 20.23
+		AmountCurrency: NZD
+		Status: Created
+	payment2:
+		Gateway: Dummy
+		AmountAmount: 1234.56
+		AmountCurrency: USD
+		Status: Authorized
+	payment3:
+		Gateway: PaymentExpress_PxPay
+		AmountAmount: 769.50
+		AmountCurrency: AUD
+		Status: Captured
+
+PaymentTransaction:
+	transaction1:
+		Type: Purchase
+		Identifier: UNIQUEHASH23q5123tqasdf
+		Reference: 
+		Message: 
+		Code:
+		PaymentID: =>Payment.payment2

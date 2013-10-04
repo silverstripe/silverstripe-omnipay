@@ -1,30 +1,82 @@
 <?php
 
+/**
+ * PaymentController
+ *
+ * This controller handles redirects from gateway servers, and also behind-the-scenes
+ * requests that gateway servers to notify our application of successful payment.
+ */
 class PaymentController extends Controller{
 	
 	private static $allowed_actions = array(
 		'endpoint'
 	);
 
-	public static function get_url(){
-		return 'PaymentController';
+	/**
+	 * Generate an absolute url for gateways to return to, or send requests to.
+	 * @param  PaymentTransaction $transaction transaction that redirect applies to.
+	 * @param  string             $status      the intended status / action of the gateway
+	 * @param  string             $returnurl   the application url to re-redirect to
+	 * @return string                          the resulting redirect url
+	 */
+	public static function get_return_url(PaymentTransaction $transaction, $status = 'complete', $returnurl = null){
+		return Director::absoluteURL(
+			Controller::join_links(
+				'paymentendpoint', //as defined in _config/routes.yml
+				$transaction->Identifier,
+				$status,
+				urlencode(base64_encode($returnurl))
+			)
+		);
 	}
 
-	public function endpoint(){
+	/**
+	 * The main action for handling all requests
+	 */
+	public function index(){
 
 		$transaction = PaymentTransaction::get()
-			->filter('Reference', $this->request->param('Reference'));
+			->filter('Identifier',$this->request->param('Identifier'))
+			->First();
+		if(!$transaction){
+			//log failure
+			//store message for user
+			return $this->redirect($this->getRedirectUrl());
+		}
 
-		//update the payment transaction
+		$payment = $transaction->Payment();
+
+		//security checks - verify that payment is allowed to be updated
+			//check token
+			//call completePurchase, completeAuthorise omnipay functions
+
+		switch($this->param('Action')){
+			case "complete":
+
+				//$payment->completePayment();
+				//update the payment transaction
+
+				return;
+			case "cancel":
+				//mark as cancelled?...or failure?
+				return;
+		}
 
 		//redirect back to application
-		//$this->redirect($redirecturl);
+		return $this->redirect($this->getRedirectUrl());
 	}
 
-	public static function get_return_url(PaymentTransaction $transaction, $action = null){
-		return Director::absoluteURL(
-			Controller::join_links(self::get_url(),'endpoint',$transaction->Reference,$action)
-		);
+	/**
+	 * Get the url to redirect to.
+	 * If a url hasn't been stored in the url, then redirect to base url.
+	 * @return [type] [description]
+	 */
+	private function getRedirectUrl(){
+		$url = $this->request->param('ReturnURL');
+		if($url){
+			return base64_decode(urldecode($url));
+		}
+		return Director::baseURL();
 	}
 
 }

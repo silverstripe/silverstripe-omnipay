@@ -10,11 +10,11 @@
  *
  * @package payment
  */
-class Payment extends DataObject{
+final class Payment extends DataObject{
 
 	private static $db = array(
 		'Gateway' => 'Varchar(50)', //this is the omnipay 'short name'
-		'Amount' => 'Money',
+		'Money' => 'Money', //contains Amount and Currency
 		'Status' => "Enum('Created,Authorized,Captured,Refunded,Void','Created')"
 	);
 
@@ -36,6 +36,7 @@ class Payment extends DataObject{
 	 */
 	public static function get_supported_gateways() {
 		$allowed = Config::inst()->forClass('Payment')->allowed_gateways;
+		$allowed = array_combine($allowed, $allowed);
 		$allowed = array_map(function($name) {
 			return _t(
 				"Payment.".strtoupper($name),
@@ -47,6 +48,84 @@ class Payment extends DataObject{
 	}
 
 	/**
+	 * Set gateway, amount, and currency in one function.
+	 * @param  string $gateway   omnipay gateway short name
+	 * @param  float $amount     monetary amount
+	 * @param  string $currency the currency to set
+	 * @return  Payment this object for chaining
+	 */
+	public function init($gateway, $amount, $currency) {
+		$this->setGateway($gateway);
+		$this->setAmount($amount);
+		$this->setCurrency($currency);
+		return $this;
+	}
+
+	/**
+	 * Set the payment amount, but only when the status is 'Created'.
+	 * @param float $amt value to set the payment to
+	 * @return  Payment this object for chaining
+	 */
+	public function setAmount($amount) {
+		if($amount instanceof Money) {
+			$this->setField("Money",$amount);
+		} elseif($this->Status == 'Created' && is_numeric($amount)) {
+			$this->MoneyAmount = $amount;
+		}
+		return $this;
+	}
+
+	public function getAmount() {
+		return $this->MoneyAmount;
+	}
+
+	/**
+	 * Set the payment currency, but only when the status is 'Created'.
+	 * @param string $currency the currency to set
+	 */
+	public function setCurrency($currency) {
+		if($this->Status == 'Created') {
+			$this->MoneyCurrency = $currency;
+		}
+
+		return $this;
+	}
+
+	/**
+	 * Get just the currency of this payment's money component
+	 * @return string the currency of this payment
+	 */
+	public function getCurrency() {
+		return $this->MoneyCurrency;
+	}
+
+	/**
+	 * Set the payment gateway
+	 * @param string $gateway the omnipay gateway short name.
+	 * @return Payment this object for chaining
+	 */
+	public function setGateway($gateway) {
+		$this->setField('Gateway', $gateway);
+		return $this;
+	}
+
+	/**
+	 * Get the omnipay gateway associated with this payment,
+	 * with configuration applied.
+	 * 
+	 * @return AbstractGateway omnipay gateway class
+	 */
+	public function oGateway(){
+		$gateway = Omnipay\Common\GatewayFactory::create($this->Gateway);
+		$parameters = Config::inst()->forClass('Payment')->parameters;
+		if(isset($parameters[$this->Gateway])) {
+			$gateway->initialize($parameters[$this->Gateway]);
+		}
+
+		return $gateway;
+	}
+
+	/**
 	 * Wrap the omnipay purchase function
 	 * @param  array $system   returnUrl, cancelUrl
 	 * @param  array $customer customer creditcard and billing/shipping details.
@@ -55,39 +134,57 @@ class Payment extends DataObject{
 	public function purchase($system, $customer) {
 		$card = new Omnipay\Common\CreditCard($customer);
 		$transaction = $this->createTransaction('Purchase');
-
 		$request = $this->oGateway()->purchase(array(
 			'card' => $card,
-			'amount' => $this->AmountAmount,
-			'currency' => $this->AmountCurrency,
+			'amount' => (float)$this->MoneyAmount,
+			'currency' => $this->MoneyCurrency,
 			'transactionId' => $transaction->ID,
-			//'clientIp' => $controller->getIP(), //TODO: get the ip from somewhere
-			'returnUrl' => PaymentController::get_return_url($transaction), //Add return url to get variable
-			'cancelUrl' => PaymentController::get_return_url($transaction,'cancel') //Add return url to get variable
+			'clientIp' => isset($system['clientIp']) ? $system['clientIp'] : null,
+			'returnUrl' => PaymentController::get_return_url($transaction, 'complete', isset($system['returnUrl']) ? $system['returnUrl'] : null),
+			'cancelUrl' => PaymentController::get_return_url($transaction,'cancel', isset($system['cancelUrl']) ? $system['cancelUrl'] : null)
 		));
+		$this->logRequest($request);
 		$response = $request->send();
+		$this->logResponse($response);
 		
-		//TODO: log request / response to file
-		$transaction->Message = $response->getMessage();
-		$transaction->Code = $response->getCode();
-		$transaction->Reference = $response->getTransactionReference();
+		$transaction->update(array(
+			'Message' => $response->getMessage(),
+			'Code' => $response->getCode(),
+			'Reference' => $response->getTransactionReference()
+		));
 		$transaction->write();
 		
 		if ($response->isSuccessful()) {
 			$this->Status = 'Captured';
-			//TODO: save other things? Transaction reference
 			$this->write();
 		} elseif ($response->isRedirect()) { // redirect to off-site payment gateway
-			//$this->Status = 'Authorized'; ...or 'Pending'?
+			$this->Status = 'Authorized'; //or should this be 'Pending'?
+			$this->write();
 		} else {
-			//something went wrong
-			//record
+			//something went wrong...record this. Update payment and/or transaction?
 		}
 
 		return $response;
 	}
 
-	public function authorize($parameters, $data) {
+	/**
+	 * Finalise this payment, after external processing.
+	 * This is ususally only called by PaymentController
+	 * @return [type] [description]
+	 */
+	public function completePurchase(){
+		$gateway = $payment->oGateway();
+		if($gateway && $gateway->supportsCompletePurchase()){
+			$request = $gateway->completePurchase();
+			$this->logRequest($request);
+			$response = $request->send();
+			$this->logResponse($response);
+			//TODO: update model
+		}
+		return $response;
+	}
+
+	public function authorize($system, $customer) {
 		//TODO
 	}
 
@@ -104,46 +201,6 @@ class Payment extends DataObject{
 	}
 
 	/**
-	 * Set the payment amount, but only when the status is 'Created'.
-	 * @param float $amt value to set the payment to
-	 * @return  Payment this object for chaining
-	 */
-	public function setAmount($amount) {
-		if($amount instanceof Money) {
-			$this->dbObject("Amount")->setValue($amount);
-		} elseif($this->Status == 'Created') {
-			$this->AmountAmount = $amount;
-		}
-
-		return $this;
-	}
-
-	/**
-	 * Set the payment currency, but only when the status is 'Created'.
-	 * @param [type] $currency [description]
-	 */
-	public function setCurrency($currency) {
-		if($currency instanceof Money) {
-			$this->dbObject("Currency")->setValue($currency);
-		} elseif($this->Status == 'Created') {
-			$this->AmountCurrency = $currency;
-		}
-
-		return $this;
-	}
-
-	/**
-	 * Set the payment gateway
-	 * @param string $gateway the omnipay gateway short name.
-	 * @return Payment this object for chaining
-	 */
-	public function setGateway($gateway) {
-		$this->dbObject('Gateway')->setValue($gateway);
-
-		return $this;
-	}
-
-	/**
 	 * Create a new transaction model for this payment
 	 * @param  string $type the type of transaction to create
 	 * @return PaymentTransaction Newly created dataobject, saved to database.
@@ -153,25 +210,35 @@ class Payment extends DataObject{
 			"Type" => $type,
 			"PaymentID" => $this->ID
 		));
+		$transaction->generateIdentifier();
 		$transaction->write();
 
 		return $transaction;
 	}
 
 	/**
-	 * Get the omnipay gateway associated with this payment,
-	 * with configuration applied.
-	 * 
-	 * @return AbstractGateway omnipay gateway class
+	 * Helper function for logging gateway requests
+	 * @param  AbstractRequest $request the omnipay request object
 	 */
-	private function oGateway(){
-		$gateway = Omnipay\Common\GatewayFactory::create($this->Gateway);
-		$parameters = Config::inst()->forClass('Payment')->parameters;
-		if(isset($parameters[$this->Gateway])) {
-			$gateway->initialize($parameters[$this->Gateway]);
+	private function logRequest($request){
+		if((bool)Config::inst()->get('Payment','file_logging')){
+			$parameters = $request->getParameters();
+			//TODO: omfuscate, or remove the creditcard details from logging
+			Debug::log($this->Gateway." REQUEST\n\n".print_r($parameters,true));
 		}
+	}
 
-		return $gateway;
+	/**
+	 * Helper function for logging gateay responses
+	 * @param  AbstractResponse $response the omnipay response object
+	 */
+	private function logResponse($response){
+		if((bool)Config::inst()->get('Payment','file_logging')){
+			Debug::log($this->Gateway." RESPONSE\n\n".print_r(array(
+				'Data' => $response->getData(),
+				'isRedirect' => $response->isRedirect(),
+			),true));
+		}
 	}
 
 }

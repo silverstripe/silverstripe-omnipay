@@ -22,8 +22,30 @@ class PaymentTransaction extends DataObject{
 		"Payment" => "Payment"
 	);
 
-	function generateIdentifier(){
-		//while...
+	/**
+	 * Only allow setting identifier, if one doesn't exist yet.
+	 * @param string $id identifier
+	 */
+	function setIdentifier($id){
+		if(!$this->Identifier){
+			$this->setField('Identifier', $id);
+		}
+	}
+
+	/**
+	 * Generate a unique url-friendly identifier, if one doesn't exist yet.
+	 * @return string|null the new identifier, if created.
+	 */
+	public function generateIdentifier(){
+		if(!$this->Identifier){
+			$id = $this->PaymentID.uniqid();
+			while(PaymentTransaction::get()->filter('Identifier',$id)->exists()){
+				$id = $this->PaymentID.uniqid();
+			}
+			$this->Identifier = $id;
+			return $id;
+		}
+		return null;
 	}
 
 }

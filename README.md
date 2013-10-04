@@ -36,7 +36,14 @@ There are three different code bases to consider:
 
 Your application is responsible for:
 * Configuration of payment gateways, via YAML.
-* Providing system (amount, currency, return urls, etc), and customer data (name, address, credit card details, etc).
+* Providing system data
+    * amount
+    * currency
+    * return/cancel urls
+* Providing customer data (depending on gateway requirements)
+    * name
+    * address for billing/shipping
+    * credit card details
 * Linking one, or many payments to the thing you want to pay for.
 
 This payment module is responsible for:
@@ -49,6 +56,8 @@ The omnipay library is responsible sending requests to the gateway servers, and 
 ## Configuration
 
 You can configure gateway settings in your `mysite/_config/payment.yml` file. Here you can select a list of allowed gateways, and separately set the gateway-specific settings.
+
+You can also choose to enable file logging by setting `file_logging` to 1.
 
 ```yaml
 ---
@@ -72,6 +81,7 @@ Except:
     environment: 'live'
 ---
 Payment:
+    file_logging: 1
     allowed_gateways:
         - 'Dummy'
 ---
@@ -162,9 +172,11 @@ To initiate the capture of a payment, first locate the appropriate payment datao
 $result = $payment->capture();
 ```
 
-
-
-
 ## Delayed capturing
 
+
+
+## Caveats
+
+ * Payments have both an ammount and a currency. That means you should check if all currenceis match if you will be adding them up.
 

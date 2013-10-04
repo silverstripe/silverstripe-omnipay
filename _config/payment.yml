@@ -18,6 +18,7 @@ Except:
     environment: 'live'
 ---
 Payment:
+    file_logging: 1
     allowed_gateways:
         - 'Dummy'
 ---

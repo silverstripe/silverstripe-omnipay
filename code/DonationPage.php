@@ -54,8 +54,8 @@ class DonationPage_Controller extends Page_Controller{
 		$payment->write();
 
 		$response = $payment->purchase(array(
-				'returnURL' => $this->Link('complete'),
-				'cancelURL' => $this->Link()
+				'returnUrl' => $this->Link('complete'),
+				'cancelUrl' => $this->Link()
 			),
 			$form->getData()
 		);

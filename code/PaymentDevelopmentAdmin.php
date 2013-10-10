@@ -1,16 +1,15 @@
 <?php
 
+/**
+ * Development tools for payments
+ */
 class PaymentDevelopmentAdmin extends Controller{
 	
-
 	function index(){
-
 		$renderer = DebugView::create();
-
 		$renderer->writeHeader();
-		$renderer->writeInfo("Payment Gateways", Director::absoluteBaseURL());
+		$renderer->writeInfo("Installed Omnipay Payment Gateways", Director::absoluteBaseURL());
 		$base = Director::baseURL();
-
 		$types = $this->PaymentTypes();
 
 		echo "<table style=\"font-size:12px;\" border=1 cellspacing=0>
@@ -33,7 +32,6 @@ class PaymentDevelopmentAdmin extends Controller{
 			<tbody>";
 
 		foreach($types as $gateway){
-
 			echo "<tr>".
 					"<td>".$gateway->getShortName()."</td>".
 					"<td>".$gateway->getName()."</td>".
@@ -48,13 +46,11 @@ class PaymentDevelopmentAdmin extends Controller{
 					"<td>".($gateway->supportsDeleteCard() ? "yes" : "")."</td>".
 					"<td>".($gateway->supportsUpdateCard() ? "yes" : "")."</td>".
 			"</tr>";
-
 			if($this->request->getVar('defaults')){
 				echo "<tr><td colspan=\"11\">";
 					var_dump($gateway->getDefaultParameters());
 				echo "</td></tr>";
 			}
-
 		}
 		echo "</tbody></table>";
 		$renderer->writeFooter();

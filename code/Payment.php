@@ -10,6 +10,11 @@
  *
  * @package payment
  */
+
+use Omnipay\Common\GatewayFactory;
+use Omnipay\Common\CreditCard;
+use Omnipay\Common\Message\AbstractResponse;
+
 final class Payment extends DataObject{
 
 	private static $db = array(
@@ -23,7 +28,7 @@ final class Payment extends DataObject{
 	);
 
 	private static $has_many = array(
-		"Transactions" => "PaymentTransaction"
+		"Transactions" => "GatewayTransaction"
 	);
 	
 	private static $defaults = array(
@@ -42,7 +47,7 @@ final class Payment extends DataObject{
 		$allowed = array_map(function($name) {
 			return _t(
 				"Payment.".strtoupper($name),
-				Omnipay\Common\GatewayFactory::create($name)->getName()
+				GatewayFactory::create($name)->getName()
 			);
 		}, $allowed);
 
@@ -119,6 +124,10 @@ final class Payment extends DataObject{
 		return $this->returnurl;
 	}
 
+	/**
+	 * Set the url to redirect to after payment is made/attempted
+	 * @return Payment this object for chaining
+	 */
 	public function setReturnUrl($url) {
 		$this->returnurl = $url;
 		return $this;
@@ -128,9 +137,23 @@ final class Payment extends DataObject{
 		return $this->returnurl;
 	}
 
+	/**
+	 * Set the url to redirect to after payment is cancelled
+	 * @return Payment this object for chaining
+	 */
 	public function setCancelUrl($url) {
 		$this->cancelurl = $url;
 		return $this;
+	}
+
+	/**
+	 * This payment requires no more processing.
+	 * @return boolean completion
+	 */
+	public function isComplete(){
+		return $this->Status == 'Captured' ||
+				$this->Status == 'Refunded' ||
+				$this->Status == 'Void';
 	}
 
 	/**
@@ -140,7 +163,7 @@ final class Payment extends DataObject{
 	 * @return AbstractGateway omnipay gateway class
 	 */
 	public function oGateway(){
-		$gateway = Omnipay\Common\GatewayFactory::create($this->Gateway);
+		$gateway = GatewayFactory::create($this->Gateway);
 		$parameters = Config::inst()->forClass('Payment')->parameters;
 		if(isset($parameters[$this->Gateway])) {
 			$gateway->initialize($parameters[$this->Gateway]);
@@ -150,40 +173,33 @@ final class Payment extends DataObject{
 	}
 
 	/**
-	 * Wrap the omnipay purchase function
+	 * Attempt to make a payment
 	 * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
 	 * @return ResponseInterface omnipay's response class, specific to the chosen gateway.
 	 */
 	public function purchase($data) {
+		//force write
 		if(!$this->isInDB()){
 			$this->write();
 		}
-
-		$card = new Omnipay\Common\CreditCard($data);
-		$transaction = $this->createTransaction('Purchase');
-
+		
 		$this->returnurl = isset($data['returnUrl']) ? $data['returnUrl'] : $this->returnurl;
 		$this->cancelurl = isset($data['cancelUrl']) ? $data['cancelUrl'] : $this->cancelurl;
 
+		$transaction = $this->createTransaction('Purchase'); //rename?
 		$request = $this->oGateway()->purchase(array(
-			'card' => $card,
+			'card' => new CreditCard($data),
 			'amount' => (float)$this->MoneyAmount,
 			'currency' => $this->MoneyCurrency,
 			'transactionId' => $transaction->ID,
 			'clientIp' => isset($data['clientIp']) ? $data['clientIp'] : null,
-			'returnUrl' => PaymentController::get_return_url($transaction, 'complete', $this->returnurl),
-			'cancelUrl' => PaymentController::get_return_url($transaction,'cancel', $this->cancelurl)
+			'returnUrl' => PaymentGatewayController::get_return_url($transaction, 'complete', $this->returnurl),
+			'cancelUrl' => PaymentGatewayController::get_return_url($transaction,'cancel', $this->cancelurl)
 		));
 		$this->logRequest($request);
 		$response = $request->send();
 		$this->logResponse($response);
-		
-		$transaction->update(array(
-			'Message' => $response->getMessage(),
-			'Code' => $response->getCode(),
-			'Reference' => $response->getTransactionReference()
-		));
-		$transaction->write();
+		$this->completeTransaction($transaction, $response);
 		
 		if ($response->isSuccessful()) {
 			$this->Status = 'Captured';
@@ -192,30 +208,48 @@ final class Payment extends DataObject{
 			$this->Status = 'Authorized'; //or should this be 'Pending'?
 			$this->write();
 		} else {
-			//something went wrong...record this. Update payment and/or transaction?
+			//TODO: something went wrong...record this. Update payment and/or transaction?
 		}
 
-		return new PaymentResponse($response, $this);
+		return new GatewayResponse($response, $this);
 	}
 
 	/**
 	 * Finalise this payment, after external processing.
-	 * This is ususally only called by PaymentController
-	 * @return [type] [description]
+	 * This is ususally only called by PaymentGatewayController.
+	 * @return PaymentResponse encapsulated response info
 	 */
 	public function completePurchase(){
-		$gateway = $payment->oGateway();
-		if($gateway && $gateway->supportsCompletePurchase()){
-			$request = $gateway->completePurchase();
-			$this->logRequest($request);
+		//TODO: do we care if gateway isn't set, or doesn't exist?
+		
+		$transaction = $this->createTransaction('CompletePurchase');
+		$request = $this->oGateway()->completePurchase(array(
+			'amount' => (float)$this->MoneyAmount
+		));
+		$this->logRequest($request);
+
+		try{
 			$response = $request->send();
+			$this->completeTransaction($transaction, $response);
+
 			$this->logResponse($response);
-			//TODO: update model
+
+			if($response->isSuccessful()){
+				$this->Status = 'Captured';
+				$this->write();
+			}
+		} catch (\Exception $e) {
+				
 		}
-		return $response;
+		
+		return new GatewayResponse($response, $this);
 	}
 
-	public function authorize($system, $customer) {
+	public function authorize($data) {
+		//TODO
+	}
+
+	public function completeAuthorize() {
 		//TODO
 	}
 
@@ -232,16 +266,34 @@ final class Payment extends DataObject{
 	}
 
 	/**
-	 * Create a new transaction model for this payment
+	 * Record a transaction on this for this payment.
 	 * @param  string $type the type of transaction to create
-	 * @return PaymentTransaction Newly created dataobject, saved to database.
+	 * @return GatewayTransaction newly created dataobject, saved to database.
 	 */
 	private function createTransaction($type){
-		$transaction = new PaymentTransaction(array(
+		$transaction = new GatewayTransaction(array(
 			"Type" => $type,
 			"PaymentID" => $this->ID
 		));
 		$transaction->generateIdentifier();
+		$transaction->write();
+
+		return $transaction;
+	}
+
+	/**
+	 * Record the gateway response for a given transaction object.
+	 * @param  GatewayTransaction $transaction the transaction to complete
+	 * @param  AbstractResponse   $response    the response object to complete the transaction with
+	 * @return GatewayTransaction
+	 */
+	private function completeTransaction(GatewayTransaction $transaction, AbstractResponse $response){
+		$transaction->update(array(
+			'Message' => $response->getMessage(),
+			'Code' => $response->getCode(),
+			'Reference' => $response->getTransactionReference(),
+			'Success' => $response->isSuccessful()
+		));
 		$transaction->write();
 
 		return $transaction;

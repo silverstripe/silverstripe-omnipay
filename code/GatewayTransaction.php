@@ -1,21 +1,19 @@
 <?php
 
 /**
- * PaymentTransaction DataObject
+ * GatewayTransaction DataObject
  *
- * This class is used for storing payment transaction details.
- * It provides a more detailed history of a payment's history.
+ * Gateway transaction details are a database record of interactions
+ * with the gateway. It allows a detailed history of a payment.
  */
-class PaymentTransaction extends DataObject{
+class GatewayTransaction extends DataObject{
 	
 	private static $db = array(
-		"Type" => "Enum('Purchase,Authorize,Capture,Refund,Void')",
+		"Type" => "Enum('Purchase,CompletePurchase,Authorize,CompleteAuthorize,Capture,Refund,Void')",
 		"Identifier" => "Varchar", //local id
 		"Reference" => "Varchar", //remote id
 		"Message" => "Varchar",
-		"Code" => "Varchar",
-		// "Success" => "Boolean",
-		// "Redirect" => "Boolean"
+		"Code" => "Varchar"
 	);
 
 	private static $has_one = array(
@@ -26,7 +24,7 @@ class PaymentTransaction extends DataObject{
 	 * Only allow setting identifier, if one doesn't exist yet.
 	 * @param string $id identifier
 	 */
-	function setIdentifier($id){
+	public function setIdentifier($id){
 		if(!$this->Identifier){
 			$this->setField('Identifier', $id);
 		}
@@ -39,7 +37,7 @@ class PaymentTransaction extends DataObject{
 	public function generateIdentifier(){
 		if(!$this->Identifier){
 			$id = $this->PaymentID.uniqid();
-			while(PaymentTransaction::get()->filter('Identifier',$id)->exists()){
+			while(GatewayTransaction::get()->filter('Identifier',$id)->exists()){
 				$id = $this->PaymentID.uniqid();
 			}
 			$this->Identifier = $id;

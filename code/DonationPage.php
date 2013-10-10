@@ -56,10 +56,14 @@ class DonationPage_Controller extends Page_Controller{
 	}
 
 	public function complete(){
+
+		//TODO: get donation / payment / transaction details
+
 		return array(
 			'Title' => $this->SuccessTitle,
 			'Content' => $this->SuccessContent,
-			'Form' => ''
+			'Form' => '',
+			'Donation' => Donation::get()->byID($this->request->getVar('donation'))
 		);
 	}
 

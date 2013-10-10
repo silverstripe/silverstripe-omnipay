@@ -3,7 +3,7 @@
 /**
  * Wrapper for omnipay responses, which allow us to customise functionality
  */
-class PaymentResponse{
+class GatewayResponse{
 
 	private $response, $payment;
 
@@ -12,15 +12,34 @@ class PaymentResponse{
 		$this->payment = $payment;
 	}
 
-	function isSuccessful(){
+	/**
+	 * Check if the response indicates a successful gateway action
+	 * @return boolean
+	 */
+	public function isSuccessful(){
 		return $this->response->isSuccessful();
 	}
 
-	function isRedirect(){
+	/**
+	 * Check if a redirect is required
+	 * @return boolean
+	 */
+	public function isRedirect(){
 		return $this->response->isRedirect();
 	}
 
-	function redirect(){
+	/**
+	 * Get the omnipay response object
+	 * @return AbstractResponse omnipay response
+	 */
+	public function oResponse(){
+		return $this->response;
+	}
+
+	/**
+	 * Do a redirect, using the current controller
+	 */
+	public function redirect(){
 		$url = null;
 		if ($this->isSuccessful()) {
 			$url = $payment->getReturnUrl();

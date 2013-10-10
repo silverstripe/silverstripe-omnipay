@@ -69,4 +69,6 @@ class PaymentTest extends SapphireTest{
 		//redirect from offsite server
 
 	//Test trying to use a payment type that isn't allowed
+	
+	//Test what happens if a gateway type is not avaliable
 }

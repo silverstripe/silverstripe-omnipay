@@ -123,58 +123,25 @@ In your application, you may want to allow users to choose between a few differe
 $methods = Payment::get_supported_gateways();
 ```
 
-## Initiating a payment
+## Usage: Making a purchase
 
-The following code examples are assumed to be executed inside your application's controller action, typically after a form has been submitted.
+Using function chaining, we can create and configure a new payment object, and submit a request to the chosen gateway. The response object has a `redirect` function built in that will either redirect the user to the external gaeway site, or to the given return url.
 
 ```php
-$payment = Payment::create_payment($amount, $currency, $gateway);
+    Payment::create()
+        ->init($gateway = "PxPayGateway", $amount = 100, $currency = "NZD")
+        ->setReturnUrl($this->Link('complete')."?donation=".$donation->ID)
+        ->setCancelUrl($this->Link()."?message=payment cancelled")
+        ->purchase($form->getData())
+        ->redirect();
 ```
 
-You get back a payment dataobject. Payment model at this stage can be thought of as "an intention to pay".
-You can then perform some, or all of the following actions on that object:
- * **Authorize** - get approval from the gateway to charge money to a customer.
- * **Capture** - initiate the actual payment. This is the step where money will exchange hands, via the gateway.
- * **Refund** - return funds back to the payee.
- * **Void** - 
-
-To request payment authorization, you need to pass the following data to the `authorize` function on the payment:
-```php
-$result = $payment->authorize(array(
-    'returnURL' => $this->Link('complete'),
-    'cancelURL' => $this->Link()
-));
-```
-
-You will get back a response object, which is an instance of omnipay's `AbstractResponse` class.
-With this response object you can determine whether the result of the authorize request was a success, failure, or now requires you to redirect
-the user to the gateway website for further processing.
-```php
-if($result->isSuccess()){
-	// success: redirect
-	$this->redirect($this->Link('confirm'));
-	return;
-}elseif($result->isRedirect()){
-	// redirect to gateway site
-	$this->redirect($response->getRedirectUrl());
-	return;
-}else{
-	// failure: go back
-	$this->redirectBack();
-    return;
-}
-```
-Note, this payment module will handle any response data that the gateway sends, and will update the payment/transaction models accordingly.
+Of course you don't need to chain all of these functions, as you may want
+to redirect somewhere else, or do some further setup .
 
 
-That concludes the handling of an authorization request. Next you'll want to handle the actual capturing of the payment.
-Capturing payment could be done immediately, or you could wait until a later point (Such as when an item has shipped).
-
-To initiate the capture of a payment, first locate the appropriate payment dataobject, then call the `capture` function on it.
-```php
-//locate payment
-$result = $payment->capture();
-```
+Redirects **back** from the external gateway will first to to `PaymentGatewayController`, and then again redirect the user to your application.
+The user won't notice the redirect to `PaymentGatewayController`.
 
 ## Caveats
 

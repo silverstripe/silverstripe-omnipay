@@ -14,8 +14,13 @@ Payment:
 		AmountAmount: 769.50
 		AmountCurrency: AUD
 		Status: Captured
+	payment4:
+		Gateway: UknownGateway
+		AmountAmount: 2.50
+		AmountCurrency: NZD
+		Status: Captured
 
-PaymentTransaction:
+GatewayTransaction:
 	transaction1:
 		Type: Purchase
 		Identifier: UNIQUEHASH23q5123tqasdf

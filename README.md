@@ -16,6 +16,7 @@ To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
  * Gateway configuration via yaml config
  * Payment / transaction model handling
  * Detailed logging
+ * Caters for different types of gateways: on-site capturing, off-site capturing, and manual payment
 
 ### Gateway Features
 
@@ -136,12 +137,9 @@ Using function chaining, we can create and configure a new payment object, and s
         ->redirect();
 ```
 
-Of course you don't need to chain all of these functions, as you may want
-to redirect somewhere else, or do some further setup .
+Of course you don't need to chain all of these functions, as you may want to redirect somewhere else, or do some further setup.
 
-
-Redirects **back** from the external gateway will first to to `PaymentGatewayController`, and then again redirect the user to your application.
-The user won't notice the redirect to `PaymentGatewayController`.
+After payment has been made, the user will be redirected to the given return url (or cancel url, if they cancelled).
 
 ## Caveats
 

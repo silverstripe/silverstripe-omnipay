@@ -42,12 +42,12 @@ class GatewayResponse{
 	public function redirect(){
 		$url = null;
 		if ($this->isSuccessful()) {
-			$url = $payment->getReturnUrl();
+			$url = $this->payment->getReturnUrl();
 		} elseif ($this->isRedirect()) {
 			$url = $this->response->getRedirectUrl();
 		} else {
 			//TODO: should this instead be the current url?
-			$url = $payment->getCancelUrl();
+			$url = $this->payment->getCancelUrl();
 		}
 		Controller::curr()->redirect($url);
 	}

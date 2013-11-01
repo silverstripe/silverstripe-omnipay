@@ -4,7 +4,7 @@ class Payable extends DataExtension {
 
 
 	private static $has_many = array(
-		'PaymentTransactions' => 'PaymentTransaction'
+		'Payments' => 'Payment'
 	);
 
 	public function updateCMS(){

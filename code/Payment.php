@@ -23,16 +23,23 @@ final class Payment extends DataObject{
 		'Status' => "Enum('Created,Authorized,Captured,Refunded,Void','Created')"
 	);
 
-	private static $has_one = array(
-		"PaidBy" => "Member"
-	);
-
 	private static $has_many = array(
-		"Transactions" => "GatewayTransaction"
+		'Transactions' => 'GatewayTransaction'
 	);
 	
 	private static $defaults = array(
 		'Status' => 'Created'
+	);
+
+	private static $casting = array(
+		"Amount" => "Decimal"
+	);
+
+	private static $summary_fields = array(
+		'Money',
+		'Gateway',
+		'Status',
+		'Created'
 	);
 
 	private $returnurl, $cancelurl;
@@ -54,6 +61,31 @@ final class Payment extends DataObject{
 		return $allowed;
 	}
 
+	public function getCMSFields() {
+		$fields = parent::getCMSFields()->makeReadonly();
+		//$fields->removeByName("Root.Transactions.Transactions");
+		$transactions = $fields->addFieldToTab("Root.Transactions",
+			GridField::create("Transactions","Transactions", $this->Transactions(),
+				new GridFieldConfig_RecordViewer()
+			)
+		);
+		
+		return $fields;
+	}
+
+	public function getDefaultSearchContext(){
+		$context = parent::getDefaultSearchContext();
+		$fields = $context->getSearchFields();
+		$fields->removeByName('Gateway');
+		$fields->insertBefore(DropdownField::create('Gateway','Gateway',
+			Payment::get_supported_gateways()
+		)->setHasEmptyDefault(true),'Status');
+		$fields->fieldByName('Status')->setHasEmptyDefault(true);
+
+		return $context;
+	}
+	
+
 	/**
 	 * Set gateway, amount, and currency in one function.
 	 * @param  string $gateway   omnipay gateway short name
@@ -66,6 +98,33 @@ final class Payment extends DataObject{
 		$this->setAmount($amount);
 		$this->setCurrency($currency);
 		return $this;
+	}
+
+	public function getTitle() {
+		return implode(' ',array(
+			$this->forTemplate()->Nice(),
+			$this->dbObject('Created')->Date()
+		));
+	}
+
+	/**
+	 * Set the payment gateway
+	 * @param string $gateway the omnipay gateway short name.
+	 * @return Payment this object for chaining
+	 */
+	public function setGateway($gateway) {
+		if($this->Status == 'Created'){
+			$this->setField('Gateway', $gateway);	
+		}
+		return $this;
+	}
+
+	/**
+	 * Get the payment amount
+	 * @return string amount of this payment
+	 */
+	public function getAmount() {
+		return $this->MoneyAmount;
 	}
 
 	/**
@@ -83,11 +142,11 @@ final class Payment extends DataObject{
 	}
 
 	/**
-	 * Get the payment amount
-	 * @return string amount of this payment
+	 * Get just the currency of this payment's money component
+	 * @return string the currency of this payment
 	 */
-	public function getAmount() {
-		return $this->MoneyAmount;
+	public function getCurrency() {
+		return $this->MoneyCurrency;
 	}
 
 	/**
@@ -103,33 +162,24 @@ final class Payment extends DataObject{
 	}
 
 	/**
-	 * Get just the currency of this payment's money component
-	 * @return string the currency of this payment
+	 * Get the url to return to, that has been previously stored.
+	 * This is not a database field.
+	 * @return string the url
 	 */
-	public function getCurrency() {
-		return $this->MoneyCurrency;
-	}
-
-	/**
-	 * Set the payment gateway
-	 * @param string $gateway the omnipay gateway short name.
-	 * @return Payment this object for chaining
-	 */
-	public function setGateway($gateway) {
-		$this->setField('Gateway', $gateway);
-		return $this;
-	}
-
 	public function getReturnUrl() {
 		return $this->returnurl;
 	}
 
 	/**
-	 * Set the url to redirect to after payment is made/attempted
+	 * Set the url to redirect to after payment is made/attempted.
+	 * This function also populates the cancel url, if it is empty.
 	 * @return Payment this object for chaining
 	 */
 	public function setReturnUrl($url) {
 		$this->returnurl = $url;
+		if(!$this->cancelurl){
+			$this->cancelurl = $url;
+		}
 		return $this;
 	}
 
@@ -156,6 +206,10 @@ final class Payment extends DataObject{
 				$this->Status == 'Void';
 	}
 
+	public function forTemplate(){
+		return $this->dbObject('Money');
+	}
+
 	/**
 	 * Get the omnipay gateway associated with this payment,
 	 * with configuration applied.
@@ -177,12 +231,15 @@ final class Payment extends DataObject{
 	 * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
 	 * @return ResponseInterface omnipay's response class, specific to the chosen gateway.
 	 */
-	public function purchase($data) {
+	public function purchase($data = array()) {
+
+		//TODO: prevent purchase if payment already complete
+
 		//force write
 		if(!$this->isInDB()){
 			$this->write();
 		}
-		
+
 		$this->returnurl = isset($data['returnUrl']) ? $data['returnUrl'] : $this->returnurl;
 		$this->cancelurl = isset($data['cancelUrl']) ? $data['cancelUrl'] : $this->cancelurl;
 
@@ -262,7 +319,9 @@ final class Payment extends DataObject{
 	}
 
 	public function void() {
-		//TODO
+		//TODO: call gateway function
+		$this->Status = "Void";
+		$this->write();
 	}
 
 	/**
@@ -273,7 +332,8 @@ final class Payment extends DataObject{
 	private function createTransaction($type){
 		$transaction = new GatewayTransaction(array(
 			"Type" => $type,
-			"PaymentID" => $this->ID
+			"PaymentID" => $this->ID,
+			"Gateway" => $this->Gateway
 		));
 		$transaction->generateIdentifier();
 		$transaction->write();

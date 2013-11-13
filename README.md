@@ -1,7 +1,11 @@
 # SilverStripe Payments via Omnipay (Work in Progress)
 
-This module is intended to replace the SilverStripe Payment module. It provides a thin wrapping of the PHP Omnipay payments library.
+The aim of this module is to make it easy for developers to eaisly integrate the ability to pay for things with their SilverStripe application.
+There are many gateway options to choose from, and integrating with additional gateways has a structured approach that should be understandable.
+A high quality, simple to use payment module will help to boost the SilverStripe ecosystem, as it allows applications to be profitable.
 
+This module is a complete rewrite of the past Payment module. It is not backwards-compatible.
+In a nutshell, it provides a thin wrapping of the PHP Omnipay payments library.
 To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
 
 ## Requirements
@@ -26,10 +30,6 @@ Different gateways have different features. This means you may get a different l
  * Enter credit card details on site. Some gateways allow entering credit card details to a form on your website, and other require users to visit another website to enter those details. This is also known as "on site" vs "off site" credit card processing. It is sometimes possible to emulate on site processing using an iframe containing the off-site payment page.
 
 To see what features are supported, visit: `your-site-url/dev/payment`.
-
-## Documentation
-
-See DonationPage.php for a working example.
 
 ## Responsibilities
 
@@ -141,7 +141,7 @@ Of course you don't need to chain all of these functions, as you may want to red
 
 After payment has been made, the user will be redirected to the given return url (or cancel url, if they cancelled).
 
-## Caveats
+## Caveats and Troubleshooting
 
- * Payments have both an ammount and a currency. That means you should check if all currenceis match if you will be adding them up.
+ * Payments have both an ammount and a currency. That means you should check if all currencies match if you will be adding them up.
 

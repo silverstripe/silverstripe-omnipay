@@ -1,6 +1,0 @@
-
-Gateway
-
-AuthorizeRequest
-AuthorizeResponse
-CompleteAuthorizeRequest

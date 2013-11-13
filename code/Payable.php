@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * An extension for providing payments on a particular data object.
+ * 
+ * @package payment
+ */
 class Payable extends DataExtension {
 
 

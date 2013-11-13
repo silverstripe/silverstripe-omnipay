@@ -1,5 +1,10 @@
 <?php
 
+/**
+ * Model admin administration of payments.
+ * 
+ * @package payment
+ */
 class PaymentAdmin extends ModelAdmin{
 	
 	private static $menu_title = "Payments";

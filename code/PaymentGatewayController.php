@@ -5,6 +5,8 @@
  *
  * This controller handles redirects from gateway servers, and also behind-the-scenes
  * requests that gateway servers to notify our application of successful payment.
+ * 
+ * @package payment
  */
 final class PaymentGatewayController extends Controller{
 	

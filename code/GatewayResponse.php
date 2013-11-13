@@ -2,6 +2,8 @@
 
 /**
  * Wrapper for omnipay responses, which allow us to customise functionality
+ *
+ * @package payment
  */
 class GatewayResponse{
 

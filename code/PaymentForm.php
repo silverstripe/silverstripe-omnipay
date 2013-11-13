@@ -1,5 +1,11 @@
 <?php
 
+/**
+ * Form for handling payment data
+ *
+ * @package payment
+ * @todo remove, or reduce
+ */
 class PaymentForm extends Form{
 
 

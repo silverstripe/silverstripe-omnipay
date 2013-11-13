@@ -2,6 +2,8 @@
 
 /**
  * Development tools for payments
+ *
+ * @package payment
  */
 class PaymentDevelopmentAdmin extends Controller{
 	

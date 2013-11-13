@@ -5,6 +5,8 @@
  *
  * Gateway transaction details are a database record of interactions
  * with the gateway. It allows a detailed history of a payment.
+ *
+ * @package payment
  */
 final class GatewayTransaction extends DataObject{
 	

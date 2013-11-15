@@ -37,9 +37,15 @@ class PaymentGatewayControllerTest extends FunctionalTest{
 		$transaction = GatewayTransaction::get()
 						->filter('Identifier','UNIQUEHASH23q5123tqasdf')
 						->First();
+		//redirect works
+		$headers = $response->getHeaders();
+		$this->assertEquals(Director::baseURL()."shop/complete", $headers['Location'], "redirected to shop/complete");
 
 		//model is appropriately updated
-		//redirect works
+	}
+
+	function testBadReturnURLs(){
+		$response = $this->get("paymentendpoint/ASDFHSADFunknonwhash/complete/c2hvcC9jb2");
 	}
 
 	function testSecurity() {

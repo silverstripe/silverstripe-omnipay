@@ -24,7 +24,7 @@ final class Payment extends DataObject{
 	);
 
 	private static $has_many = array(
-		'Transactions' => 'GatewayTransaction'
+		'Transactions' => 'PaymentMessage'
 	);
 	
 	private static $defaults = array(
@@ -42,7 +42,7 @@ final class Payment extends DataObject{
 		'Created'
 	);
 
-	private $returnurl, $cancelurl;
+	private $returnurl, $cancelurl, $httpclient, $httprequest;
 
 	/**
 	 * Get the available configured payment types, with i18n readable names.
@@ -63,7 +63,6 @@ final class Payment extends DataObject{
 
 	public function getCMSFields() {
 		$fields = parent::getCMSFields()->makeReadonly();
-		//$fields->removeByName("Root.Transactions.Transactions");
 		$transactions = $fields->addFieldToTab("Root.Transactions",
 			GridField::create("Transactions","Transactions", $this->Transactions(),
 				new GridFieldConfig_RecordViewer()
@@ -73,6 +72,9 @@ final class Payment extends DataObject{
 		return $fields;
 	}
 
+	/**
+	 * Change search context to use a dropdown for list of gateways.
+	 */
 	public function getDefaultSearchContext(){
 		$context = parent::getDefaultSearchContext();
 		$fields = $context->getSearchFields();
@@ -85,7 +87,6 @@ final class Payment extends DataObject{
 		return $context;
 	}
 	
-
 	/**
 	 * Set gateway, amount, and currency in one function.
 	 * @param  string $gateway   omnipay gateway short name
@@ -184,7 +185,7 @@ final class Payment extends DataObject{
 	}
 
 	public function getCancelUrl() {
-		return $this->returnurl;
+		return $this->cancelurl;
 	}
 
 	/**
@@ -217,7 +218,7 @@ final class Payment extends DataObject{
 	 * @return AbstractGateway omnipay gateway class
 	 */
 	public function oGateway(){
-		$gateway = GatewayFactory::create($this->Gateway);
+		$gateway = GatewayFactory::create($this->Gateway, $this->httpclient, $this->httprequest);
 		$parameters = Config::inst()->forClass('Payment')->parameters;
 		if(isset($parameters[$this->Gateway])) {
 			$gateway->initialize($parameters[$this->Gateway]);
@@ -232,8 +233,9 @@ final class Payment extends DataObject{
 	 * @return ResponseInterface omnipay's response class, specific to the chosen gateway.
 	 */
 	public function purchase($data = array()) {
-
-		//TODO: prevent purchase if payment already complete
+		if($this->Status !== "Created"){
+		 	return null; //could be handled better? send payment response?
+		}
 
 		//force write
 		if(!$this->isInDB()){
@@ -254,10 +256,13 @@ final class Payment extends DataObject{
 			'cancelUrl' => PaymentGatewayController::get_return_url($transaction,'cancel', $this->cancelurl)
 		));
 		$this->logRequest($request);
+		//TODO: add database log entry - success or failed purchase request
 		$response = $request->send();
 		$this->logResponse($response);
 		$this->completeTransaction($transaction, $response);
+		//TODO: add database log entry - success or failed purchase response
 		
+		//update payment model
 		if ($response->isSuccessful()) {
 			$this->Status = 'Captured';
 			$this->write();
@@ -272,7 +277,7 @@ final class Payment extends DataObject{
 	}
 
 	/**
-	 * Finalise this payment, after external processing.
+	 * Finalise this payment, after off-site external processing.
 	 * This is ususally only called by PaymentGatewayController.
 	 * @return PaymentResponse encapsulated response info
 	 */
@@ -283,10 +288,15 @@ final class Payment extends DataObject{
 		$request = $this->oGateway()->completePurchase(array(
 			'amount' => (float)$this->MoneyAmount
 		));
+
+		//Debug::show($request);
+
 		$this->logRequest($request);
+		//TODO: add database log entry - success or failed purchase request
 
 		try{
 			$response = $request->send();
+			
 			$this->completeTransaction($transaction, $response);
 
 			$this->logResponse($response);
@@ -295,31 +305,58 @@ final class Payment extends DataObject{
 				$this->Status = 'Captured';
 				$this->write();
 			}
+			
+			//TODO: add database log entry - success or failed purchase response
+
 		} catch (\Exception $e) {
-				
+			//TODO: log failure?
+			//var_dump($request);
+			throw $e;
 		}
 		
 		return new GatewayResponse($response, $this);
 	}
 
-	public function authorize($data) {
+	/**
+	 * Initiate the authorisation process for on-site and off-site gateways.
+	 * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
+	 * @return ResponseInterface omnipay's response class, specific to the chosen gateway.
+	 */
+	public function authorize($data = array()) {
 		//TODO
 	}
 
+	/**
+	 * Complete authorisation, after off-site external processing.
+	 * This is ususally only called by PaymentGatewayController.
+	 * @return PaymentResponse encapsulated response info
+	 */
 	public function completeAuthorize() {
 		//TODO
 	}
 
+	/**
+	 * Do the capture of money on authorised credit card. Money exchanges hands.
+	 * @return PaymentResponse encapsulated response info
+	 */
 	public function capture() {
 		//TODO
 	}
 
+	/**
+	 * Return money to the previously charged credit card.
+	 * @return PaymentResponse encapsulated response info
+	 */
 	public function refund() {
 		//TODO
 	}
 
+	/**
+	 * Cancel this payment, and prevent any future changes.
+	 * @return PaymentResponse encapsulated response info
+	 */
 	public function void() {
-		//TODO: call gateway function
+		//TODO: call gateway function, if available
 		$this->Status = "Void";
 		$this->write();
 	}
@@ -382,6 +419,28 @@ final class Payment extends DataObject{
 				'isRedirect' => $response->isRedirect(),
 			),true));
 		}
+	}
+
+	//testing functions (could these instead be injected somehow?)
+
+	/**
+	 * Set the guzzle client (for testing)
+	 * @param GuzzleHttpClientInterface $httpClient [description]
+	 */
+	public function setHTTPClient(Guzzle\Http\ClientInterface $httpClient){
+		$this->httpclient = $httpClient;
+
+		return $this;
+	}
+
+	/**
+	 * Set the symphony http request (for testing)
+	 * @param SymfonyComponentHttpFoundationRequest $httpRequest [description]
+	 */
+	public function setHTTPRequest(Symfony\Component\HttpFoundation\Request $httpRequest){
+		$this->httprequest = $httpRequest;
+
+		return $this;
 	}
 
 }

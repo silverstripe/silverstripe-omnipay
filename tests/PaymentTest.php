@@ -88,16 +88,40 @@ class PaymentTest extends SapphireTest {
 		$this->assertFalse($response->isRedirect());
 	}
 
-	/**
-	 * @group current
-	 */
+	function testOnSitePurchase() {
+		$payment = $this->payment->setGateway('PaymentExpress_PxPost');
+		$this->setMockHttpResponse('PaymentExpress/Mock/PxPostPurchaseSuccess.txt');//add success mock response from file
+	 	$response = $payment->purchase(array(
+			'number' => '4242424242424242', //this creditcard will succeed
+			'expiryMonth' => '5',
+			'expiryYear' => date("Y",strtotime("+1 year"))
+		));
+		$this->assertTrue($response->isSuccessful()); //payment has not been captured
+		$this->assertFalse($response->isRedirect());
+		$this->assertSame("Captured",$payment->Status);
+	}
+
+	function testInvalidOnsitePurchase() {
+		//provide invalid/incorrect data
+	}
+
+	function testFailedOnSitePurchase() {
+		$payment = $this->payment->setGateway('PaymentExpress_PxPost');
+		$this->setMockHttpResponse('PaymentExpress/Mock/PxPostPurchaseFailure.txt');//add success mock response from file
+	 	$response = $payment->purchase(array(
+			'number' => '4111111111111111', //this creditcard will decline
+			'expiryMonth' => '5',
+			'expiryYear' => date("Y",strtotime("+1 year"))
+		));
+		$this->assertFalse($response->isSuccessful()); //payment has not been captured
+		$this->assertFalse($response->isRedirect());
+		$this->assertSame("Created",$payment->Status);
+	}
+
 	function testOffSitePurchase(){
 		$payment = $this->payment->setGateway('PaymentExpress_PxPay');
-
 		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayPurchaseSuccess.txt');//add success mock response from file
-		
 	 	$response = $payment->purchase();
-
 		$this->assertFalse($response->isSuccessful()); //payment has not been captured
 		$this->assertTrue($response->isRedirect());
 		$this->assertSame('https://sec.paymentexpress.com/pxpay/pxpay.aspx?userid=Developer&request=v5H7JrBTzH-4Whs__1iQnz4RGSb9qxRKNR4kIuDP8kIkQzIDiIob9GTIjw_9q_AdRiR47ViWGVx40uRMu52yz2mijT39YtGeO7cZWrL5rfnx0Mc4DltIHRnIUxy1EO1srkNpxaU8fT8_1xMMRmLa-8Fd9bT8Oq0BaWMxMquYa1hDNwvoGs1SJQOAJvyyKACvvwsbMCC2qJVyN0rlvwUoMtx6gGhvmk7ucEsPc_Cyr5kNl3qURnrLKxINnS0trdpU4kXPKOlmT6VacjzT1zuj_DnrsWAPFSFq-hGsow6GpKKciQ0V0aFbAqECN8rl_c-aZWFFy0gkfjnUM4qp6foS0KMopJlPzGAgMjV6qZ0WfleOT64c3E-FRLMP5V_-mILs8a', $response->oResponse()->getRedirectUrl());
@@ -107,16 +131,18 @@ class PaymentTest extends SapphireTest {
 
 		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayCompletePurchaseSuccess.txt'); //mock complete purchase response
 		$this->getHttpRequest()->query->replace(array('result' => 'abc123')); //mock the 'result' get variable into the current request
-
 		$response = $payment->completePurchase(); //something going wrong here
-
 		$this->assertTrue($response->isSuccessful());
 		$this->assertSame("Captured", $payment->Status);
-
 	}
 
 	function testFailedOffSitePurchase(){
-
+		$payment = $this->payment->setGateway('PaymentExpress_PxPay');
+		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayPurchaseFailure.txt');//add success mock response from file
+		$response = $payment->purchase();
+		$this->assertFalse($response->isSuccessful()); //payment has not been captured
+		$this->assertFalse($response->isRedirect()); //redirect won't occur, because of failure
+		$this->assertSame("Created",$payment->Status);
 	}
 
 	function testRedirectUrl() {

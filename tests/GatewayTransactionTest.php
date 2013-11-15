@@ -20,4 +20,29 @@ class GatewayTransactionTest extends SapphireTest{
 		$this->assertEquals("UNIQUEHASH23q5123tqasdf", $transaction->Identifier);
 	}
 
+	
+	
+	function testPurchaseTransaction(){
+
+		//successful: assert that transaction exists
+		
+		//failed
+
+	}
+	
+	function testCompletePurchaseTransaction(){
+
+	}
+
+	function testVoidTransaction(){
+
+	}
+
+	//TODO: test transactions are created whenever gateway transiations
+
+	//authorise
+	//capture
+	//void
+	//refund
+
 }

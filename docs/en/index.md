@@ -21,25 +21,28 @@ The high level goals are to make it easy to:
  	* Configuration / connection issues
 	* Retry failed payments using alternative methods
  * Translations
+ * Token billing - token that represents a credit card, for delayed, or reocurring payments.
 
 ### Not sure if in scope
-
- * Token billing - token that represents a credit card, for delayed, or reocurring payments.
  * Provide forms?
 
 ### Out of scope features
 
  * Subscripting / reoccurring billing
  * Credit notes
+ * Payment via gift vouchers
 
 ## Use cases
 
 Use this module to provide payment for things like:
 
- * Orders
+ * Pay for invoice/bill/order
  * Event registrations
- * Donations
-
+ * Make a donation
+ * Renew a subscription
+ * Top-up an account
+ * Request a payment via email
+ * Enter a user's credit card details via phone
 
 ## This wrapper module provides:
 

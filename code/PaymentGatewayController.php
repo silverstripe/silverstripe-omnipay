@@ -59,8 +59,7 @@ final class PaymentGatewayController extends Controller{
 				$response = $payment->completePurchase();
 				break;
 			case "cancel":
-				//mark as cancelled?...or failure? void?
-				
+				$response = $payment->void();
 				break;
 		}
 		
@@ -73,8 +72,8 @@ final class PaymentGatewayController extends Controller{
 	 */
 	private function getTransaction(){
 		return GatewayTransaction::get()
-						->filter('Identifier',$this->request->param('Identifier'))
-						->First();
+				->filter('Identifier',$this->request->param('Identifier'))
+				->First();
 	}
 
 	/**

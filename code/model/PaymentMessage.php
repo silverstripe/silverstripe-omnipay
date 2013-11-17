@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Payment transactions keep track of all the important things that can be logged for a payment.
+ * Base class for logging messages, transactions etc associated with a payment.
  * 
  * @package payment
  */

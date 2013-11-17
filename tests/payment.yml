@@ -20,7 +20,7 @@ Payment:
 		MoneyCurrency: NZD
 		Status: Captured
 
-GatewayTransaction:
+GatewayMessage:
 	transaction1:
 		Type: Purchase
 		Identifier: UNIQUEHASH23q5123tqasdf

@@ -21,7 +21,7 @@ class PaymentGatewayControllerTest extends FunctionalTest{
 	}
 
 	function testReturnUrlGeneration() {
-		$transaction = $this->objFromFixture('GatewayTransaction','transaction1');
+		$transaction = $this->objFromFixture('GatewayMessage','transaction1');
 		$url = PaymentGatewayController::get_return_url($transaction,'action',"shop/complete");
 		$this->assertEquals(
 			Director::absoluteURL("paymentendpoint/UNIQUEHASH23q5123tqasdf/action/c2hvcC9jb21wbGV0ZQ%3D%3D"),
@@ -34,7 +34,7 @@ class PaymentGatewayControllerTest extends FunctionalTest{
 		//Note the string 'c2hvcC9jb21wbGV0ZQ%3D%3D' is just "shop/complete" base64 encoded, then url encoded
 		$response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/complete/c2hvcC9jb21wbGV0ZQ%3D%3D"); //mimic gateway update
 
-		$transaction = GatewayTransaction::get()
+		$transaction = GatewayMessage::get()
 						->filter('Identifier','UNIQUEHASH23q5123tqasdf')
 						->First();
 		//redirect works

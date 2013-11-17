@@ -367,7 +367,7 @@ final class Payment extends DataObject{
 	 * @return GatewayTransaction newly created dataobject, saved to database.
 	 */
 	private function createTransaction($type){
-		$transaction = new GatewayTransaction(array(
+		$transaction = new GatewayMessage(array(
 			"Type" => $type,
 			"PaymentID" => $this->ID,
 			"Gateway" => $this->Gateway
@@ -384,7 +384,7 @@ final class Payment extends DataObject{
 	 * @param  AbstractResponse   $response    the response object to complete the transaction with
 	 * @return GatewayTransaction
 	 */
-	private function completeTransaction(GatewayTransaction $transaction, AbstractResponse $response){
+	private function completeTransaction(GatewayMessage $transaction, AbstractResponse $response){
 		$transaction->update(array(
 			'Message' => $response->getMessage(),
 			'Code' => $response->getCode(),

@@ -7,14 +7,14 @@ class GatewayTransactionTest extends SapphireTest{
 	);
 
 	function testCreateIdentifier(){
-		$transaction = new GatewayTransaction();
+		$transaction = new GatewayMessage();
 		$identifier = $transaction->generateIdentifier();
 		$this->assertNotNull($identifier);
 		$this->assertNotEquals('',$identifier);
 	}
 
 	function testChangeIdentifier(){
-		$transaction = $this->objFromFixture('GatewayTransaction','transaction1');
+		$transaction = $this->objFromFixture('GatewayMessage','transaction1');
 		$transaction->generateIdentifier();
 		$transaction->Identifier = "somethingelse";
 		$this->assertEquals("UNIQUEHASH23q5123tqasdf", $transaction->Identifier);

@@ -21,7 +21,7 @@ final class PaymentGatewayController extends Controller{
 	 * @param  string             $returnurl   the application url to re-redirect to
 	 * @return string                          the resulting redirect url
 	 */
-	public static function get_return_url(GatewayTransaction $transaction, $status = 'complete', $returnurl = null){
+	public static function get_return_url(GatewayMessage $transaction, $status = 'complete', $returnurl = null){
 		return Director::absoluteURL(
 			Controller::join_links(
 				'paymentendpoint', //as defined in _config/routes.yml
@@ -71,7 +71,7 @@ final class PaymentGatewayController extends Controller{
 	 * @return PaymentTransaction the transaction
 	 */
 	private function getTransaction(){
-		return GatewayTransaction::get()
+		return GatewayMessage::get()
 				->filter('Identifier',$this->request->param('Identifier'))
 				->First();
 	}

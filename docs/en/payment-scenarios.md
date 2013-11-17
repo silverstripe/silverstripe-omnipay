@@ -29,7 +29,7 @@ Here is how different gateway scenarios can play out:
   * Authorization requested / or request failed
   * Authorize successful / or gateway responds with failure
 
-...client now visits external gateway...
+  ...client now visits external gateway...
 
   * Complete authorize requested / or request failed (triggered by client return, or by a call from gateway server)
   * Complete authorize successful / or gateway responds with failure

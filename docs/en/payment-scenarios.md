@@ -11,7 +11,9 @@ Here is how different gateway scenarios can play out:
 
  * Purcahse requested / or request failed
  * Purchase request successful / or gateway responds with failure
- * (client now visits external gateway)
+ 
+  ...client now visits external gateway...
+
  * Complete purchase requested / or request failed (triggered by client return, or by a call from gateway server)
  * Complete purchase successful / or gateway responds with failure
 
@@ -19,25 +21,25 @@ Here is how different gateway scenarios can play out:
  * Authorization requested / or request failed
  * Authorize successful / or gateway responds with failure
 
- ...later...
+  ...later...
 
  * Capture requested / or request failed (triggered by system, admin, or user)
  * Capture successful / or gateway responds with failure
 
 ### Off-site 'authorize/capture' gateway:
 
-  * Authorization requested / or request failed
-  * Authorize successful / or gateway responds with failure
+ * Authorization requested / or request failed
+ * Authorize successful / or gateway responds with failure
 
-  ...client now visits external gateway...
+ ...client now visits external gateway...
 
-  * Complete authorize requested / or request failed (triggered by client return, or by a call from gateway server)
-  * Complete authorize successful / or gateway responds with failure
+ * Complete authorize requested / or request failed (triggered by client return, or by a call from gateway server)
+ * Complete authorize successful / or gateway responds with failure
 
-  ...later...
+ ...later...
 
-  * Capture requested / or request failed (triggered by system, admin, or user)
-  * Capture successful / or gateway responds with failure
+ * Capture requested / or request failed (triggered by system, admin, or user)
+ * Capture successful / or gateway responds with failure
 
 ### 'manual' gateway:
 

@@ -2,7 +2,7 @@ Credit card details should never fall into the wrong hands! Be safe.
 
 You should:
 
- * Become familiar with SilverStripe security measures, and implement where possible.
+ * Become familiar with standard SilverStripe security measures, and implement where possible.
  * Use SSL security whenever there is a payment-related form.
  * Make the PaymentGatewayController use SSL.
 

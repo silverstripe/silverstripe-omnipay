@@ -19,8 +19,10 @@ To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
 
  * Gateway configuration via yaml config
  * Payment / transaction model handling
- * Detailed logging
+ * Detailed + structured logging in the database
  * Caters for different types of gateways: on-site capturing, off-site capturing, and manual payment
+ * Wraps the Omnipay php library
+ * Multiple currencies
 
 ### Gateway Features
 

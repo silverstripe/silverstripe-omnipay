@@ -4,6 +4,5 @@ After: framework/routes#coreroutes
 ---
 Director:
   rules:
-    'omni' : 'OmniPage_Controller'
     'paymentendpoint/$Reference/$Status/$ReturnURL' : 'PaymentGatewayController'
     'dev/payment' : 'PaymentDevelopmentAdmin'

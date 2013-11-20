@@ -25,6 +25,12 @@ class PaymentGatewayTest extends PaymentTest {
 		$this->assertEquals(1222, $payment->Amount);
 		$this->assertEquals("GBP", $payment->Currency);
 		$this->assertEquals("Dummy", $payment->Gateway);
+
+		//check messaging
+		$this->assertDOSContains(array(
+			array('ClassName' => 'PurchaseRequest'),
+			array('ClassName' => 'PurchasedResponse')
+		), $payment->Messages());
 	}
 
 	function testFailedDummyOnSitePurchase() {
@@ -39,6 +45,12 @@ class PaymentGatewayTest extends PaymentTest {
 		$this->assertEquals("GBP", $payment->Currency);
 		$this->assertFalse($response->isSuccessful());
 		$this->assertFalse($response->isRedirect());
+
+		//check messaging
+		$this->assertDOSContains(array(
+			array('ClassName' => 'PurchaseRequest'),
+			array('ClassName' => 'PurchaseError')
+		), $payment->Messages());
 	}
 
 	function testOnSitePurchase() {
@@ -52,6 +64,12 @@ class PaymentGatewayTest extends PaymentTest {
 		$this->assertTrue($response->isSuccessful()); //payment has not been captured
 		$this->assertFalse($response->isRedirect());
 		$this->assertSame("Captured",$payment->Status);
+
+		//check messaging
+		$this->assertDOSContains(array(
+			array('ClassName' => 'PurchaseRequest'),
+			array('ClassName' => 'PurchasedResponse')
+		), $payment->Messages());
 	}
 
 	function testInvalidOnsitePurchase() {
@@ -69,6 +87,12 @@ class PaymentGatewayTest extends PaymentTest {
 		$this->assertFalse($response->isSuccessful()); //payment has not been captured
 		$this->assertFalse($response->isRedirect());
 		$this->assertSame("Created",$payment->Status);
+
+		//check messaging
+		$this->assertDOSContains(array(
+			array('ClassName' => 'PurchaseRequest'),
+			array('ClassName' => 'PurchaseError')
+		), $payment->Messages());
 	}
 
 	function testOffSitePurchase(){
@@ -85,6 +109,14 @@ class PaymentGatewayTest extends PaymentTest {
 		$response = $payment->completePurchase(); //something going wrong here
 		$this->assertTrue($response->isSuccessful());
 		$this->assertSame("Captured", $payment->Status);
+
+		//check messaging
+		$this->assertDOSContains(array(
+			array('ClassName' => 'PurchaseRequest'),
+			array('ClassName' => 'PurchaseRedirectResponse'),
+			array('ClassName' => 'CompletePurchaseRequest'),
+			array('ClassName' => 'PurchasedResponse')
+		), $payment->Messages());
 	}
 
 	function testFailedOffSitePurchase(){
@@ -94,6 +126,14 @@ class PaymentGatewayTest extends PaymentTest {
 		$this->assertFalse($response->isSuccessful()); //payment has not been captured
 		$this->assertFalse($response->isRedirect()); //redirect won't occur, because of failure
 		$this->assertSame("Created",$payment->Status);
+
+		//check messaging
+		$this->assertDOSContains(array(
+			array('ClassName' => 'PurchaseRequest'),
+			array('ClassName' => 'PurchaseError'),
+		), $payment->Messages());
+
+		//TODO: fail in various ways
 	}
 
 	function testRedirectUrl() {
@@ -106,17 +146,22 @@ class PaymentGatewayTest extends PaymentTest {
 	
 	function testNonExistantGateway() {
 		//exception when trying to run functions that require a gateway
-		$this->setExpectedException("RuntimeException");
-		$result = Payment::create()
+		
+		$payment = $this->payment
 			->init("PxPayGateway", 100, "NZD")
-			->setReturnUrl("complete")
-			->purchase();
+			->setReturnUrl("complete");
+		$this->setExpectedException("RuntimeException");		
+		$result = $payment->purchase();
 
 		//but we can still use the payment model in calculations etc
 		$totalNZD = Payment::get()->filter('MoneyCurrency',"NZD")->sum();
-		$this->assertEquals(27.23,$totalNZD);
+		$this->assertEquals(27.23, $totalNZD);
 
 		//TODO: call gateway functions
+		//$payment->purchase();
+		//$payment->completePurchase();
+		//$payment->refund();
+		//$payment->void();
 	}
 
 	//TODO: testOnSiteAuthorizeCapture

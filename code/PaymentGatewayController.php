@@ -82,7 +82,6 @@ final class PaymentGatewayController extends Controller{
 	 * @return string the url
 	 */
 	private function getRedirectUrl(){
-		//TODO: introduce callback / extension hook to allow developers to update return url???
 		$url = $this->request->param('ReturnURL');
 		if($url){
 			return base64_decode(urldecode($url));

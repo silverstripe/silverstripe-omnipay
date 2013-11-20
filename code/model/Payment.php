@@ -24,7 +24,7 @@ final class Payment extends DataObject{
 	);
 
 	private static $has_many = array(
-		'Transactions' => 'PaymentMessage'
+		'Messages' => 'PaymentMessage'
 	);
 	
 	private static $defaults = array(
@@ -245,32 +245,29 @@ final class Payment extends DataObject{
 		$this->returnurl = isset($data['returnUrl']) ? $data['returnUrl'] : $this->returnurl;
 		$this->cancelurl = isset($data['cancelUrl']) ? $data['cancelUrl'] : $this->cancelurl;
 
-		$transaction = $this->createTransaction('Purchase'); //rename?
+		$message = $this->createMessage('PurchaseRequest');
 		$request = $this->oGateway()->purchase(array(
 			'card' => new CreditCard($data),
 			'amount' => (float)$this->MoneyAmount,
 			'currency' => $this->MoneyCurrency,
-			'transactionId' => $transaction->ID,
+			'transactionId' => $message->ID,
 			'clientIp' => isset($data['clientIp']) ? $data['clientIp'] : null,
-			'returnUrl' => PaymentGatewayController::get_return_url($transaction, 'complete', $this->returnurl),
-			'cancelUrl' => PaymentGatewayController::get_return_url($transaction,'cancel', $this->cancelurl)
+			'returnUrl' => PaymentGatewayController::get_return_url($message, 'complete', $this->returnurl),
+			'cancelUrl' => PaymentGatewayController::get_return_url($message,'cancel', $this->cancelurl)
 		));
-		$this->logRequest($request);
-		//TODO: add database log entry - success or failed purchase request
 		$response = $request->send();
-		$this->logResponse($response);
-		$this->completeTransaction($transaction, $response);
-		//TODO: add database log entry - success or failed purchase response
 		
 		//update payment model
 		if ($response->isSuccessful()) {
+			$this->createMessage('PurchasedResponse');
 			$this->Status = 'Captured';
 			$this->write();
 		} elseif ($response->isRedirect()) { // redirect to off-site payment gateway
+			$this->createMessage('PurchaseRedirectResponse');
 			$this->Status = 'Authorized'; //or should this be 'Pending'?
 			$this->write();
 		} else {
-			//TODO: something went wrong...record this. Update payment and/or transaction?
+			$this->createMessage('PurchaseError');
 		}
 
 		return new GatewayResponse($response, $this);
@@ -282,35 +279,29 @@ final class Payment extends DataObject{
 	 * @return PaymentResponse encapsulated response info
 	 */
 	public function completePurchase(){
-		//TODO: do we care if gateway isn't set, or doesn't exist?
+		// if(!$this->canDo('completePurchase')){
+		// 		return PaymentFailure(...);
+		// }
 		
-		$transaction = $this->createTransaction('CompletePurchase');
 		$request = $this->oGateway()->completePurchase(array(
 			'amount' => (float)$this->MoneyAmount
 		));
-
-		//Debug::show($request);
-
-		$this->logRequest($request);
-		//TODO: add database log entry - success or failed purchase request
+		$this->createMessage('CompletePurchaseRequest');
 
 		try{
 			$response = $request->send();
 			
-			$this->completeTransaction($transaction, $response);
-
-			$this->logResponse($response);
-
 			if($response->isSuccessful()){
+				$this->createMessage('PurchasedResponse');
 				$this->Status = 'Captured';
 				$this->write();
+			}else{
+				$this->createMessage('PurchaseError');
 			}
-			
-			//TODO: add database log entry - success or failed purchase response
 
 		} catch (\Exception $e) {
-			//TODO: log failure?
-			//var_dump($request);
+			$this->createMessage("PurchasedError");
+			//retrn failure object
 			throw $e;
 		}
 		
@@ -366,34 +357,18 @@ final class Payment extends DataObject{
 	 * @param  string $type the type of transaction to create
 	 * @return GatewayTransaction newly created dataobject, saved to database.
 	 */
-	private function createTransaction($type){
-		$transaction = new GatewayMessage(array(
-			"Type" => $type,
+	private function createMessage($type, $data = array()){
+		//TODO: add file logging here also
+		$message = $type::create(array_merge($data, array(
 			"PaymentID" => $this->ID,
 			"Gateway" => $this->Gateway
-		));
-		$transaction->generateIdentifier();
-		$transaction->write();
-
-		return $transaction;
-	}
-
-	/**
-	 * Record the gateway response for a given transaction object.
-	 * @param  GatewayTransaction $transaction the transaction to complete
-	 * @param  AbstractResponse   $response    the response object to complete the transaction with
-	 * @return GatewayTransaction
-	 */
-	private function completeTransaction(GatewayMessage $transaction, AbstractResponse $response){
-		$transaction->update(array(
-			'Message' => $response->getMessage(),
-			'Code' => $response->getCode(),
-			'Reference' => $response->getTransactionReference(),
-			'Success' => $response->isSuccessful()
-		));
-		$transaction->write();
-
-		return $transaction;
+		)));
+		if(method_exists($message,'generateIdentifier')){
+			$message->generateIdentifier();
+		}
+		$message->write();
+		$this->Messages()->add($message);
+		return $message;
 	}
 
 	/**

@@ -76,33 +76,3 @@ class GatewayRequestMessage extends GatewayMessage{}
 class GatewayResponseMessage extends GatewayMessage{}
 class GatewayRedirectResponseMessage extends GatewayMessage{}
 class GatewayErrorMessage extends GatewayMessage{}
-
-class PurchaseRequest extends GatewayRequestMessage{}
-class PurchasedResponse extends GatewayResponseMessage{}
-class PurchaseRedirectResponse extends GatewayRedirectResponseMessage{}
-class PurchaseError extends GatewayErrorMessage{}
-
-class CompletePurchaseRequest extends GatewayRequestMessage{}
-//PurchasedResponse
-class CompletePurchaseError extends GatewayErrorMessage{}
-
-class AuthorizeRequest extends GatewayRequestMessage{}
-class AuthorizedResponse extends GatewayResponseMessage{}
-class AuthorizeRedirectResponse extends GatewayRedirectResponseMessage{}
-class AuthorizeError extends GatewayErrorMessage{}
-
-class CompleteAuthorizeRequest extends GatewayRequestMessage{}
-//AuthorizedResponse
-class CompleteAuthorizeError extends GatewayErrorMessage{}
-
-class CaptureRequest extends GatewayRequestMessage{}
-class CapturedResponse extends GatewayResponseMessage{}
-class CaptureError extends GatewayErrorMessage{}
-
-class RefundRequest extends GatewayRequestMessage{}
-class RefundedResponse extends GatewayResponseMessage{}
-class RefundError extends GatewayErrorMessage{}
-
-class VoidRequest extends GatewayRequestMessage{}
-class VoidedResponse extends GatewayResponseMessage{}
-class VoidError extends GatewayErrorMessage{}

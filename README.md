@@ -1,4 +1,4 @@
-# SilverStripe Payments via Omnipay (Work in Progress)
+# SilverStripe Payments via Omnipay
 
 The aim of this module is to make it easy for developers to eaisly integrate the ability to pay for things with their SilverStripe application.
 There are many gateway options to choose from, and integrating with additional gateways has a structured approach that should be understandable.

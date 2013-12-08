@@ -44,6 +44,10 @@ class GatewayMessage extends PaymentMessage{
 		'Type','Identifier','Reference','Message','Code'
 	);
 
+	private static $indexes = array(
+		'Identifier' => true,
+	);
+
 	/**
 	 * Only allow setting identifier, if one doesn't exist yet.
 	 * @param string $id identifier

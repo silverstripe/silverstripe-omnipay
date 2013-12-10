@@ -114,7 +114,7 @@ The [SilverStripe documentation](http://doc.silverstripe.com/framework/en/topics
 We have left it up to you to decide how payments are linked in with your existing model.
 
 Here are a few ideas:
- * MyObject has_many Payments - allowing for partial paymetns to be made
+ * MyObject has_many Payments - allowing for partial payments to be made
  * MyObject has_one Payment
  * ...or you could generate payments and complete them in a stand alone form.
 
@@ -123,7 +123,7 @@ Here are a few ideas:
 In your application, you may want to allow users to choose between a few different payment gateways. This can be useful for users if their first attempt is declined.
 
 ```php
-$methods = Payment::get_supported_gateways();
+$gateways = Payment::get_supported_gateways();
 ```
 
 ## Usage: Making a purchase

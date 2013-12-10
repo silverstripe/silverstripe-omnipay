@@ -44,23 +44,6 @@ final class Payment extends DataObject{
 
 	private $returnurl, $cancelurl, $httpclient, $httprequest;
 
-	/**
-	 * Get the available configured payment types, with i18n readable names.
-	 * @return array map of gateway short name to translated long name.
-	 */
-	public static function get_supported_gateways() {
-		$allowed = Config::inst()->forClass('Payment')->allowed_gateways;
-		$allowed = array_combine($allowed, $allowed);
-		$allowed = array_map(function($name) {
-			return _t(
-				"Payment.".strtoupper($name),
-				GatewayFactory::create($name)->getName()
-			);
-		}, $allowed);
-
-		return $allowed;
-	}
-
 	public function getCMSFields() {
 		$fields = parent::getCMSFields()->makeReadonly();
 		$transactions = $fields->addFieldToTab("Root.Transactions",
@@ -80,7 +63,7 @@ final class Payment extends DataObject{
 		$fields = $context->getSearchFields();
 		$fields->removeByName('Gateway');
 		$fields->insertBefore(DropdownField::create('Gateway','Gateway',
-			Payment::get_supported_gateways()
+			GatewayInfo::get_supported_gateways()
 		)->setHasEmptyDefault(true),'Status');
 		$fields->fieldByName('Status')->setHasEmptyDefault(true);
 

@@ -17,7 +17,7 @@ class PaymentModelTest extends PaymentTest {
 	}
 
 	function testSupportedGateways() {
-		$gateways = Payment::get_supported_gateways();
+		$gateways = GatewayInfo::get_supported_gateways();
 		$this->assertEquals(array(
 			'PayPal_Express' => 'PayPal Express',
 			'PaymentExpress_PxPay' => 'PaymentExpress PxPay',
@@ -25,7 +25,5 @@ class PaymentModelTest extends PaymentTest {
 			'Dummy' => 'Dummy'
 		), $gateways, "supported gateways array is created correctly");
 	}
-
-	//TODO: test 
 
 }

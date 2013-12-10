@@ -7,30 +7,28 @@
  */
 class Payable extends DataExtension {
 
-
 	private static $has_many = array(
 		'Payments' => 'Payment'
 	);
 
-	public function updateCMS(){
-
-		// add grid field with payments
+	public function updateCMSFields(FieldList $fields){
+		$fields->addFieldToTab("Root.Payments", 
+			GridField::create("Payments","Payments", $this->owner->Payments() ,
+				new GridFieldConfig_RelationEditor()
+			)
+		);
 	}
 
-	/**
-	 * [createPayment description]
-	 * @param  [type] $amount   Amount to get payment for
-	 * @param  [type] $currency [description]
-	 * @param  [type] $gateway  [description]
-	 * @return [type]           [description]
-	 */
-	public function createPayment($amount, $currency, $gateway){
-
+	public function TotalPaid() {
+		$paid = 0;
+		if($payments = $this->owner->Payments()) {
+			foreach($payments as $payment) {
+				if($payment->Status == 'Captured') {
+					$paid += $payment->getAmount();
+				}
+			}
+		}
+		return $paid;
 	}
-
-	public function getTotalPaid(){
-
-	}
-
 
 }

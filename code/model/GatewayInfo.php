@@ -29,11 +29,28 @@ class GatewayInfo{
 	 * Checks if the given gateway name is an off-site gaeway.
 	 * @param  string  $gateway gateway name
 	 * @throws RuntimeException
-	 * @return boolean          [description]
+	 * @return boolean the gateway offsite or not
 	 */
 	public static function is_offsite($gateway){
 		$gateway = GatewayFactory::create($gateway);
 		return $gateway->supportsCompletePurchase() || $gateway->supportsCompleteAuthorize();
+	}
+
+	/**
+	 * Get the required parameters for a given gateway
+	 * @param string $gateway gateway name
+	 * @return array required parameters
+	 */
+	public static function required_fields($gateway){
+		$parameters = Config::inst()->forClass('Payment')->parameters;
+		if(!isset($parameters[$gateway]) || !isset($parameters[$gateway]['required_fields'])){
+			return array();
+		}
+		$f = $parameters[$gateway]['required_fields'];
+		if(!is_array($f)){
+			return array();
+		}
+		return $f;
 	}
 
 }

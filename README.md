@@ -1,5 +1,10 @@
 # SilverStripe Payments via Omnipay
 
+[![Build Status](https://api.travis-ci.org/burnbright/silverstripe-omnipay.png)](https://travis-ci.org/burnbright/silverstripe-omnipay)
+[![Latest Stable Version](https://poser.pugx.org/burnbright/silverstripe-omnipay/v/stable.png)](https://packagist.org/packages/burnbright/silverstripe-omnipay)
+[![Total Downloads](https://poser.pugx.org/burnbright/silverstripe-omnipay/downloads.png)](https://packagist.org/packages/burnbright/silverstripe-omnipay)
+[![Latest Unstable Version](https://poser.pugx.org/burnbright/silverstripe-omnipay/v/unstable.png)](https://packagist.org/packages/burnbright/silverstripe-omnipay)
+
 The aim of this module is to make it easy for developers to eaisly integrate the ability to pay for things with their SilverStripe application.
 There are many gateway options to choose from, and integrating with additional gateways has a structured approach that should be understandable.
 A high quality, simple to use payment module will help to boost the SilverStripe ecosystem, as it allows applications to be profitable.
@@ -10,8 +15,8 @@ To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
 
 ## Requirements
 
- * silverstripe framework 3.1+
- * omnipay + it's dependencies - which include guzzle and some symphony libraries
+ * [silverstripe framework](https://github.com/silverstripe/silverstripe-framework) 3.1+
+ * [omnipay](https://github.com/omnipay/omnipay) + it's dependencies - which include guzzle and some symphony libraries
 
 *Note:* Composer is currently the only supported way to set up this module.
 

@@ -1,6 +1,6 @@
 # Contents
 
-* [Use cases](use-cases.md)
+ * [Use cases](use-cases.md)
  * [Gateway Features](gateway-features.md)
  * [Responsibilities](responsibilities.md)
  * [Payment Scenarios](payment-scenarios.md)

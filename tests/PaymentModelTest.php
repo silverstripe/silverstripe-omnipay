@@ -17,13 +17,14 @@ class PaymentModelTest extends PaymentTest {
 	}
 
 	function testSupportedGateways() {
-		$gateways = GatewayInfo::get_supported_gateways();
-		$this->assertEquals(array(
+		$expected = array(
 			'PayPal_Express' => 'PayPal Express',
 			'PaymentExpress_PxPay' => 'PaymentExpress PxPay',
 			'Manual' => 'Manual',
 			'Dummy' => 'Dummy'
-		), $gateways, "supported gateways array is created correctly");
+		);
+		$actual = GatewayInfo::get_supported_gateways();
+		$this->assertEquals($expected, $actual, "supported gateways array is created correctly");
 	}
 
 }

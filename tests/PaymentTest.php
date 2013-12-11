@@ -11,7 +11,9 @@ class PaymentTest extends SapphireTest{
 
 	function setUp() {
 		parent::setUp();
-		Config::inst()->update("Payment", "allowed_gateways", array(
+		$cfg = Config::inst();
+		$cfg->remove("Payment", "allowed_gateways");
+		$cfg->update("Payment", "allowed_gateways", array(
 			'PayPal_Express',
 			'PaymentExpress_PxPay',
 			'Manual',

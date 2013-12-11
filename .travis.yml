@@ -23,4 +23,4 @@ before_script:
   - cd ~/builds/ss
 
 script: 
-  - phpunit omnipay/tests
+  - phpunit silverstripe-omnipay/tests

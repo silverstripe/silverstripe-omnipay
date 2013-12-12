@@ -39,9 +39,9 @@ class GatewayResponse{
 	}
 
 	/**
-	 * Do a redirect, using the current controller
+	 * Get the appropriate redirect url
 	 */
-	public function redirect(){
+	public function redirectURL(){
 		$url = null;
 		if ($this->isSuccessful()) {
 			$url = $this->payment->getReturnUrl();
@@ -51,7 +51,14 @@ class GatewayResponse{
 			//TODO: should this instead be the current url?
 			$url = $this->payment->getCancelUrl();
 		}
-		Controller::curr()->redirect($url);
+		return $url;
+	}
+
+	/**
+	 * Do a redirect, using the current controller
+	 */
+	public function redirect(){
+		Controller::curr()->redirect($this->redirectURL());
 	}
 
 }

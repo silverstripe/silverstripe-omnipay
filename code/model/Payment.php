@@ -45,10 +45,18 @@ final class Payment extends DataObject{
 	private $returnurl, $cancelurl, $httpclient, $httprequest;
 
 	public function getCMSFields() {
-		$fields = parent::getCMSFields()->makeReadonly();
+		$fields = parent::getCMSFields();
+		$fields->addFieldToTab("Root.Main",new TextField("Money","Money",
+			$this->dbObject('Money')->Nice()
+		),"Gateway");
+		$fields = $fields->makeReadonly();
+		$fields->fieldByName("Root")->removeByName("Messages");
+
 		$fields->addFieldToTab("Root.Main",
 			GridField::create("Messages","Messages", $this->Messages(),
-				GridFieldConfig_RecordViewer::create()
+				GridFieldConfig_RecordEditor::create()
+					->removeComponentsByType('GridFieldAddNewButton')
+					->removeComponentsByType('GridFieldDeleteAction')
 			)
 		);
 		

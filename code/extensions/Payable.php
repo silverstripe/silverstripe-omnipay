@@ -14,7 +14,7 @@ class Payable extends DataExtension {
 	public function updateCMSFields(FieldList $fields){
 		$fields->addFieldToTab("Root.Payments", 
 			GridField::create("Payments","Payments", $this->owner->Payments() ,
-				new GridFieldConfig_RelationEditor()
+				GridFieldConfig_RecordViewer::create()
 			)
 		);
 	}
@@ -24,7 +24,7 @@ class Payable extends DataExtension {
 		if($payments = $this->owner->Payments()) {
 			foreach($payments as $payment) {
 				if($payment->Status == 'Captured') {
-					$paid += $payment->getAmount();
+					$paid += $payment->Amount;
 				}
 			}
 		}

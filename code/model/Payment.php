@@ -46,9 +46,9 @@ final class Payment extends DataObject{
 
 	public function getCMSFields() {
 		$fields = parent::getCMSFields()->makeReadonly();
-		$transactions = $fields->addFieldToTab("Root.Transactions",
-			GridField::create("Transactions","Transactions", $this->Transactions(),
-				new GridFieldConfig_RecordViewer()
+		$fields->addFieldToTab("Root.Main",
+			GridField::create("Messages","Messages", $this->Messages(),
+				GridFieldConfig_RecordViewer::create()
 			)
 		);
 		

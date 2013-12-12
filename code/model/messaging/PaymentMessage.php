@@ -17,6 +17,10 @@ class PaymentMessage extends DataObject{
 		"User" => "Member" //currently logged in user, if appliciable
 	);
 
+	private static $summary_fields = array(
+		'ClassName', 'Message', 'User.Name'
+	);
+
 	public function getCMSFields(){
 		return parent::getCMSFields()->makeReadOnly();
 	}

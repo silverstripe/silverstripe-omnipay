@@ -235,7 +235,7 @@ final class Payment extends DataObject{
 
 		$this->returnurl = isset($data['returnUrl']) ? $data['returnUrl'] : $this->returnurl;
 		$this->cancelurl = isset($data['cancelUrl']) ? $data['cancelUrl'] : $this->cancelurl;
-
+		
 		$message = $this->createMessage('PurchaseRequest');
 		$request = $this->oGateway()->purchase(array(
 			'card' => new CreditCard($data),
@@ -246,19 +246,24 @@ final class Payment extends DataObject{
 			'returnUrl' => PaymentGatewayController::get_return_url($message, 'complete', $this->returnurl),
 			'cancelUrl' => PaymentGatewayController::get_return_url($message,'cancel', $this->cancelurl)
 		));
-		$response = $request->send();
+		$this->logToFile($request->getParameters());
 		
-		//update payment model
-		if ($response->isSuccessful()) {
-			$this->createMessage('PurchasedResponse');
-			$this->Status = 'Captured';
-			$this->write();
-		} elseif ($response->isRedirect()) { // redirect to off-site payment gateway
-			$this->createMessage('PurchaseRedirectResponse');
-			$this->Status = 'Authorized'; //or should this be 'Pending'?
-			$this->write();
-		} else {
-			$this->createMessage('PurchaseError');
+		try{
+			$response = $request->send();
+			//update payment model
+			if ($response->isSuccessful()) {
+				$this->createMessage('PurchasedResponse', $response->getMessage());
+				$this->Status = 'Captured';
+				$this->write();
+			} elseif ($response->isRedirect()) { // redirect to off-site payment gateway
+				$this->createMessage('PurchaseRedirectResponse', $response->getMessage());
+				$this->Status = 'Authorized'; //or should this be 'Pending'?
+				$this->write();
+			} else {
+				$this->createMessage('PurchaseError', $response->getMessage());
+			}
+		}catch(Exception $e){
+			$this->createMessage('PurchaseError', $e->getMessage());
 		}
 
 		return new GatewayResponse($response, $this);
@@ -283,16 +288,16 @@ final class Payment extends DataObject{
 			$response = $request->send();
 			
 			if($response->isSuccessful()){
-				$this->createMessage('PurchasedResponse');
+				$this->createMessage('PurchasedResponse', $response->getMessage());
 				$this->Status = 'Captured';
 				$this->write();
 			}else{
-				$this->createMessage('PurchaseError');
+				$this->createMessage('PurchaseError', $response->getMessage());
 			}
 
 		} catch (\Exception $e) {
-			$this->createMessage("PurchasedError");
-			//retrn failure object
+			$this->createMessage("PurchasedError", $e->getMessage());
+			//return failure object
 			throw $e;
 		}
 		
@@ -348,12 +353,14 @@ final class Payment extends DataObject{
 	 * @param  string $type the type of transaction to create
 	 * @return GatewayTransaction newly created dataobject, saved to database.
 	 */
-	private function createMessage($type, $data = array()){
-		//TODO: add file logging here also
-		$message = $type::create(array_merge($data, array(
+	private function createMessage($type, $message = null, $data = array()){
+		$data =  array_merge($data, array(
 			"PaymentID" => $this->ID,
-			"Gateway" => $this->Gateway
-		)));
+			"Gateway" => $this->Gateway,
+			"Message" => $message
+		));
+		$this->logToFile($data, $message);
+		$message = $type::create($data);
 		if(method_exists($message,'generateIdentifier')){
 			$message->generateIdentifier();
 		}
@@ -366,24 +373,11 @@ final class Payment extends DataObject{
 	 * Helper function for logging gateway requests
 	 * @param  AbstractRequest $request the omnipay request object
 	 */
-	private function logRequest($request){
+	private function logToFile($data,$message = ""){
 		if((bool)Config::inst()->get('Payment','file_logging')){
-			$parameters = $request->getParameters();
-			//TODO: omfuscate, or remove the creditcard details from logging
-			Debug::log($this->Gateway." REQUEST\n\n".print_r($parameters,true));
-		}
-	}
-
-	/**
-	 * Helper function for logging gateay responses
-	 * @param  AbstractResponse $response the omnipay response object
-	 */
-	private function logResponse($response){
-		if((bool)Config::inst()->get('Payment','file_logging')){
-			Debug::log($this->Gateway." RESPONSE\n\n".print_r(array(
-				'Data' => $response->getData(),
-				'isRedirect' => $response->isRedirect(),
-			),true));
+			Debug::log($this->Gateway." REQUEST\n\n".
+				$message."\n\n"
+				.print_r($data,true));
 		}
 	}
 

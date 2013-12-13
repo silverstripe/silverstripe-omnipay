@@ -9,20 +9,33 @@ use Omnipay\Common\GatewayFactory;
 class GatewayInfo{
 
 	/**
-	 * Get the available configured payment types, with i18n readable names.
+	 * Get the available configured payment types, optionally with i18n readable names.
+	 * @param bool $nice make the array values i18n readable.
 	 * @return array map of gateway short name to translated long name.
 	 */
-	public static function get_supported_gateways() {
+	public static function get_supported_gateways($nice = true) {
 		$allowed = Config::inst()->forClass('Payment')->allowed_gateways;
 		$allowed = array_combine($allowed, $allowed);
-		$allowed = array_map(function($name) {
-			return _t(
-				"Payment.".strtoupper($name),
-				GatewayFactory::create($name)->getName()
-			);
-		}, $allowed);
+		if($nice){
+			$allowed = array_map(function($name) {
+				return _t(
+					"Payment.".strtoupper($name),
+					GatewayFactory::create($name)->getName()
+				);
+			}, $allowed);
+		}
 
 		return $allowed;
+	}
+
+	/**
+	 * Find out if the given gateway is supported.
+	 * @param  string  $gateway gateway name to check
+	 * @return boolean
+	 */
+	public static function is_supported($gateway) {
+		$gateways = self::get_supported_gateways(false);
+		return isset($gateways[$gateway]);
 	}
 
 	/**

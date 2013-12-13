@@ -16,16 +16,16 @@ final class PaymentGatewayController extends Controller{
 
 	/**
 	 * Generate an absolute url for gateways to return to, or send requests to.
-	 * @param  PaymentTransaction $transaction transaction that redirect applies to.
+	 * @param  GatewayMessage $message message that redirect applies to.
 	 * @param  string             $status      the intended status / action of the gateway
 	 * @param  string             $returnurl   the application url to re-redirect to
 	 * @return string                          the resulting redirect url
 	 */
-	public static function get_return_url(GatewayMessage $transaction, $status = 'complete', $returnurl = null){
+	public static function get_return_url(GatewayMessage $message, $status = 'complete', $returnurl = null){
 		return Director::absoluteURL(
 			Controller::join_links(
 				'paymentendpoint', //as defined in _config/routes.yml
-				$transaction->Identifier,
+				$message->Identifier,
 				$status,
 				urlencode(base64_encode($returnurl))
 			)
@@ -39,12 +39,12 @@ final class PaymentGatewayController extends Controller{
 	 * or allowed to be updated.
 	 */
 	public function index(){
-		$transaction = $this->getTransaction();
-		if(!$transaction){			
+		$message = $this->getRequestMessage();
+		if(!$message){			
 			//TODO: log failure && store a message for user?
 			return $this->redirect($this->getRedirectUrl());
 		}
-		$payment = $transaction->Payment();
+		$payment = $message->Payment();
 
 		//check if payment is already a success
 		if(!$payment || $payment->isComplete()){
@@ -67,10 +67,10 @@ final class PaymentGatewayController extends Controller{
 	}
 
 	/**
-	 * Get the transaction by the given identifier
-	 * @return PaymentTransaction the transaction
+	 * Get the message storing the identifier for this payment
+	 * @return GatewayMessage the transaction
 	 */
-	private function getTransaction(){
+	private function getRequestMessage(){
 		return GatewayMessage::get()
 				->filter('Identifier',$this->request->param('Identifier'))
 				->First();

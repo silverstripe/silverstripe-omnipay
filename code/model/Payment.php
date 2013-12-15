@@ -36,24 +36,22 @@ final class Payment extends DataObject{
 	);
 
 	private static $summary_fields = array(
-		'Money',
-		'Gateway',
-		'Status',
-		'Created'
+		'Money' => 'Money',
+		'GatewayTitle' => 'Gateway',
+		'Status' => 'Status',
+		'Created.Nice' => 'Created'
 	);
 
 	private $returnurl, $cancelurl, $httpclient, $httprequest;
 
 	public function getCMSFields() {
-		$fields = parent::getCMSFields();
-		$fields->addFieldToTab("Root.Main",new TextField("Money","Money",
-			$this->dbObject('Money')->Nice()
-		),"Gateway");
+		$fields = new FieldList(
+			TextField::create("Money",_t("Payment.MONEY","Money"), $this->dbObject('Money')->Nice()),
+			TextField::create("GatewayTitle",_t("Payment.GATEWAY","Gateway"))
+		);
 		$fields = $fields->makeReadonly();
-		$fields->fieldByName("Root")->removeByName("Messages");
-
-		$fields->addFieldToTab("Root.Main",
-			GridField::create("Messages","Messages", $this->Messages(),
+		$fields->push(
+			GridField::create("Messages",_t("Payment.MESSAGES","Messages"), $this->Messages(),
 				GridFieldConfig_RecordEditor::create()
 					->removeComponentsByType('GridFieldAddNewButton')
 					->removeComponentsByType('GridFieldDeleteAction')
@@ -94,6 +92,7 @@ final class Payment extends DataObject{
 
 	public function getTitle() {
 		return implode(' ',array(
+			$this->getGatewayTitle(),
 			$this->forTemplate()->Nice(),
 			$this->dbObject('Created')->Date()
 		));
@@ -109,6 +108,10 @@ final class Payment extends DataObject{
 			$this->setField('Gateway', $gateway);	
 		}
 		return $this;
+	}
+
+	public function getGatewayTitle() {
+		return GatewayInfo::nice_title($this->Gateway);
 	}
 
 	/**

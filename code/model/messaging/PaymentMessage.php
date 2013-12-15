@@ -18,7 +18,9 @@ class PaymentMessage extends DataObject{
 	);
 
 	private static $summary_fields = array(
-		'ClassName', 'Message', 'User.Name'
+		'i18n_singular_name' => "Type",
+		'Message' => "Message",
+		'User.Name' => "User"
 	);
 
 	public function getCMSFields(){

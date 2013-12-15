@@ -17,15 +17,21 @@ class GatewayInfo{
 		$allowed = Config::inst()->forClass('Payment')->allowed_gateways;
 		$allowed = array_combine($allowed, $allowed);
 		if($nice){
-			$allowed = array_map(function($name) {
-				return _t(
-					"Payment.".strtoupper($name),
-					GatewayFactory::create($name)->getName()
-				);
-			}, $allowed);
+			$allowed = array_map('GatewayInfo::nice_title', $allowed);
 		}
 
 		return $allowed;
+	}
+
+	public static function nice_title($name){
+		$gateway = null;
+		try{
+			$gateway = GatewayFactory::create($name);
+		}catch(Exception $e){/** do nothing */}
+		return _t(
+			"Payment.".strtoupper($name),
+			$gateway ? $gateway->getName() : $name
+		);
 	}
 
 	/**

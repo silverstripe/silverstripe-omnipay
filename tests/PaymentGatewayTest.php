@@ -5,6 +5,8 @@ class PaymentGatewayTest extends PaymentTest {
 	function testDummyOnSitePurchase() {
 		$payment = $this->payment;
 		$response = $payment->purchase(array(
+			'firstName' => 'joe',
+	 		'lastName' => 'bloggs',
 			'number' => '4242424242424242', //this creditcard will succeed
 			'expiryMonth' => '5',
 			'expiryYear' => date("Y",strtotime("+1 year"))
@@ -36,6 +38,8 @@ class PaymentGatewayTest extends PaymentTest {
 	function testFailedDummyOnSitePurchase() {
 		$payment = $this->payment;
 		$response = $payment->purchase(array(
+			'firstName' => 'joe',
+	 		'lastName' => 'bloggs',
 			'number' => '4111111111111111',  //this creditcard will decline
 			'expiryMonth' => '5',
 			'expiryYear' => date("Y",strtotime("+1 year"))
@@ -57,6 +61,8 @@ class PaymentGatewayTest extends PaymentTest {
 		$payment = $this->payment->setGateway('PaymentExpress_PxPost');
 		$this->setMockHttpResponse('PaymentExpress/Mock/PxPostPurchaseSuccess.txt');//add success mock response from file
 	 	$response = $payment->purchase(array(
+	 		'firstName' => 'joe',
+	 		'lastName' => 'bloggs',
 			'number' => '4242424242424242', //this creditcard will succeed
 			'expiryMonth' => '5',
 			'expiryYear' => date("Y",strtotime("+1 year"))
@@ -73,7 +79,20 @@ class PaymentGatewayTest extends PaymentTest {
 	}
 
 	function testInvalidOnsitePurchase() {
-		//provide invalid/incorrect data
+		$payment = $this->payment->setGateway("PaymentExpress_PxPost");
+		//pass no card details nothing
+		$response = $payment->purchase(array()); 
+
+		//check messaging
+		$this->assertFalse($response->isSuccessful()); //payment has not been captured
+		$this->assertFalse($response->isRedirect());
+		$this->assertDOSContains(array(
+			array('ClassName' => 'PurchaseError')
+		), $payment->Messages());
+
+		//TODO:
+			//invalid/incorrect card number/date..lhun check (InvalidCreditCardException)
+			//InvalidRequestException thrown when gateway needs specific parameters
 	}
 
 	function testFailedOnSitePurchase() {
@@ -146,22 +165,25 @@ class PaymentGatewayTest extends PaymentTest {
 	
 	function testNonExistantGateway() {
 		//exception when trying to run functions that require a gateway
-		
 		$payment = $this->payment
 			->init("PxPayGateway", 100, "NZD")
 			->setReturnUrl("complete");
-		$this->setExpectedException("RuntimeException");		
+
+		$this->setExpectedException("RuntimeException");
 		$result = $payment->purchase();
+
+		//TODO: execution halts on exception, so we can't keep testing..
 
 		//but we can still use the payment model in calculations etc
 		$totalNZD = Payment::get()->filter('MoneyCurrency',"NZD")->sum();
 		$this->assertEquals(27.23, $totalNZD);
 
 		//TODO: call gateway functions
-		//$payment->purchase();
-		//$payment->completePurchase();
-		//$payment->refund();
-		//$payment->void();
+		$payment->purchase();
+		$payment->completePurchase();
+		$payment->refund();
+		$payment->void();
+		
 	}
 
 	//TODO: testOnSiteAuthorizeCapture

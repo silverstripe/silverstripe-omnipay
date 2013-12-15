@@ -9,7 +9,7 @@ class GatewayResponse{
 
 	private $response, $payment;
 
-	public function __construct(Omnipay\Common\Message\AbstractResponse $response, Payment $payment){
+	public function __construct(Payment $payment, Omnipay\Common\Message\AbstractResponse $response = null){
 		$this->response = $response;
 		$this->payment = $payment;
 	}
@@ -19,7 +19,7 @@ class GatewayResponse{
 	 * @return boolean
 	 */
 	public function isSuccessful(){
-		return $this->response->isSuccessful();
+		return $this->response && $this->response->isSuccessful();
 	}
 
 	/**
@@ -27,7 +27,7 @@ class GatewayResponse{
 	 * @return boolean
 	 */
 	public function isRedirect(){
-		return $this->response->isRedirect();
+		return $this->response && $this->response->isRedirect();
 	}
 
 	/**
@@ -62,3 +62,5 @@ class GatewayResponse{
 	}
 
 }
+
+

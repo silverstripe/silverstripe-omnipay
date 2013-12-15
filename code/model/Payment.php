@@ -208,7 +208,8 @@ final class Payment extends DataObject{
 	/**
 	 * Get the omnipay gateway associated with this payment,
 	 * with configuration applied.
-	 * 
+	 *
+	 * @throws RuntimeException - when gateway doesn't exist.
 	 * @return AbstractGateway omnipay gateway class
 	 */
 	public function oGateway(){
@@ -251,6 +252,7 @@ final class Payment extends DataObject{
 		));
 		$this->logToFile($request->getParameters());
 		
+		$response = null;
 		try{
 			$response = $request->send();
 			//update payment model
@@ -268,8 +270,8 @@ final class Payment extends DataObject{
 		}catch(Exception $e){
 			$this->createMessage('PurchaseError', $e->getMessage());
 		}
-
-		return new GatewayResponse($response, $this);
+		//TODO: response isn't set if we exception
+		return new GatewayResponse($this, $response);
 	}
 
 	/**
@@ -278,15 +280,11 @@ final class Payment extends DataObject{
 	 * @return PaymentResponse encapsulated response info
 	 */
 	public function completePurchase(){
-		// if(!$this->canDo('completePurchase')){
-		// 		return PaymentFailure(...);
-		// }
-		
 		$request = $this->oGateway()->completePurchase(array(
 			'amount' => (float)$this->MoneyAmount
 		));
 		$this->createMessage('CompletePurchaseRequest');
-
+		$response = null;
 		try{
 			$response = $request->send();
 			
@@ -300,11 +298,9 @@ final class Payment extends DataObject{
 
 		} catch (\Exception $e) {
 			$this->createMessage("PurchasedError", $e->getMessage());
-			//return failure object
-			throw $e;
 		}
 		
-		return new GatewayResponse($response, $this);
+		return new GatewayResponse($this, $response);
 	}
 
 	/**
@@ -378,7 +374,7 @@ final class Payment extends DataObject{
 	 */
 	private function logToFile($data,$message = ""){
 		if((bool)Config::inst()->get('Payment','file_logging')){
-			Debug::log($this->Gateway." REQUEST\n\n".
+			Debug::log($this->Gateway."\n\n".
 				$message."\n\n"
 				.print_r($data,true));
 		}

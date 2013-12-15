@@ -56,6 +56,9 @@ class GatewayFieldsFactory{
 		}
 		$year = date("Y");
 		$range = 5;
+		$startrange = range(date("Y",strtotime("-$range years")), $year);
+		$expiryrange = range($year, date("Y",strtotime("+$range years")));
+
 		$fields = array(
 			"type" => DropdownField::create('type',_t("PaymentForm.TYPE","Type"),$this->getCardTypes()),
 			"name" => TextField::create('name',_t("PaymentForm.NAME","Name on Card")),
@@ -63,11 +66,11 @@ class GatewayFieldsFactory{
 							->setDescription(_t("PaymentForm.NUMBERDESCRIPTION","no dashes or spaces")),
 			"startMonth" => DropdownField::create('startMonth',_t("PaymentForm.STARTMONTH","Month"), $months),
 			"startYear" => DropdownField::create('startYear',_t("PaymentForm.STARTYEAR","Year"), 
-								range(date("Y",strtotime("-$range years")), $year), $year
+								array_combine($startrange, $startrange), $year
 							),
 			"expiryMonth" => DropdownField::create('expiryMonth',_t("PaymentForm.EXPIRYMONTH","Month"), $months),
 			"expiryYear" => DropdownField::create('expiryYear',_t("PaymentForm.EXPIRYYEAR","Year"),
-								range($year, date("Y",strtotime("+$range years"))),$year
+								array_combine($expiryrange, $expiryrange),$year
 							),
 			"cvv" => TextField::create('cvv',_t("PaymentForm.CVV","Security Code")),
 			"issueNumber" => TextField::create('issueNumber',_t("PaymentForm.ISSUENUMBER","Issue Number"))

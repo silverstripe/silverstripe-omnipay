@@ -431,8 +431,6 @@ final class Payment extends DataObject{
 	 */
 	public static function set_http_client(Guzzle\Http\ClientInterface $httpClient){
 		self::$httpclient = $httpClient;
-
-		return $this;
 	}
 
 	/**
@@ -441,8 +439,6 @@ final class Payment extends DataObject{
 	 */
 	public static function set_http_request(Symfony\Component\HttpFoundation\Request $httpRequest){
 		self::$httprequest = $httpRequest;
-
-		return $this;
 	}
 
 }

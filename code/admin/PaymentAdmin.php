@@ -16,4 +16,8 @@ class PaymentAdmin extends ModelAdmin{
 		'Payment'
 	);
 
+	function alternateAccessCheck(){
+		return !$this->config()->hidden;
+	}
+
 }

@@ -40,7 +40,7 @@ final class Payment extends DataObject{
 		'Money' => 'Money',
 		'GatewayTitle' => 'Gateway',
 		'Status' => 'Status',
-		'Created.Nice' => 'Created'
+		'Created' => 'Created'
 	);
 
 	private static $httpclient, $httprequest;

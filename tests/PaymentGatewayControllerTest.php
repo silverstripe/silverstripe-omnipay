@@ -1,6 +1,6 @@
 <?php
 
-class PaymentGatewayControllerTest extends FunctionalTest{
+class PaymentGatewayControllerTest extends PaymentTest{
 
 	static $fixture_file = array(
 		'payment.yml'
@@ -31,21 +31,32 @@ class PaymentGatewayControllerTest extends FunctionalTest{
 	}
 
 	function testSucessfulEndpoint() {
+
+		Payment::set_http_client($this->getHttpClient());
+		Payment::set_http_request($this->getHttpRequest());
+
+		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayPurchaseSuccess.txt');//add success mock response from file
+
 		//Note the string 'c2hvcC9jb21wbGV0ZQ%3D%3D' is just "shop/complete" base64 encoded, then url encoded
 		$response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/complete/c2hvcC9jb21wbGV0ZQ%3D%3D"); //mimic gateway update
 
 		$transaction = GatewayMessage::get()
 						->filter('Identifier','UNIQUEHASH23q5123tqasdf')
-						->First();
+						->first();
 		//redirect works
 		$headers = $response->getHeaders();
 		$this->assertEquals(Director::baseURL()."shop/complete", $headers['Location'], "redirected to shop/complete");
 
-		//model is appropriately updated
+		$payment = $transaction->Payment();
+
+		//TODO: model is appropriately updated - need to 
+		//$this->assertEquals('Captured', $payment->Status);
+		
 	}
 
 	function testBadReturnURLs(){
 		$response = $this->get("paymentendpoint/ASDFHSADFunknonwhash/complete/c2hvcC9jb2");
+
 	}
 
 	function testSecurity() {
@@ -55,5 +66,8 @@ class PaymentGatewayControllerTest extends FunctionalTest{
 		//database changes shouldn't be made by unauthorised means
 		//see https://github.com/burnbright/silverstripe-omnipay/issues/13
 	}
+
+	//TODO: test purchase -> completePurchase (this failed because gateaway passed identifier was $message->ID, not $message->Identifier)
+	//TODO: test authorize -> completeAuthorize
 
 }

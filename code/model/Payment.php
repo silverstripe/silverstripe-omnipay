@@ -14,6 +14,7 @@
 use Omnipay\Common\GatewayFactory;
 use Omnipay\Common\CreditCard;
 use Omnipay\Common\Message\AbstractResponse;
+use Omnipay\Common\Message\AbstractRequest;
 
 final class Payment extends DataObject{
 
@@ -42,7 +43,9 @@ final class Payment extends DataObject{
 		'Created.Nice' => 'Created'
 	);
 
-	private $returnurl, $cancelurl, $httpclient, $httprequest;
+	private static $httpclient, $httprequest;
+
+	private $returnurl, $cancelurl;
 
 	public function getCMSFields() {
 		$fields = new FieldList(
@@ -213,7 +216,7 @@ final class Payment extends DataObject{
 	 * @return AbstractGateway omnipay gateway class
 	 */
 	public function oGateway(){
-		$gateway = GatewayFactory::create($this->Gateway, $this->httpclient, $this->httprequest);
+		$gateway = GatewayFactory::create($this->Gateway, self::$httpclient, self::$httprequest);
 		$parameters = Config::inst()->forClass('Payment')->parameters;
 		if(isset($parameters[$this->Gateway])) {
 			$gateway->initialize($parameters[$this->Gateway]);
@@ -245,7 +248,7 @@ final class Payment extends DataObject{
 			'card' => new CreditCard($data),
 			'amount' => (float)$this->MoneyAmount,
 			'currency' => $this->MoneyCurrency,
-			'transactionId' => $message->ID,
+			'transactionId' => $message->Identifier,
 			'clientIp' => isset($data['clientIp']) ? $data['clientIp'] : null,
 			'returnUrl' => PaymentGatewayController::get_return_url($message, 'complete', $this->returnurl),
 			'cancelUrl' => PaymentGatewayController::get_return_url($message,'cancel', $this->cancelurl)
@@ -257,15 +260,15 @@ final class Payment extends DataObject{
 			$response = $request->send();
 			//update payment model
 			if ($response->isSuccessful()) {
-				$this->createMessage('PurchasedResponse', $response->getMessage());
+				$this->createMessage('PurchasedResponse', $response);
 				$this->Status = 'Captured';
 				$this->write();
 			} elseif ($response->isRedirect()) { // redirect to off-site payment gateway
-				$this->createMessage('PurchaseRedirectResponse', $response->getMessage());
+				$this->createMessage('PurchaseRedirectResponse', $response);
 				$this->Status = 'Authorized'; //or should this be 'Pending'?
 				$this->write();
 			} else {
-				$this->createMessage('PurchaseError', $response->getMessage());
+				$this->createMessage('PurchaseError', $response);
 			}
 		}catch(Exception $e){
 			$this->createMessage('PurchaseError', $e->getMessage());
@@ -283,21 +286,21 @@ final class Payment extends DataObject{
 		$request = $this->oGateway()->completePurchase(array(
 			'amount' => (float)$this->MoneyAmount
 		));
-		$this->createMessage('CompletePurchaseRequest');
+		$this->createMessage('CompletePurchaseRequest', $request);
 		$response = null;
 		try{
 			$response = $request->send();
 			
 			if($response->isSuccessful()){
-				$this->createMessage('PurchasedResponse', $response->getMessage());
+				$this->createMessage('PurchasedResponse', $response);
 				$this->Status = 'Captured';
 				$this->write();
 			}else{
-				$this->createMessage('PurchaseError', $response->getMessage());
+				$this->createMessage('CompletePurchaseError', $response);
 			}
 
 		} catch (\Exception $e) {
-			$this->createMessage("PurchasedError", $e->getMessage());
+			$this->createMessage("CompletePurchaseError", $e->getMessage());
 		}
 		
 		return new GatewayResponse($this, $response);
@@ -350,16 +353,47 @@ final class Payment extends DataObject{
 	/**
 	 * Record a transaction on this for this payment.
 	 * @param  string $type the type of transaction to create
+	 * @param array|string|AbstractResponse $data the response to record, or data to store
 	 * @return GatewayTransaction newly created dataobject, saved to database.
 	 */
-	private function createMessage($type, $message = null, $data = array()){
-		$data =  array_merge($data, array(
+	private function createMessage($type, $data = null){
+		$output = array(
 			"PaymentID" => $this->ID,
-			"Gateway" => $this->Gateway,
-			"Message" => $message
-		));
-		$this->logToFile($data, $message);
-		$message = $type::create($data);
+			"Gateway" => $this->Gateway
+		);
+		if(is_string($data)){
+			$output =  array_merge(array(
+				'Message' => $data
+			), $output);
+		}if(is_array($data)){
+			$output =  array_merge($data, $output);
+		}elseif($data instanceof AbstractResponse){
+			$output =  array_merge(array(
+				"Message" => $data->getMessage(),
+				"Code" => $data->getCode(),
+				"Reference" => $data->getTransactionReference(),
+				"Data" => $data->getData()
+			), $output);
+		}elseif($data instanceof AbstractRequest){
+			$output =  array_merge(array(
+				//TODO: decide what to record here
+				'Token' => $data->getToken(),
+				'CardReference' => $data->getCardReference(),
+				'Amount' => $data->getAmount(),
+				'Amount' => $data->getAmount(),
+				'Currency' => $data->getCurrency(),
+				'Description' => $data->getDescription(),
+				'TransactionId' => $data->getTransactionId(),
+				'TransactionReference' => $data->getTransactionReference(),
+				'ClientIp' => $data->getClientIp(),
+				'ReturnUrl' => $data->getReturnUrl(),
+				'CancelUrl' => $data->getCancelUrl(),
+				'NotifyUrl' => $data->getNotifyUrl()
+			), $output);
+		}
+
+		$this->logToFile($output, $type);
+		$message = $type::create($output);
 		if(method_exists($message,'generateIdentifier')){
 			$message->generateIdentifier();
 		}
@@ -372,11 +406,20 @@ final class Payment extends DataObject{
 	 * Helper function for logging gateway requests
 	 * @param  AbstractRequest $request the omnipay request object
 	 */
-	private function logToFile($data,$message = ""){
+	private function logToFile($data, $type = ""){
 		if((bool)Config::inst()->get('Payment','file_logging')){
-			Debug::log($this->Gateway."\n\n".
-				$message."\n\n"
-				.print_r($data,true));
+			$logstyle = Config::inst()->get('Payment','file_logging');
+			if($logstyle === "expanded"){
+				Debug::log($type." (".$this->Gateway.")\n\n".
+					print_r($data,true));
+			}else{
+				Debug::log(implode(",",array(
+					$type,
+					$this->Gateway,
+					isset($data['Message']) ? $data['Message'] : " ",
+					isset($data['Code']) ? $data['Code'] : " ",
+				)));
+			}
 		}
 	}
 
@@ -386,8 +429,8 @@ final class Payment extends DataObject{
 	 * Set the guzzle client (for testing)
 	 * @param GuzzleHttpClientInterface $httpClient [description]
 	 */
-	public function setHTTPClient(Guzzle\Http\ClientInterface $httpClient){
-		$this->httpclient = $httpClient;
+	public static function set_http_client(Guzzle\Http\ClientInterface $httpClient){
+		self::$httpclient = $httpClient;
 
 		return $this;
 	}
@@ -396,8 +439,8 @@ final class Payment extends DataObject{
 	 * Set the symphony http request (for testing)
 	 * @param SymfonyComponentHttpFoundationRequest $httpRequest [description]
 	 */
-	public function setHTTPRequest(Symfony\Component\HttpFoundation\Request $httpRequest){
-		$this->httprequest = $httpRequest;
+	public static function set_http_request(Symfony\Component\HttpFoundation\Request $httpRequest){
+		self::$httprequest = $httpRequest;
 
 		return $this;
 	}

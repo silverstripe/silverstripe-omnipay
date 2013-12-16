@@ -4,5 +4,5 @@ After: framework/routes#coreroutes
 ---
 Director:
   rules:
-    'paymentendpoint/$Reference/$Status/$ReturnURL' : 'PaymentGatewayController'
+    'paymentendpoint/$Identifier/$Status/$ReturnURL' : 'PaymentGatewayController'
     'dev/payment' : 'PaymentDevelopmentAdmin'

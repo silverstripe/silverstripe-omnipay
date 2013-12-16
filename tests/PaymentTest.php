@@ -1,6 +1,6 @@
 <?php
 
-class PaymentTest extends SapphireTest{
+class PaymentTest extends FunctionalTest{
 	
 	static $fixture_file = array(
 		'payment.yml'
@@ -23,9 +23,10 @@ class PaymentTest extends SapphireTest{
 		$this->payment = Payment::create()
 		 			->setGateway("Dummy")
 		 			->setAmount(1222)
-		 			->setCurrency("GBP")
-		 			->setHTTPClient($this->getHttpClient())
-		 			->setHTTPRequest($this->getHttpRequest());
+		 			->setCurrency("GBP");
+
+		Payment::set_http_client($this->getHttpClient());
+		Payment::set_http_request($this->getHttpRequest());
 	}
 
 	protected function getHttpClient() {

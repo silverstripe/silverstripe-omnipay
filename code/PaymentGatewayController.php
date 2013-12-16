@@ -54,7 +54,7 @@ final class PaymentGatewayController extends Controller{
 		$payment->setReturnUrl($this->getRedirectUrl());
 
 		//do the payment update
-		switch($this->param('Status')){
+		switch($this->request->param('Status')){
 			case "complete":
 				$response = $payment->completePurchase();
 				break;
@@ -63,7 +63,7 @@ final class PaymentGatewayController extends Controller{
 				break;
 		}
 		
-		return $payment->redirect(); //redirect back to application
+		return $response->redirect(); //redirect back to application
 	}
 
 	/**

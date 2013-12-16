@@ -5,7 +5,7 @@ Payment:
 		MoneyCurrency: NZD
 		Status: Created
 	payment2:
-		Gateway: Dummy
+		Gateway: PaymentExpress_PxPay
 		MoneyAmount: 1234.56
 		MoneyCurrency: USD
 		Status: Authorized
@@ -22,6 +22,7 @@ Payment:
 
 GatewayMessage:
 	transaction1:
+		ClassName: GatewayRequestMessage
 		Type: Purchase
 		Identifier: UNIQUEHASH23q5123tqasdf
 		Reference: 

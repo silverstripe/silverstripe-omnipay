@@ -352,7 +352,7 @@ final class Payment extends DataObject{
 
 	/**
 	 * Record a transaction on this for this payment.
-	 * @param  string $type the type of transaction to create
+	 * @param string $type the type of transaction to create. This is any class that is (or extends) PaymentMessage.
 	 * @param array|string|AbstractResponse $data the response to record, or data to store
 	 * @return GatewayTransaction newly created dataobject, saved to database.
 	 */

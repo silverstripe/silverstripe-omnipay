@@ -52,7 +52,7 @@ class GatewayFieldsFactory{
 		$months = array();
 		//generate list of months
 		for($x = 1; $x <= 12; $x++) {
-			$months[] = date('m - F', mktime(0, 0, 0, $x, 1));
+			$months[$x] = date('m - F', mktime(0, 0, 0, $x, 1));
 		}
 		$year = date("Y");
 		$range = 5;

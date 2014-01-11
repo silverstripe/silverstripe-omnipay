@@ -72,7 +72,8 @@ class GatewayFieldsFactory{
 			"expiryYear" => DropdownField::create('expiryYear',_t("PaymentForm.EXPIRYYEAR","Year"),
 								array_combine($expiryrange, $expiryrange),$year
 							),
-			"cvv" => TextField::create('cvv',_t("PaymentForm.CVV","Security Code")),
+			"cvv" => TextField::create('cvv',_t("PaymentForm.CVV","Security Code"))
+							->setMaxLength(5),
 			"issueNumber" => TextField::create('issueNumber',_t("PaymentForm.ISSUENUMBER","Issue Number"))
 		);
 		//assumption: no credit card fields are ever required for off-site gateways by default

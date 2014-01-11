@@ -234,15 +234,11 @@ final class Payment extends DataObject{
 		if($this->Status !== "Created"){
 		 	return null; //could be handled better? send payment response?
 		}
-
-		//force write
 		if(!$this->isInDB()){
 			$this->write();
 		}
-
 		$this->returnurl = isset($data['returnUrl']) ? $data['returnUrl'] : $this->returnurl;
 		$this->cancelurl = isset($data['cancelUrl']) ? $data['cancelUrl'] : $this->cancelurl;
-		
 		$message = $this->createMessage('PurchaseRequest');
 		$request = $this->oGateway()->purchase(array(
 			'card' => new CreditCard($data),
@@ -255,7 +251,8 @@ final class Payment extends DataObject{
 		));
 		$this->logToFile($request->getParameters());
 		
-		$response = null;
+		$gatewayresponse = new GatewayResponse($this);
+
 		try{
 			$response = $request->send();
 			//update payment model
@@ -263,18 +260,25 @@ final class Payment extends DataObject{
 				$this->createMessage('PurchasedResponse', $response);
 				$this->Status = 'Captured';
 				$this->write();
+				$gatewayresponse->setOmnipayResponse($response);
+				$gatewayresponse->setMessage("Payment successful");
 			} elseif ($response->isRedirect()) { // redirect to off-site payment gateway
 				$this->createMessage('PurchaseRedirectResponse', $response);
 				$this->Status = 'Authorized'; //or should this be 'Pending'?
 				$this->write();
+				$gatewayresponse->setOmnipayResponse($response);
+				$gatewayresponse->setMessage("Redirecting to gateway");
 			} else {
 				$this->createMessage('PurchaseError', $response);
+				$gatewayresponse->setOmnipayResponse($response);
+				$gatewayresponse->setMessage("Error (".$response->getCode()."): ".$response->getMessage());
 			}
 		}catch(Exception $e){
 			$this->createMessage('PurchaseError', $e->getMessage());
+			$gatewayresponse->setMessage($e->getMessage());
+
 		}
-		//TODO: response isn't set if we exception
-		return new GatewayResponse($this, $response);
+		return $gatewayresponse;
 	}
 
 	/**

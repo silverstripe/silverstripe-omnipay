@@ -7,11 +7,30 @@
  */
 class GatewayResponse{
 
-	private $response, $payment;
+	private $response, $payment, $message;
 
-	public function __construct(Payment $payment, Omnipay\Common\Message\AbstractResponse $response = null){
-		$this->response = $response;
+	public function __construct(Payment $payment){
 		$this->payment = $payment;
+	}
+
+	public function setOmnipayResponse(Omnipay\Common\Message\AbstractResponse $response){
+		$this->response = $response;
+
+		return $this;
+	}
+
+	public function getOmnipayResponse(){
+		return $this->response;
+	}
+
+	public function setMessage($message){
+		$this->message = $message;
+
+		return $this;
+	}
+
+	public function getMessage(){
+		return $this->message;
 	}
 
 	/**
@@ -31,14 +50,6 @@ class GatewayResponse{
 	}
 
 	/**
-	 * Get the omnipay response object
-	 * @return AbstractResponse omnipay response
-	 */
-	public function oResponse(){
-		return $this->response;
-	}
-
-	/**
 	 * Get the appropriate redirect url
 	 */
 	public function redirectURL(){
@@ -48,7 +59,6 @@ class GatewayResponse{
 		} elseif ($this->isRedirect()) {
 			$url = $this->response->getRedirectUrl();
 		} else {
-			//TODO: should this instead be the current url?
 			$url = $this->payment->getCancelUrl();
 		}
 		return $url;

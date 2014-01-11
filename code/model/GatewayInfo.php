@@ -62,14 +62,19 @@ class GatewayInfo{
 	 */
 	public static function required_fields($gateway){
 		$parameters = Config::inst()->forClass('Payment')->parameters;
-		if(!isset($parameters[$gateway]) || !isset($parameters[$gateway]['required_fields'])){
-			return array();
+		$fields = array();
+		if(isset($parameters[$gateway]['required_fields']) &&
+			is_array($parameters[$gateway]['required_fields'])){
+				$fields = $parameters[$gateway]['required_fields'];
 		}
-		$f = $parameters[$gateway]['required_fields'];
-		if(!is_array($f)){
-			return array();
+		//always require the following offsite fields
+		if(!self::is_offsite($gateway)){
+			$fields = array_merge(
+				$fields,
+				array('name','number','expiryMonth','expiryYear','cvv')
+			);
 		}
-		return $f;
+		return $fields;
 	}
 
 }

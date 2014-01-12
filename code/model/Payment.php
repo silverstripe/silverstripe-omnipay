@@ -43,6 +43,8 @@ final class Payment extends DataObject{
 		'Created' => 'Created'
 	);
 
+	private static $default_sort = "\"Created\" DESC, \"ID\" DESC";
+
 	private static $httpclient, $httprequest;
 
 	private $returnurl, $cancelurl;

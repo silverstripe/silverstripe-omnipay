@@ -127,7 +127,7 @@ class PaymentGatewayTest extends PaymentTest {
 		//... user would normally be redirected to external gateway at this point ...
 		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayCompletePurchaseSuccess.txt'); //mock complete purchase response
 		$this->getHttpRequest()->query->replace(array('result' => 'abc123')); //mock the 'result' get variable into the current request
-		$response = $payment->completePurchase(); //something going wrong here
+		$response = $payment->completePurchase();
 		$this->assertTrue($response->isSuccessful());
 		$this->assertSame("Captured", $payment->Status);
 

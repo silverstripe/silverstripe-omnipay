@@ -276,7 +276,6 @@ final class Payment extends DataObject{
 		}catch(Exception $e){
 			$this->createMessage('PurchaseError', $e->getMessage());
 			$gatewayresponse->setMessage($e->getMessage());
-
 		}
 		return $gatewayresponse;
 	}
@@ -287,6 +286,8 @@ final class Payment extends DataObject{
 	 * @return PaymentResponse encapsulated response info
 	 */
 	public function completePurchase(){
+
+		$gatewayresponse = new GatewayResponse($this);
 		$request = $this->oGateway()->completePurchase(array(
 			'amount' => (float)$this->MoneyAmount
 		));
@@ -302,12 +303,12 @@ final class Payment extends DataObject{
 			}else{
 				$this->createMessage('CompletePurchaseError', $response);
 			}
-
+			$gatewayresponse->setOmnipayResponse($response);
 		} catch (\Exception $e) {
 			$this->createMessage("CompletePurchaseError", $e->getMessage());
 		}
-		
-		return new GatewayResponse($this, $response);
+
+		return $gatewayresponse;
 	}
 
 	/**

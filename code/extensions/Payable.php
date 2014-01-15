@@ -17,6 +17,8 @@ class Payable extends DataExtension {
 				GridFieldConfig_RecordEditor::create()
 					->removeComponentsByType('GridFieldAddNewButton')
 					->removeComponentsByType('GridFieldDeleteAction')
+					->removeComponentsByType('GridFieldFilterHeader')
+					->removeComponentsByType('GridFieldPageCount')
 			)
 		);
 	}

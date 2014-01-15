@@ -15,6 +15,10 @@ class GatewayInfo{
 	 */
 	public static function get_supported_gateways($nice = true) {
 		$allowed = Config::inst()->forClass('Payment')->allowed_gateways;
+		if(!is_array($allowed)){
+			//include the manual payment type by default, if no gateways are configured
+			$allowed = array("Manual");
+		}
 		$allowed = array_combine($allowed, $allowed);
 		if($nice){
 			$allowed = array_map('GatewayInfo::nice_title', $allowed);

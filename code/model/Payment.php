@@ -264,6 +264,7 @@ final class Payment extends DataObject{
 				$this->write();
 				$gatewayresponse->setOmnipayResponse($response);
 				$gatewayresponse->setMessage("Payment successful");
+				$this->extend('onCaptured', $gatewayresponse);
 			} elseif ($response->isRedirect()) { // redirect to off-site payment gateway
 				$this->createMessage('PurchaseRedirectResponse', $response);
 				$this->Status = 'Authorized'; //or should this be 'Pending'?
@@ -302,6 +303,7 @@ final class Payment extends DataObject{
 				$this->createMessage('PurchasedResponse', $response);
 				$this->Status = 'Captured';
 				$this->write();
+				$this->extend('onCaptured', $gatewayresponse);
 			}else{
 				$this->createMessage('CompletePurchaseError', $response);
 			}

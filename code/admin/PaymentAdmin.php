@@ -9,6 +9,7 @@ class PaymentAdmin extends ModelAdmin{
 	
 	private static $menu_title = "Payments";
 	private static $url_segment = "payments";
+	private static $menu_icon = 'omnipay/images/payment-admin.png';
 
 	public $showImportForm = false;
 

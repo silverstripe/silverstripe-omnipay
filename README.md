@@ -55,7 +55,7 @@ Payment:
             username: 'example.username.test'
             password: 'txjjllae802325'
             signature: 'wk32hkimhacsdfa'
-        PaymentExpress_PxPost:
+        PaymentExpress_PxPay:
             username: 'EXAMPLEUSER'
             password: '235llgwxle4tol23l'
 ---
@@ -76,7 +76,7 @@ Payment:
             username: 'liveexample.test'
             password: 'livepassawe23'
             signature: 'laivfe23235235'
-        PaymentExpress_PxPost:
+        PaymentExpress_PxPay:
             username: 'LIVEUSER'
             password: 'n23nl2ltwlwjle'
 ---

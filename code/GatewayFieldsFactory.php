@@ -39,7 +39,7 @@ class GatewayFieldsFactory{
 
 	function getFields(){
 		$fields = new FieldList();
-		foreach($this->fieldgroups as $group){
+		foreach($this->fieldgroups as $group) {
 			if(method_exists($this, "get".$group."Fields")){
 				$fields->merge($this->{"get".$group."Fields"}());
 			}
@@ -79,18 +79,25 @@ class GatewayFieldsFactory{
 		//assumption: no credit card fields are ever required for off-site gateways by default
 		$defaults = GatewayInfo::is_offsite($this->gateway) ? array() : array('name','number','expiryMonth','expiryYear','cvv');
 		$this->cullForGateway($fields, $defaults);
-		//optionally group date fields
-		if($this->groupdatefields){
+		// optionally group date fields
+		if($this->groupdatefields) {
 			if(isset($fields['startMonth']) && isset($fields['startYear'])){
-				$fields['startMonth'] = new FieldGroup(_t("PaymentForm.START","Start"),
+				$fields['startMonth'] = new FieldGroup(
+					_t("PaymentForm.START","Start"),
 					$fields['startMonth'],$fields['startYear']
 				);
+
+				$fields['startMonth']->addExtraClass('card_startyear');
+
 			 	unset($fields['startYear']);
 			}
 			if(isset($fields['expiryMonth']) && isset($fields['expiryYear'])){
 				$fields['expiryMonth'] = new FieldGroup(_t("PaymentForm.EXPIRY","Expiry"),
 					$fields['expiryMonth'],$fields['expiryYear']
 				);
+
+				$fields['expiryMonth']->addExtraClass('card_expiry');
+
 			 	unset($fields['expiryYear']);
 			}
 		}

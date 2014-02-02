@@ -54,9 +54,18 @@ class GatewayInfo{
 	 * @throws RuntimeException
 	 * @return boolean the gateway offsite or not
 	 */
-	public static function is_offsite($gateway){
+	public static function is_offsite($gateway) {
 		$gateway = GatewayFactory::create($gateway);
 		return $gateway->supportsCompletePurchase() || $gateway->supportsCompleteAuthorize();
+	}
+
+	/**
+	 * Check for special 'manual' payment type.
+	 * @param  string  $gateway [description]
+	 * @return boolean          [description]
+	 */
+	public static function is_manual($gateway) {
+		return $gateway === 'Manual';
 	}
 
 	/**

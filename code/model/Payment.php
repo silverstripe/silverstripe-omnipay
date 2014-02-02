@@ -258,24 +258,28 @@ final class Payment extends DataObject{
 		try{
 			$response = $request->send();
 			//update payment model
-			if ($response->isSuccessful()) {
+			if(GatewayInfo::is_manual($this->Gateway)){
+				$this->createMessage('AuthorizedResponse', $response);
+				$this->Status = 'Authorized';
+				$this->write();
+				$gatewayresponse->setMessage("Manual payment authorised");
+			} elseif ($response->isSuccessful()) {
 				$this->createMessage('PurchasedResponse', $response);
 				$this->Status = 'Captured';
 				$this->write();
-				$gatewayresponse->setOmnipayResponse($response);
 				$gatewayresponse->setMessage("Payment successful");
 				$this->extend('onCaptured', $gatewayresponse);
 			} elseif ($response->isRedirect()) { // redirect to off-site payment gateway
 				$this->createMessage('PurchaseRedirectResponse', $response);
 				$this->Status = 'Authorized'; //or should this be 'Pending'?
 				$this->write();
-				$gatewayresponse->setOmnipayResponse($response);
 				$gatewayresponse->setMessage("Redirecting to gateway");
 			} else {
 				$this->createMessage('PurchaseError', $response);
-				$gatewayresponse->setOmnipayResponse($response);
 				$gatewayresponse->setMessage("Error (".$response->getCode()."): ".$response->getMessage());
 			}
+
+			$gatewayresponse->setOmnipayResponse($response);
 		}catch(Exception $e){
 			$this->createMessage('PurchaseError', $e->getMessage());
 			$gatewayresponse->setMessage($e->getMessage());

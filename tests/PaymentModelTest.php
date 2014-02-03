@@ -2,16 +2,24 @@
 
 class PaymentModelTest extends PaymentTest {
 	
-	function testParameterSetup(){
+	function testParameterSetup() {
 
 		$payment = Payment::create()
-					->init("Manual",23.56,"NZD");
+					->init("Manual", 23.56, "NZD");
 
 		$this->assertEquals("Created", $payment->Status);
 		$this->assertEquals(23.56, $payment->Amount);
 		$this->assertEquals("NZD", $payment->Currency);
 		$this->assertEquals("Manual", $payment->Gateway);
 
+	}
+
+	function testTitle() {
+		$payment = $this->objFromFixture("Payment", "payment1");
+		$this->assertEquals(
+			"Manual NZ$20.23 10/10/2013",
+			$payment->Title
+		);
 	}
 
 	function testSupportedGateways() {

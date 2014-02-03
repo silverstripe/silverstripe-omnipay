@@ -6,18 +6,24 @@ class PurchaseService extends PaymentService{
 	
 	/**
 	 * Attempt to make a payment
-	 * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
-	 * @return ResponseInterface omnipay's response class, specific to the chosen gateway.
+	 * @param  array $data returnUrl/cancelUrl + customer creditcard 
+	 * and billing/shipping details.
+	 * @return ResponseInterface omnipay's response class, 
+	 * specific to the chosen gateway.
 	 */
 	public function purchase($data = array()) {
 		if($this->payment->Status !== "Created"){
-		 	return null; //could be handled better? send payment response?
+			return null; //could be handled better? send payment response?
 		}
 		if(!$this->payment->isInDB()){
 			$this->payment->write();
 		}
-		$this->returnurl = isset($data['returnUrl']) ? $data['returnUrl'] : $this->returnurl;
-		$this->cancelurl = isset($data['cancelUrl']) ? $data['cancelUrl'] : $this->cancelurl;
+		$this->returnurl = isset($data['returnUrl']) ?
+							$data['returnUrl'] : 
+							$this->returnurl;
+		$this->cancelurl = isset($data['cancelUrl']) ? 
+							$data['cancelUrl'] :
+							$this->cancelurl;
 		$message = $this->createMessage('PurchaseRequest');
 		$request = $this->oGateway()->purchase(array(
 			'card' => new CreditCard($data),
@@ -29,7 +35,7 @@ class PurchaseService extends PaymentService{
 								$message, 'complete', $this->returnurl
 							),
 			'cancelUrl' => PaymentGatewayController::get_return_url(
-								$message,'cancel', $this->cancelurl
+								$message, 'cancel', $this->cancelurl
 							)
 		));
 		$this->logToFile($request->getParameters());
@@ -48,9 +54,10 @@ class PurchaseService extends PaymentService{
 				$this->payment->write();
 				$gatewayresponse->setMessage("Payment successful");
 				$this->extend('onCaptured', $gatewayresponse);
-			} elseif ($response->isRedirect()) { // redirect to off-site payment gateway
+			} elseif ($response->isRedirect()) {
+				// redirect to off-site payment gateway
 				$this->createMessage('PurchaseRedirectResponse', $response);
-				$this->payment->Status = 'Authorized'; //or should this be 'Pending'?
+				$this->payment->Status = 'Authorized';
 				$this->payment->write();
 				$gatewayresponse->setMessage("Redirecting to gateway");
 			} else {
@@ -75,7 +82,7 @@ class PurchaseService extends PaymentService{
 	 * This is ususally only called by PaymentGatewayController.
 	 * @return PaymentResponse encapsulated response info
 	 */
-	public function completePurchase(){
+	public function completePurchase() {
 		$gatewayresponse = $this->createGatewayResponse();
 		$request = $this->oGateway()->completePurchase(array(
 			'amount' => (float)$this->payment->MoneyAmount

@@ -4,6 +4,7 @@ Payment:
 		MoneyAmount: 20.23
 		MoneyCurrency: NZD
 		Status: Created
+		Created: 2013-10-10 12:00:00
 	payment2:
 		Gateway: PaymentExpress_PxPay
 		MoneyAmount: 1234.56

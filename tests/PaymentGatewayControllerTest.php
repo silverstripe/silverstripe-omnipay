@@ -32,8 +32,8 @@ class PaymentGatewayControllerTest extends PaymentTest{
 
 	function testSucessfulEndpoint() {
 
-		Payment::set_http_client($this->getHttpClient());
-		Payment::set_http_request($this->getHttpRequest());
+		PaymentService::set_http_client($this->getHttpClient());
+		PaymentService::set_http_request($this->getHttpRequest());
 
 		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayPurchaseSuccess.txt');//add success mock response from file
 

@@ -3,17 +3,15 @@
 class PaymentModelTest extends PaymentTest {
 	
 	function testParameterSetup(){
+
 		$payment = Payment::create()
-					->init("Manual",23.56,"NZD")
-					->setReturnUrl("abc/123")
-					->setCancelUrl("xyz/blah/2345235?andstuff=124124#hash");
+					->init("Manual",23.56,"NZD");
 
 		$this->assertEquals("Created", $payment->Status);
 		$this->assertEquals(23.56, $payment->Amount);
 		$this->assertEquals("NZD", $payment->Currency);
 		$this->assertEquals("Manual", $payment->Gateway);
-		$this->assertEquals("abc/123",$payment->getReturnUrl());
-		$this->assertEquals("xyz/blah/2345235?andstuff=124124#hash",$payment->getCancelUrl());
+
 	}
 
 	function testSupportedGateways() {

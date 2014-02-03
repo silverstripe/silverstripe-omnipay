@@ -8,7 +8,7 @@
  * 
  * @package payment
  */
-final class PaymentGatewayController extends Controller{
+class PaymentGatewayController extends Controller{
 	
 	private static $allowed_actions = array(
 		'endpoint'
@@ -45,25 +45,24 @@ final class PaymentGatewayController extends Controller{
 			return $this->redirect($this->getRedirectUrl());
 		}
 		$payment = $message->Payment();
+		$service = PurchaseService::create($payment);
 
 		//check if payment is already a success
 		if(!$payment || $payment->isComplete()){
 			return $this->redirect($this->getRedirectUrl());
 		}
 		//store redirect url in payment model
-		$payment->setReturnUrl($this->getRedirectUrl());
+		$service->setReturnUrl($this->getRedirectUrl());
 
 		//do the payment update
 		switch($this->request->param('Status')){
 			case "complete":
-				$response = $payment->completePurchase();
-				break;
+				$response = $service->completePurchase();
+				return $this->redirect($response->getRedirectURL());
 			case "cancel":
-				$response = $payment->void();
+				//$response = $payment->void();
 				break;
 		}
-		
-		return $response->redirect(); //redirect back to application
 	}
 
 	/**
@@ -72,8 +71,8 @@ final class PaymentGatewayController extends Controller{
 	 */
 	private function getRequestMessage(){
 		return GatewayMessage::get()
-				->filter('Identifier',$this->request->param('Identifier'))
-				->First();
+				->filter('Identifier', $this->request->param('Identifier'))
+				->first();
 	}
 
 	/**

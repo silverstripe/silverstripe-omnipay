@@ -1,10 +1,11 @@
 <?php
 
-class PaymentGatewayTest extends PaymentTest {
+class PurchaseServiceTest extends PaymentTest {
 
 	function testDummyOnSitePurchase() {
 		$payment = $this->payment;
-		$response = $payment->purchase(array(
+		$service = new PurchaseService($payment);
+		$response = $service->purchase(array(
 			'firstName' => 'joe',
 	 		'lastName' => 'bloggs',
 			'number' => '4242424242424242', //this creditcard will succeed
@@ -37,7 +38,8 @@ class PaymentGatewayTest extends PaymentTest {
 
 	function testFailedDummyOnSitePurchase() {
 		$payment = $this->payment;
-		$response = $payment->purchase(array(
+		$service = new PurchaseService($payment);
+		$response = $service->purchase(array(
 			'firstName' => 'joe',
 	 		'lastName' => 'bloggs',
 			'number' => '4111111111111111',  //this creditcard will decline
@@ -59,17 +61,18 @@ class PaymentGatewayTest extends PaymentTest {
 
 	function testOnSitePurchase() {
 		$payment = $this->payment->setGateway('PaymentExpress_PxPost');
+		$service = new PurchaseService($payment);
 		$this->setMockHttpResponse('PaymentExpress/Mock/PxPostPurchaseSuccess.txt');//add success mock response from file
-	 	$response = $payment->purchase(array(
+	 	$response = $service->purchase(array(
 	 		'firstName' => 'joe',
 	 		'lastName' => 'bloggs',
 			'number' => '4242424242424242', //this creditcard will succeed
 			'expiryMonth' => '5',
 			'expiryYear' => date("Y",strtotime("+1 year"))
 		));
-		$this->assertTrue($response->isSuccessful()); //payment has not been captured
+		$this->assertTrue($response->isSuccessful());
 		$this->assertFalse($response->isRedirect());
-		$this->assertSame("Captured",$payment->Status);
+		$this->assertSame("Captured",$payment->Status, "has the payment been captured");
 
 		//check messaging
 		$this->assertDOSContains(array(
@@ -80,8 +83,9 @@ class PaymentGatewayTest extends PaymentTest {
 
 	function testInvalidOnsitePurchase() {
 		$payment = $this->payment->setGateway("PaymentExpress_PxPost");
+		$service = new PurchaseService($payment);
 		//pass no card details nothing
-		$response = $payment->purchase(array()); 
+		$response = $service->purchase(array()); 
 
 		//check messaging
 		$this->assertFalse($response->isSuccessful()); //payment has not been captured
@@ -97,8 +101,9 @@ class PaymentGatewayTest extends PaymentTest {
 
 	function testFailedOnSitePurchase() {
 		$payment = $this->payment->setGateway('PaymentExpress_PxPost');
+		$service = new PurchaseService($payment);
 		$this->setMockHttpResponse('PaymentExpress/Mock/PxPostPurchaseFailure.txt');//add success mock response from file
-	 	$response = $payment->purchase(array(
+	 	$response = $service->purchase(array(
 			'number' => '4111111111111111', //this creditcard will decline
 			'expiryMonth' => '5',
 			'expiryYear' => date("Y",strtotime("+1 year"))
@@ -116,18 +121,19 @@ class PaymentGatewayTest extends PaymentTest {
 
 	function testOffSitePurchase(){
 		$payment = $this->payment->setGateway('PaymentExpress_PxPay');
+		$service = new PurchaseService($payment);
 		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayPurchaseSuccess.txt');//add success mock response from file
-	 	$response = $payment->purchase();
+	 	$response = $service->purchase();
 		$this->assertFalse($response->isSuccessful()); //payment has not been captured
 		$this->assertTrue($response->isRedirect());
 		$this->assertSame(
 			'https://sec.paymentexpress.com/pxpay/pxpay.aspx?userid=Developer&request=v5H7JrBTzH-4Whs__1iQnz4RGSb9qxRKNR4kIuDP8kIkQzIDiIob9GTIjw_9q_AdRiR47ViWGVx40uRMu52yz2mijT39YtGeO7cZWrL5rfnx0Mc4DltIHRnIUxy1EO1srkNpxaU8fT8_1xMMRmLa-8Fd9bT8Oq0BaWMxMquYa1hDNwvoGs1SJQOAJvyyKACvvwsbMCC2qJVyN0rlvwUoMtx6gGhvmk7ucEsPc_Cyr5kNl3qURnrLKxINnS0trdpU4kXPKOlmT6VacjzT1zuj_DnrsWAPFSFq-hGsow6GpKKciQ0V0aFbAqECN8rl_c-aZWFFy0gkfjnUM4qp6foS0KMopJlPzGAgMjV6qZ0WfleOT64c3E-FRLMP5V_-mILs8a', 
-			$response->redirectURL());
+			$response->getRedirectURL());
 		$this->assertSame("Authorized",$payment->Status);
 		//... user would normally be redirected to external gateway at this point ...
 		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayCompletePurchaseSuccess.txt'); //mock complete purchase response
 		$this->getHttpRequest()->query->replace(array('result' => 'abc123')); //mock the 'result' get variable into the current request
-		$response = $payment->completePurchase();
+		$response = $service->completePurchase();
 		$this->assertTrue($response->isSuccessful());
 		$this->assertSame("Captured", $payment->Status);
 
@@ -142,8 +148,9 @@ class PaymentGatewayTest extends PaymentTest {
 
 	function testFailedOffSitePurchase(){
 		$payment = $this->payment->setGateway('PaymentExpress_PxPay');
+		$service = new PurchaseService($payment);
 		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayPurchaseFailure.txt');//add success mock response from file
-		$response = $payment->purchase();
+		$response = $service->purchase();
 		$this->assertFalse($response->isSuccessful()); //payment has not been captured
 		$this->assertFalse($response->isRedirect()); //redirect won't occur, because of failure
 		$this->assertSame("Created",$payment->Status);
@@ -157,22 +164,17 @@ class PaymentGatewayTest extends PaymentTest {
 		//TODO: fail in various ways
 	}
 
-	function testRedirectUrl() {
-		$payment = Payment::create()
-					->setReturnUrl("abc/123")
-					->setCancelUrl("xyz/blah/2345235?andstuff=124124#hash");
-		$this->assertEquals("abc/123",$payment->getReturnUrl());
-		$this->assertEquals("xyz/blah/2345235?andstuff=124124#hash",$payment->getCancelUrl());
-	}
 	
 	function testNonExistantGateway() {
 		//exception when trying to run functions that require a gateway
-		$payment = $this->payment
-			->init("PxPayGateway", 100, "NZD")
-			->setReturnUrl("complete");
+		$payment = $this->payment;
+
+		$service = PurchaseService::create(
+				$payment->init("PxPayGateway", 100, "NZD")
+			)->setReturnUrl("complete");
 
 		$this->setExpectedException("RuntimeException");
-		$result = $payment->purchase();
+		$result = $service->purchase();
 
 		//TODO: execution halts on exception, so we can't keep testing..
 
@@ -181,16 +183,8 @@ class PaymentGatewayTest extends PaymentTest {
 		$this->assertEquals(27.23, $totalNZD);
 
 		//TODO: call gateway functions
-		$payment->purchase();
-		$payment->completePurchase();
-		$payment->refund();
-		$payment->void();
-		
+		$service->purchase();
+		$service->completePurchase();
 	}
-
-	//TODO: testOnSiteAuthorizeCapture
-	//TODO: testOffSiteAuthorizeCapture
-	//TODO: testVoid
-	//TODO: testRefund™
 
 }

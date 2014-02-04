@@ -133,17 +133,38 @@ Payment:
 Using function chaining, we can create and configure a new payment object, and submit a request to the chosen gateway. The response object has a `redirect` function built in that will either redirect the user to the external gateway site, or to the given return url.
 
 ```php
-    Payment::create()
-        ->init($gateway = "PxPayGateway", $amount = 100, $currency = "NZD")
-        ->setReturnUrl($this->Link('complete')."?donation=".$donation->ID)
+    $payment = Payment::create()->init("PxPayGateway", 100, "NZD");
+    $response = PurchaseService::create($payment)
+        ->setReturnUrl($this->Link('complete')."/".$donation->ID)
         ->setCancelUrl($this->Link()."?message=payment cancelled")
-        ->purchase($form->getData())
-        ->redirect();
+        ->purchase($form->getData());
+    $response->redirect();
 ```
 
 Of course you don't need to chain all of these functions, as you may want to redirect somewhere else, or do some further setup.
 
 After payment has been made, the user will be redirected to the given return url (or cancel url, if they cancelled).
+
+### onCaptured hook
+
+To call your custom code when returning from an off-site gateway, you'll need to
+introduce an extension that utilises the onCaptured extension point.
+
+For example:
+```php
+class ShopPayment extends DataExtension {
+
+    private static $has_one = array(
+        'Order' => 'Order'
+    );
+
+    public function onCaptured($response){
+        $order = $this->owner->Order();
+        $order->completePayment($this->owner);
+    }
+
+}
+```
 
 ## Further Documentation
 

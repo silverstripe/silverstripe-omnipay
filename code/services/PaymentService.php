@@ -17,7 +17,8 @@ use Omnipay\Common\Message\AbstractRequest;
 
 abstract class PaymentService extends Object{
 
-	private static $httpclient, $httprequest;
+	private static $httpclient;
+	private static $httprequest;
 
 	protected $payment;
 	protected $returnurl;
@@ -68,7 +69,7 @@ abstract class PaymentService extends Object{
 	/**
 	 * Get the appropriate redirect url
 	 */
-	public function getRedirectURL(){
+	public function getRedirectURL() {
 		if($this->response){
 			if ($this->response->isSuccessful()) {
 				return $this->getReturnUrl();
@@ -144,7 +145,7 @@ abstract class PaymentService extends Object{
 		}
 		$this->logToFile($output, $type);
 		$message = $type::create($output);
-		if(method_exists($message,'generateIdentifier')){
+		if(method_exists($message, 'generateIdentifier')){
 			$message->generateIdentifier();
 		}
 		$message->write();
@@ -162,9 +163,9 @@ abstract class PaymentService extends Object{
 			$logstyle = Config::inst()->get('Payment', 'file_logging');
 			if($logstyle === "expanded"){
 				Debug::log($type." (".$this->Gateway.")\n\n".
-					print_r($data,true));
+					print_r($data, true));
 			}else{
-				Debug::log(implode(",",array(
+				Debug::log(implode(",", array(
 					$type,
 					$this->Gateway,
 					isset($data['Message']) ? $data['Message'] : " ",
@@ -186,7 +187,7 @@ abstract class PaymentService extends Object{
 	 * Set the guzzle client (for testing)
 	 * @param GuzzleHttpClientInterface $httpClient [description]
 	 */
-	public static function set_http_client(Guzzle\Http\ClientInterface $httpClient){
+	public static function set_http_client(Guzzle\Http\ClientInterface $httpClient) {
 		self::$httpclient = $httpClient;
 	}
 
@@ -194,7 +195,7 @@ abstract class PaymentService extends Object{
 	 * Set the symphony http request (for testing)
 	 * @param SymfonyComponentHttpFoundationRequest $httpRequest [description]
 	 */
-	public static function set_http_request(Symfony\Component\HttpFoundation\Request $httpRequest){
+	public static function set_http_request(Symfony\Component\HttpFoundation\Request $httpRequest) {
 		self::$httprequest = $httpRequest;
 	}
 

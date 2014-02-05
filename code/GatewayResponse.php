@@ -71,5 +71,5 @@ class GatewayResponse{
 	public function redirect() {
 		Controller::curr()->redirect($this->redirectURL());
 	}
-	
+
 }

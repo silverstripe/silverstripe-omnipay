@@ -2,11 +2,11 @@
 
 /**
  * Model admin administration of payments.
- * 
+ *
  * @package payment
  */
 class PaymentAdmin extends ModelAdmin{
-	
+
 	private static $menu_title = "Payments";
 	private static $url_segment = "payments";
 	private static $menu_icon = 'omnipay/images/payment-admin.png';
@@ -17,7 +17,7 @@ class PaymentAdmin extends ModelAdmin{
 		'Payment'
 	);
 
-	function alternateAccessCheck(){
+	public function alternateAccessCheck(){
 		return !$this->config()->hidden;
 	}
 

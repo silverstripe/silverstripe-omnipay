@@ -1,7 +1,7 @@
 <?php
 
 class AuthorizeCaptureService extends PaymentService{
-	
+
 	/**
 	 * Initiate the authorisation process for on-site and off-site gateways.
 	 * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
@@ -27,6 +27,5 @@ class AuthorizeCaptureService extends PaymentService{
 	public function capture() {
 		//TODO
 	}
-	
 
 }

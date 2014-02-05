@@ -2,13 +2,13 @@
 
 class PaymentGatewayControllerTest extends PaymentTest{
 
-	static $fixture_file = array(
+	public static $fixture_file = array(
 		'payment.yml'
 	);
 
 	protected $autoFollowRedirection = false;
-	
-	function setUp(){
+
+	public function setUp(){
 		parent::setUp();
 
 		Config::inst()->update("Payment", "allowed_gateways", array(
@@ -20,7 +20,7 @@ class PaymentGatewayControllerTest extends PaymentTest{
 
 	}
 
-	function testReturnUrlGeneration() {
+	public function testReturnUrlGeneration() {
 		$transaction = $this->objFromFixture('GatewayMessage','transaction1');
 		$url = PaymentGatewayController::get_return_url($transaction,'action',"shop/complete");
 		$this->assertEquals(
@@ -30,7 +30,7 @@ class PaymentGatewayControllerTest extends PaymentTest{
 		);
 	}
 
-	function testSucessfulEndpoint() {
+	public function testSucessfulEndpoint() {
 
 		PaymentService::set_http_client($this->getHttpClient());
 		PaymentService::set_http_request($this->getHttpRequest());
@@ -49,17 +49,17 @@ class PaymentGatewayControllerTest extends PaymentTest{
 
 		$payment = $transaction->Payment();
 
-		//TODO: model is appropriately updated - need to 
+		//TODO: model is appropriately updated - need to
 		//$this->assertEquals('Captured', $payment->Status);
-		
+
 	}
 
-	function testBadReturnURLs(){
+	public function testBadReturnURLs(){
 		$response = $this->get("paymentendpoint/ASDFHSADFunknonwhash/complete/c2hvcC9jb2");
 
 	}
 
-	function testSecurity() {
+	public function testSecurity() {
 		//$this->get(); //mimic mallicious activity
 		//incorrect security token
 		//

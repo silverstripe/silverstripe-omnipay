@@ -1,15 +1,15 @@
 <?php
 
 class PaymentTest extends FunctionalTest{
-	
-	static $fixture_file = array(
+
+	public static $fixture_file = array(
 		'payment.yml'
 	);
 
 	protected $payment;
 	protected $httpClient, $httpRequest;
 
-	function setUp() {
+	public function setUp() {
 		parent::setUp();
 		$cfg = Config::inst();
 		$cfg->remove("Payment", "allowed_gateways");

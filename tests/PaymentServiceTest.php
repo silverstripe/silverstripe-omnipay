@@ -2,7 +2,7 @@
 
 class PaymentServiceTest extends PaymentTest{
 
-	function testRedirectUrl() {
+	public function testRedirectUrl() {
 		$service = PurchaseService::create(new Payment())
 					->setReturnUrl("abc/123")
 					->setCancelUrl("xyz/blah/2345235?andstuff=124124#hash");

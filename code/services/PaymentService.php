@@ -5,7 +5,7 @@
  *
  * Provides wrapper methods for interacting with the omnipay gateways
  * library.
- * 
+ *
  * Interfaces with the omnipay library
  *
  * @package payment
@@ -45,7 +45,7 @@ abstract class PaymentService extends Object{
 	 */
 	public function setReturnUrl($url) {
 		$this->returnurl = $url;
-		if(!$this->cancelurl){
+		if (!$this->cancelurl) {
 			$this->cancelurl = $url;
 		}
 
@@ -70,7 +70,7 @@ abstract class PaymentService extends Object{
 	 * Get the appropriate redirect url
 	 */
 	public function getRedirectURL() {
-		if($this->response){
+		if ($this->response) {
 			if ($this->response->isSuccessful()) {
 				return $this->getReturnUrl();
 			} elseif ($this->response->isRedirect()) {
@@ -95,16 +95,16 @@ abstract class PaymentService extends Object{
 			self::$httprequest
 		);
 		$parameters = Config::inst()->forClass('Payment')->parameters;
-		if(isset($parameters[$this->payment->Gateway])) {
+		if (isset($parameters[$this->payment->Gateway])) {
 			$gateway->initialize($parameters[$this->payment->Gateway]);
 		}
 
 		return $gateway;
-	}	
-	
+	}
+
 	/**
 	 * Record a transaction on this for this payment.
-	 * @param string $type the type of transaction to create. 
+	 * @param string $type the type of transaction to create.
 	 *        This is any class that is (or extends) PaymentMessage.
 	 * @param array|string|AbstractResponse $data the response to record, or data to store
 	 * @return GatewayTransaction newly created dataobject, saved to database.
@@ -114,20 +114,20 @@ abstract class PaymentService extends Object{
 			"PaymentID" => $this->payment->ID,
 			"Gateway" => $this->payment->Gateway
 		);
-		if(is_string($data)){
+		if (is_string($data)) {
 			$output =  array_merge(array(
 				'Message' => $data
 			), $output);
-		}if(is_array($data)){
+		}if (is_array($data)) {
 			$output =  array_merge($data, $output);
-		}elseif($data instanceof AbstractResponse){
+		} elseif ($data instanceof AbstractResponse) {
 			$output =  array_merge(array(
 				"Message" => $data->getMessage(),
 				"Code" => $data->getCode(),
 				"Reference" => $data->getTransactionReference(),
 				"Data" => $data->getData()
 			), $output);
-		}elseif($data instanceof AbstractRequest){
+		} elseif ($data instanceof AbstractRequest) {
 			$output =  array_merge(array(
 				'Token' => $data->getToken(),
 				'CardReference' => $data->getCardReference(),
@@ -145,7 +145,7 @@ abstract class PaymentService extends Object{
 		}
 		$this->logToFile($output, $type);
 		$message = $type::create($output);
-		if(method_exists($message, 'generateIdentifier')){
+		if (method_exists($message, 'generateIdentifier')) {
 			$message->generateIdentifier();
 		}
 		$message->write();
@@ -159,12 +159,12 @@ abstract class PaymentService extends Object{
 	 * @param  AbstractRequest $request the omnipay request object
 	 */
 	protected function logToFile($data, $type = "") {
-		if((bool)Config::inst()->get('Payment', 'file_logging')){
+		if ((bool) Config::inst()->get('Payment', 'file_logging')) {
 			$logstyle = Config::inst()->get('Payment', 'file_logging');
-			if($logstyle === "expanded"){
+			if ($logstyle === "expanded") {
 				Debug::log($type." (".$this->Gateway.")\n\n".
 					print_r($data, true));
-			}else{
+			} else {
 				Debug::log(implode(",", array(
 					$type,
 					$this->Gateway,

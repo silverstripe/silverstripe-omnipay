@@ -2,7 +2,7 @@
 
 /**
  * An extension for providing payments on a particular data object.
- * 
+ *
  * @package payment
  */
 class Payable extends DataExtension {
@@ -12,7 +12,7 @@ class Payable extends DataExtension {
 	);
 
 	public function updateCMSFields(FieldList $fields){
-		$fields->addFieldToTab("Root.Payments", 
+		$fields->addFieldToTab("Root.Payments",
 			GridField::create("Payments","Payments", $this->owner->Payments() ,
 				GridFieldConfig_RecordEditor::create()
 					->removeComponentsByType('GridFieldAddNewButton')
@@ -25,9 +25,9 @@ class Payable extends DataExtension {
 
 	public function TotalPaid() {
 		$paid = 0;
-		if($payments = $this->owner->Payments()) {
-			foreach($payments as $payment) {
-				if($payment->Status == 'Captured') {
+		if ($payments = $this->owner->Payments()) {
+			foreach ($payments as $payment) {
+				if ($payment->Status == 'Captured') {
 					$paid += $payment->Amount;
 				}
 			}

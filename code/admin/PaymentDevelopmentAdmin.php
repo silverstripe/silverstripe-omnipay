@@ -6,8 +6,8 @@
  * @package payment
  */
 class PaymentDevelopmentAdmin extends Controller{
-	
-	function index(){
+
+	public function index(){
 		$renderer = DebugView::create();
 		$renderer->writeHeader();
 		$renderer->writeInfo("Installed Omnipay Payment Gateways", Director::absoluteBaseURL());
@@ -33,7 +33,7 @@ class PaymentDevelopmentAdmin extends Controller{
 				</thead>
 			<tbody>";
 
-		foreach($types as $gateway){
+		foreach ($types as $gateway) {
 			echo "<tr>".
 					"<td>".$gateway->getShortName()."</td>".
 					"<td>".$gateway->getName()."</td>".
@@ -48,7 +48,7 @@ class PaymentDevelopmentAdmin extends Controller{
 					"<td>".($gateway->supportsDeleteCard() ? "yes" : "")."</td>".
 					"<td>".($gateway->supportsUpdateCard() ? "yes" : "")."</td>".
 			"</tr>";
-			if($this->request->getVar('defaults')){
+			if ($this->request->getVar('defaults')) {
 				echo "<tr><td colspan=\"11\">";
 					var_dump($gateway->getDefaultParameters());
 				echo "</td></tr>";

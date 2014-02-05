@@ -2,7 +2,7 @@
 
 class PurchaseServiceTest extends PaymentTest {
 
-	function testDummyOnSitePurchase() {
+	public function testDummyOnSitePurchase() {
 		$payment = $this->payment;
 		$service = new PurchaseService($payment);
 		$response = $service->purchase(array(
@@ -36,7 +36,7 @@ class PurchaseServiceTest extends PaymentTest {
 		), $payment->Messages());
 	}
 
-	function testFailedDummyOnSitePurchase() {
+	public function testFailedDummyOnSitePurchase() {
 		$payment = $this->payment;
 		$service = new PurchaseService($payment);
 		$response = $service->purchase(array(
@@ -59,7 +59,7 @@ class PurchaseServiceTest extends PaymentTest {
 		), $payment->Messages());
 	}
 
-	function testOnSitePurchase() {
+	public function testOnSitePurchase() {
 		$payment = $this->payment->setGateway('PaymentExpress_PxPost');
 		$service = new PurchaseService($payment);
 		$this->setMockHttpResponse('PaymentExpress/Mock/PxPostPurchaseSuccess.txt');//add success mock response from file
@@ -81,11 +81,11 @@ class PurchaseServiceTest extends PaymentTest {
 		), $payment->Messages());
 	}
 
-	function testInvalidOnsitePurchase() {
+	public function testInvalidOnsitePurchase() {
 		$payment = $this->payment->setGateway("PaymentExpress_PxPost");
 		$service = new PurchaseService($payment);
 		//pass no card details nothing
-		$response = $service->purchase(array()); 
+		$response = $service->purchase(array());
 
 		//check messaging
 		$this->assertFalse($response->isSuccessful()); //payment has not been captured
@@ -99,7 +99,7 @@ class PurchaseServiceTest extends PaymentTest {
 			//InvalidRequestException thrown when gateway needs specific parameters
 	}
 
-	function testFailedOnSitePurchase() {
+	public function testFailedOnSitePurchase() {
 		$payment = $this->payment->setGateway('PaymentExpress_PxPost');
 		$service = new PurchaseService($payment);
 		$this->setMockHttpResponse('PaymentExpress/Mock/PxPostPurchaseFailure.txt');//add success mock response from file
@@ -119,7 +119,7 @@ class PurchaseServiceTest extends PaymentTest {
 		), $payment->Messages());
 	}
 
-	function testOffSitePurchase(){
+	public function testOffSitePurchase(){
 		$payment = $this->payment->setGateway('PaymentExpress_PxPay');
 		$service = new PurchaseService($payment);
 		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayPurchaseSuccess.txt');//add success mock response from file
@@ -127,7 +127,7 @@ class PurchaseServiceTest extends PaymentTest {
 		$this->assertFalse($response->isSuccessful()); //payment has not been captured
 		$this->assertTrue($response->isRedirect());
 		$this->assertSame(
-			'https://sec.paymentexpress.com/pxpay/pxpay.aspx?userid=Developer&request=v5H7JrBTzH-4Whs__1iQnz4RGSb9qxRKNR4kIuDP8kIkQzIDiIob9GTIjw_9q_AdRiR47ViWGVx40uRMu52yz2mijT39YtGeO7cZWrL5rfnx0Mc4DltIHRnIUxy1EO1srkNpxaU8fT8_1xMMRmLa-8Fd9bT8Oq0BaWMxMquYa1hDNwvoGs1SJQOAJvyyKACvvwsbMCC2qJVyN0rlvwUoMtx6gGhvmk7ucEsPc_Cyr5kNl3qURnrLKxINnS0trdpU4kXPKOlmT6VacjzT1zuj_DnrsWAPFSFq-hGsow6GpKKciQ0V0aFbAqECN8rl_c-aZWFFy0gkfjnUM4qp6foS0KMopJlPzGAgMjV6qZ0WfleOT64c3E-FRLMP5V_-mILs8a', 
+			'https://sec.paymentexpress.com/pxpay/pxpay.aspx?userid=Developer&request=v5H7JrBTzH-4Whs__1iQnz4RGSb9qxRKNR4kIuDP8kIkQzIDiIob9GTIjw_9q_AdRiR47ViWGVx40uRMu52yz2mijT39YtGeO7cZWrL5rfnx0Mc4DltIHRnIUxy1EO1srkNpxaU8fT8_1xMMRmLa-8Fd9bT8Oq0BaWMxMquYa1hDNwvoGs1SJQOAJvyyKACvvwsbMCC2qJVyN0rlvwUoMtx6gGhvmk7ucEsPc_Cyr5kNl3qURnrLKxINnS0trdpU4kXPKOlmT6VacjzT1zuj_DnrsWAPFSFq-hGsow6GpKKciQ0V0aFbAqECN8rl_c-aZWFFy0gkfjnUM4qp6foS0KMopJlPzGAgMjV6qZ0WfleOT64c3E-FRLMP5V_-mILs8a',
 			$response->getRedirectURL());
 		$this->assertSame("Authorized",$payment->Status);
 		//... user would normally be redirected to external gateway at this point ...
@@ -146,7 +146,7 @@ class PurchaseServiceTest extends PaymentTest {
 		), $payment->Messages());
 	}
 
-	function testFailedOffSitePurchase(){
+	public function testFailedOffSitePurchase(){
 		$payment = $this->payment->setGateway('PaymentExpress_PxPay');
 		$service = new PurchaseService($payment);
 		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayPurchaseFailure.txt');//add success mock response from file
@@ -164,8 +164,8 @@ class PurchaseServiceTest extends PaymentTest {
 		//TODO: fail in various ways
 	}
 
-	
-	function testNonExistantGateway() {
+
+	public function testNonExistantGateway() {
 		//exception when trying to run functions that require a gateway
 		$payment = $this->payment;
 

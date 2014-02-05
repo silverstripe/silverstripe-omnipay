@@ -6,7 +6,7 @@
  * @package payment
  */
 class PaymentMessage extends DataObject{
-	
+
 	private static $db = array(
 		//Created
 		"Message" => "Varchar(255)",
@@ -30,7 +30,7 @@ class PaymentMessage extends DataObject{
 	public function onBeforeWrite(){
 		parent::onBeforeWrite();
 		//automatically set the current user id for new payment messages
-		if(!$this->UserID && !$this->isInDB()){
+		if (!$this->UserID && !$this->isInDB()) {
 			$this->UserID = Member::currentUserID();
 		}
 	}
@@ -38,7 +38,7 @@ class PaymentMessage extends DataObject{
 }
 
 class GatewayMessage extends PaymentMessage{
-	
+
 	private static $db = array(
 		"Gateway" => "Varchar",
 		"Identifier" => "Varchar", //local id
@@ -59,7 +59,7 @@ class GatewayMessage extends PaymentMessage{
 	 * @param string $id identifier
 	 */
 	public function setIdentifier($id){
-		if(!$this->Identifier){
+		if (!$this->Identifier) {
 			$this->setField('Identifier', $id);
 		}
 	}
@@ -69,9 +69,9 @@ class GatewayMessage extends PaymentMessage{
 	 * @return string|null the new identifier, if created.
 	 */
 	public function generateIdentifier(){
-		if(!$this->Identifier){
+		if (!$this->Identifier) {
 			$id = $this->PaymentID.uniqid();
-			while(GatewayMessage::get()->filter('Identifier',$id)->exists()){
+			while (GatewayMessage::get()->filter('Identifier',$id)->exists()) {
 				$id = $this->PaymentID.uniqid();
 			}
 			$this->Identifier = $id;

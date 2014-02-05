@@ -2,18 +2,18 @@
 
 class GatewayTransactionTest extends SapphireTest{
 
-	static $fixture_file = array(
+	public static $fixture_file = array(
 		'payment.yml'
 	);
 
-	function testCreateIdentifier(){
+	public function testCreateIdentifier(){
 		$transaction = new GatewayMessage();
 		$identifier = $transaction->generateIdentifier();
 		$this->assertNotNull($identifier);
 		$this->assertNotEquals('',$identifier);
 	}
 
-	function testChangeIdentifier(){
+	public function testChangeIdentifier(){
 		$transaction = $this->objFromFixture('GatewayMessage','transaction1');
 		$transaction->generateIdentifier();
 		$transaction->Identifier = "somethingelse";

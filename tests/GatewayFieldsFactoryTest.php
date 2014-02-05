@@ -2,7 +2,7 @@
 
 class GatewayFieldsFactoryTest extends SapphireTest{
 
-	function testFieldGroups() {
+	public function testFieldGroups() {
 
 		$factory = new GatewayFieldsFactory(
 			"Dummy", array(

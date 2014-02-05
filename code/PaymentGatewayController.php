@@ -5,11 +5,11 @@
  *
  * This controller handles redirects from gateway servers, and also behind-the-scenes
  * requests that gateway servers to notify our application of successful payment.
- * 
+ *
  * @package payment
  */
 class PaymentGatewayController extends Controller{
-	
+
 	private static $allowed_actions = array(
 		'endpoint'
 	);
@@ -40,7 +40,7 @@ class PaymentGatewayController extends Controller{
 	 */
 	public function index(){
 		$message = $this->getRequestMessage();
-		if(!$message){			
+		if (!$message) {
 			//TODO: log failure && store a message for user?
 			return $this->redirect($this->getRedirectUrl());
 		}
@@ -48,14 +48,14 @@ class PaymentGatewayController extends Controller{
 		$service = PurchaseService::create($payment);
 
 		//check if payment is already a success
-		if(!$payment || $payment->isComplete()){
+		if (!$payment || $payment->isComplete()) {
 			return $this->redirect($this->getRedirectUrl());
 		}
 		//store redirect url in payment model
 		$service->setReturnUrl($this->getRedirectUrl());
 
 		//do the payment update
-		switch($this->request->param('Status')){
+		switch ($this->request->param('Status')) {
 			case "complete":
 				$response = $service->completePurchase();
 				return $this->redirect($response->getRedirectURL());
@@ -82,7 +82,7 @@ class PaymentGatewayController extends Controller{
 	 */
 	private function getRedirectUrl(){
 		$url = $this->request->param('ReturnURL');
-		if($url){
+		if ($url) {
 			return base64_decode(urldecode($url));
 		}
 		return Director::baseURL();

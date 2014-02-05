@@ -3,31 +3,31 @@
 use Omnipay\Common\CreditCard;
 
 class PurchaseService extends PaymentService{
-	
+
 	/**
 	 * Attempt to make a payment
-	 * @param  array $data returnUrl/cancelUrl + customer creditcard 
+	 * @param  array $data returnUrl/cancelUrl + customer creditcard
 	 * and billing/shipping details.
-	 * @return ResponseInterface omnipay's response class, 
+	 * @return ResponseInterface omnipay's response class,
 	 * specific to the chosen gateway.
 	 */
 	public function purchase($data = array()) {
-		if($this->payment->Status !== "Created"){
+		if ($this->payment->Status !== "Created") {
 			return null; //could be handled better? send payment response?
 		}
-		if(!$this->payment->isInDB()){
+		if (!$this->payment->isInDB()) {
 			$this->payment->write();
 		}
 		$this->returnurl = isset($data['returnUrl']) ?
-							$data['returnUrl'] : 
+							$data['returnUrl'] :
 							$this->returnurl;
-		$this->cancelurl = isset($data['cancelUrl']) ? 
+		$this->cancelurl = isset($data['cancelUrl']) ?
 							$data['cancelUrl'] :
 							$this->cancelurl;
 		$message = $this->createMessage('PurchaseRequest');
 		$request = $this->oGateway()->purchase(array(
 			'card' => new CreditCard($data),
-			'amount' => (float)$this->payment->MoneyAmount,
+			'amount' => (float) $this->payment->MoneyAmount,
 			'currency' => $this->payment->MoneyCurrency,
 			'transactionId' => $message->Identifier,
 			'clientIp' => isset($data['clientIp']) ? $data['clientIp'] : null,
@@ -40,10 +40,10 @@ class PurchaseService extends PaymentService{
 		));
 		$this->logToFile($request->getParameters());
 		$gatewayresponse = $this->createGatewayResponse();
-		try{
+		try {
 			$response = $this->response = $request->send();
 			//update payment model
-			if(GatewayInfo::is_manual($this->payment->Gateway)){
+			if (GatewayInfo::is_manual($this->payment->Gateway)) {
 				$this->createMessage('AuthorizedResponse', $response);
 				$this->payment->Status = 'Authorized';
 				$this->payment->write();
@@ -67,7 +67,7 @@ class PurchaseService extends PaymentService{
 				);
 			}
 			$gatewayresponse->setOmnipayResponse($response);
-		}catch(Exception $e){
+		} catch (Exception $e) {
 			//TODO: only handle 'some' exceptions, throw the rest
 			$this->createMessage('PurchaseError', $e->getMessage());
 			$gatewayresponse->setMessage($e->getMessage());
@@ -85,25 +85,25 @@ class PurchaseService extends PaymentService{
 	public function completePurchase() {
 		$gatewayresponse = $this->createGatewayResponse();
 		$request = $this->oGateway()->completePurchase(array(
-			'amount' => (float)$this->payment->MoneyAmount
+			'amount' => (float) $this->payment->MoneyAmount
 		));
 		$this->createMessage('CompletePurchaseRequest', $request);
 		$response = null;
-		try{
+		try {
 			$response = $this->response = $request->send();
-			if($response->isSuccessful()){
+			if ($response->isSuccessful()) {
 				$this->createMessage('PurchasedResponse', $response);
 				$this->payment->Status = 'Captured';
 				$this->payment->write();
 				$this->extend('onCaptured', $gatewayresponse);
-			}else{
+			} else {
 				$this->createMessage('CompletePurchaseError', $response);
 			}
 			$gatewayresponse->setOmnipayResponse($response);
 		} catch (\Exception $e) {
 			$this->createMessage("CompletePurchaseError", $e->getMessage());
 		}
-		
+
 		return $gatewayresponse;
 	}
 

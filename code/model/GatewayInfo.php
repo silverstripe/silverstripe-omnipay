@@ -15,12 +15,12 @@ class GatewayInfo{
 	 */
 	public static function get_supported_gateways($nice = true) {
 		$allowed = Config::inst()->forClass('Payment')->allowed_gateways;
-		if(!is_array($allowed)){
+		if (!is_array($allowed)) {
 			//include the manual payment type by default, if no gateways are configured
 			$allowed = array("Manual");
 		}
 		$allowed = array_combine($allowed, $allowed);
-		if($nice){
+		if ($nice) {
 			$allowed = array_map('GatewayInfo::nice_title', $allowed);
 		}
 
@@ -29,9 +29,9 @@ class GatewayInfo{
 
 	public static function nice_title($name){
 		$gateway = null;
-		try{
+		try {
 			$gateway = GatewayFactory::create($name);
-		}catch(Exception $e){/** do nothing */}
+		} catch (Exception $e) {/** do nothing */}
 		return _t(
 			"Payment.".strtoupper($name),
 			$gateway ? $gateway->getName() : $name
@@ -81,7 +81,7 @@ class GatewayInfo{
 				$fields = $parameters[$gateway]['required_fields'];
 		}
 		//always require the following offsite fields
-		if(!self::is_offsite($gateway)){
+		if (!self::is_offsite($gateway)) {
 			$fields = array_merge(
 				$fields,
 				array('name','number','expiryMonth','expiryYear','cvv')

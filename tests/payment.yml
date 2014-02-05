@@ -26,7 +26,7 @@ GatewayMessage:
 		ClassName: GatewayRequestMessage
 		Type: Purchase
 		Identifier: UNIQUEHASH23q5123tqasdf
-		Reference: 
-		Message: 
+		Reference:
+		Message:
 		Code:
 		PaymentID: =>Payment.payment2

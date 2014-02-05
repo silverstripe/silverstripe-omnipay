@@ -1,7 +1,7 @@
 <?php
 
 class VoidService extends PaymentService{
-	
+
 	/**
 	 * Cancel this payment, and prevent any future changes.
 	 * @return PaymentResponse encapsulated response info

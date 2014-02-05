@@ -1,8 +1,8 @@
 <?php
 
 class PaymentModelTest extends PaymentTest {
-	
-	function testParameterSetup() {
+
+	public function testParameterSetup() {
 
 		$payment = Payment::create()
 					->init("Manual", 23.56, "NZD");
@@ -14,7 +14,7 @@ class PaymentModelTest extends PaymentTest {
 
 	}
 
-	function testTitle() {
+	public function testTitle() {
 		$payment = $this->objFromFixture("Payment", "payment1");
 		$this->assertEquals(
 			"Manual NZ$20.23 10/10/2013",
@@ -22,7 +22,7 @@ class PaymentModelTest extends PaymentTest {
 		);
 	}
 
-	function testSupportedGateways() {
+	public function testSupportedGateways() {
 		$expected = array(
 			'PayPal_Express' => 'PayPal Express',
 			'PaymentExpress_PxPay' => 'PaymentExpress PxPay',

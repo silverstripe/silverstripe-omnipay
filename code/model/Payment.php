@@ -19,7 +19,7 @@ final class Payment extends DataObject{
 	private static $has_many = array(
 		'Messages' => 'PaymentMessage'
 	);
-	
+
 	private static $defaults = array(
 		'Status' => 'Created'
 	);
@@ -50,7 +50,7 @@ final class Payment extends DataObject{
 					->removeComponentsByType('GridFieldDeleteAction')
 			)
 		);
-		
+
 		return $fields;
 	}
 
@@ -68,7 +68,7 @@ final class Payment extends DataObject{
 
 		return $context;
 	}
-	
+
 	/**
 	 * Set gateway, amount, and currency in one function.
 	 * @param  string $gateway   omnipay gateway short name
@@ -97,8 +97,8 @@ final class Payment extends DataObject{
 	 * @return Payment this object for chaining
 	 */
 	public function setGateway($gateway) {
-		if($this->Status == 'Created'){
-			$this->setField('Gateway', $gateway);	
+		if ($this->Status == 'Created') {
+			$this->setField('Gateway', $gateway);
 		}
 		return $this;
 	}
@@ -121,9 +121,9 @@ final class Payment extends DataObject{
 	 * @return  Payment this object for chaining
 	 */
 	public function setAmount($amount) {
-		if($amount instanceof Money) {
+		if ($amount instanceof Money) {
 			$this->setField("Money",$amount);
-		} elseif($this->Status == 'Created' && is_numeric($amount)) {
+		} elseif ($this->Status == 'Created' && is_numeric($amount)) {
 			$this->MoneyAmount = $amount;
 		}
 		return $this;
@@ -142,7 +142,7 @@ final class Payment extends DataObject{
 	 * @param string $currency the currency to set
 	 */
 	public function setCurrency($currency) {
-		if($this->Status == 'Created') {
+		if ($this->Status == 'Created') {
 			$this->MoneyCurrency = $currency;
 		}
 

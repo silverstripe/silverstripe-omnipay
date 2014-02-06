@@ -69,7 +69,7 @@ class GatewayResponse{
 	 * Do a redirect, using the current controller
 	 */
 	public function redirect() {
-		Controller::curr()->redirect($this->redirectURL());
+		Controller::curr()->redirect($this->getRedirectURL());
 	}
 
 }

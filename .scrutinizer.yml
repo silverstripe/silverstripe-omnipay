@@ -1,18 +1,12 @@
+inherit: true
 tools:
   external_code_coverage:
     timeout: 600
-  php_pdepend: true
   php_analyzer:
     enabled: true
     config:
       phpunit_checks:
         enabled: true
-  php_cpd: true
-  php_code_sniffer:
-    enabled: true
-    config:
-      standard: custom
-  php_hhvm: true
   php_mess_detector:
     config:
       unused_code_rules:
@@ -21,7 +15,6 @@ tools:
         unused_private_method:  true
         unused_formal_parameter:  true
       code_size_rules:
-        cyclomatic_complexity:  true
         npath_complexity:     true
         excessive_method_length:  true
         excessive_class_length:  true
@@ -30,5 +23,3 @@ tools:
         too_many_fields:      true
         too_many_methods:     true
         excessive_class_complexity:  true
-  sensiolabs_security_checker: true
-  php_pdepend: true

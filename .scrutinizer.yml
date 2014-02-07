@@ -4,8 +4,9 @@ tools:
   php_pdepend: true
   php_analyzer:
     enabled: true
-    phpunit_checks:
-      enabled: true
+    config:
+      phpunit_checks:
+        enabled: true
   php_cpd: true
   php_code_sniffer:
     enabled: true

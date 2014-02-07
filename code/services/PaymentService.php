@@ -41,7 +41,7 @@ abstract class PaymentService extends Object{
 	/**
 	 * Set the url to redirect to after payment is made/attempted.
 	 * This function also populates the cancel url, if it is empty.
-	 * @return Payment this object for chaining
+	 * @return PaymentService this object for chaining
 	 */
 	public function setReturnUrl($url) {
 		$this->returnurl = $url;
@@ -52,13 +52,16 @@ abstract class PaymentService extends Object{
 		return $this;
 	}
 
+	/**
+	 * @return string cancel url
+	 */
 	public function getCancelUrl() {
 		return $this->cancelurl;
 	}
 
 	/**
 	 * Set the url to redirect to after payment is cancelled
-	 * @return Payment this object for chaining
+	 * @return PaymentService this object for chaining
 	 */
 	public function setCancelUrl($url) {
 		$this->cancelurl = $url;
@@ -156,7 +159,6 @@ abstract class PaymentService extends Object{
 
 	/**
 	 * Helper function for logging gateway requests
-	 * @param  AbstractRequest $request the omnipay request object
 	 */
 	protected function logToFile($data, $type = "") {
 		if ((bool) Config::inst()->get('Payment', 'file_logging')) {
@@ -185,7 +187,7 @@ abstract class PaymentService extends Object{
 
 	/**
 	 * Set the guzzle client (for testing)
-	 * @param GuzzleHttpClientInterface $httpClient [description]
+	 * @param Guzzle\Http\ClientInterface $httpClient guzzle client for testing
 	 */
 	public static function set_http_client(Guzzle\Http\ClientInterface $httpClient) {
 		self::$httpclient = $httpClient;
@@ -193,7 +195,7 @@ abstract class PaymentService extends Object{
 
 	/**
 	 * Set the symphony http request (for testing)
-	 * @param SymfonyComponentHttpFoundationRequest $httpRequest [description]
+	 * @param Symfony\Component\HttpFoundation\Request $httpRequest symphony http request for testing
 	 */
 	public static function set_http_request(Symfony\Component\HttpFoundation\Request $httpRequest) {
 		self::$httprequest = $httpRequest;

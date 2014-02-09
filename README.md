@@ -22,13 +22,14 @@ To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
 
 ## Features
 
- * Gateway configuration via yaml config
- * Payment / transaction model handling
- * Detailed + structured logging in the database
- * Provides form fields, which can change per-gateway
- * Caters for different types of gateways: on-site capturing, off-site capturing, and manual payment
- * Wraps the Omnipay php library
- * Multiple currencies
+ * Gateway configuration via yaml config.
+ * Payment / transaction model handling.
+ * Detailed + structured logging in the database.
+ * Provide visitors with one, or many gateways to choose from.
+ * Provides form fields, which can change per-gateway.
+ * Caters for different types of gateways: on-site capturing, off-site capturing, and manual payment.
+ * Wraps the Omnipay php library.
+ * Multiple currencies.
 
 ## Installation
 
@@ -86,8 +87,6 @@ Payment:
 
 The [SilverStripe documentation](http://doc.silverstripe.com/framework/en/topics/configuration#setting-configuration-via-yaml-files) explains more about yaml config files.
 
-
-
 ## Usage
 
 ### List available gateways
@@ -97,6 +96,9 @@ In your application, you may want to allow users to choose between a few differe
 ```php
 $gateways = GatewayInfo::get_supported_gateways();
 ```
+
+If no allowed gateways are configured, then the module will default to providing
+the "Manual" gateway.
 
 ### Get payment form fields
 

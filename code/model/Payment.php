@@ -39,12 +39,12 @@ final class Payment extends DataObject{
 
 	public function getCMSFields() {
 		$fields = new FieldList(
-			TextField::create("Money",_t("Payment.MONEY","Money"), $this->dbObject('Money')->Nice()),
-			TextField::create("GatewayTitle",_t("Payment.GATEWAY","Gateway"))
+			TextField::create("Money", _t("Payment.MONEY", "Money"), $this->dbObject('Money')->Nice()),
+			TextField::create("GatewayTitle", _t("Payment.GATEWAY", "Gateway"))
 		);
 		$fields = $fields->makeReadonly();
 		$fields->push(
-			GridField::create("Messages",_t("Payment.MESSAGES","Messages"), $this->Messages(),
+			GridField::create("Messages", _t("Payment.MESSAGES", "Messages"), $this->Messages(),
 				GridFieldConfig_RecordEditor::create()
 					->removeComponentsByType('GridFieldAddNewButton')
 					->removeComponentsByType('GridFieldDeleteAction')
@@ -61,9 +61,9 @@ final class Payment extends DataObject{
 		$context = parent::getDefaultSearchContext();
 		$fields = $context->getSearchFields();
 		$fields->removeByName('Gateway');
-		$fields->insertBefore(DropdownField::create('Gateway','Gateway',
+		$fields->insertBefore(DropdownField::create('Gateway', 'Gateway',
 			GatewayInfo::get_supported_gateways()
-		)->setHasEmptyDefault(true),'Status');
+		)->setHasEmptyDefault(true), 'Status');
 		$fields->fieldByName('Status')->setHasEmptyDefault(true);
 
 		return $context;
@@ -84,7 +84,7 @@ final class Payment extends DataObject{
 	}
 
 	public function getTitle() {
-		return implode(' ',array(
+		return implode(' ', array(
 			$this->getGatewayTitle(),
 			$this->forTemplate()->Nice(),
 			$this->dbObject('Created')->Date()
@@ -122,7 +122,7 @@ final class Payment extends DataObject{
 	 */
 	public function setAmount($amount) {
 		if ($amount instanceof Money) {
-			$this->setField("Money",$amount);
+			$this->setField("Money", $amount);
 		} elseif ($this->Status == 'Created' && is_numeric($amount)) {
 			$this->MoneyAmount = $amount;
 		}

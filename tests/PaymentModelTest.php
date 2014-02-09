@@ -3,7 +3,6 @@
 class PaymentModelTest extends PaymentTest {
 
 	public function testParameterSetup() {
-
 		$payment = Payment::create()
 					->init("Manual", 23.56, "NZD");
 
@@ -11,7 +10,10 @@ class PaymentModelTest extends PaymentTest {
 		$this->assertEquals(23.56, $payment->Amount);
 		$this->assertEquals("NZD", $payment->Currency);
 		$this->assertEquals("Manual", $payment->Gateway);
+	}
 
+	public function testCMSFields() {
+		$fields = Payment::create()->getCMSFields();
 	}
 
 	public function testTitle() {

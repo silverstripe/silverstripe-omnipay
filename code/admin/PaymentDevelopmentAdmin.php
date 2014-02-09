@@ -7,11 +7,10 @@
  */
 class PaymentDevelopmentAdmin extends Controller{
 
-	public function index(){
+	public function index() {
 		$renderer = DebugView::create();
 		$renderer->writeHeader();
 		$renderer->writeInfo("Installed Omnipay Payment Gateways", Director::absoluteBaseURL());
-		$base = Director::baseURL();
 		$types = $this->PaymentTypes();
 
 		echo "<table style=\"font-size:12px;\" border=1 cellspacing=0>
@@ -61,12 +60,12 @@ class PaymentDevelopmentAdmin extends Controller{
 	/**
 	 * Get all available payment types
 	 */
-	private function PaymentTypes(){
+	private function PaymentTypes() {
 		$gateways =  Omnipay\Common\GatewayFactory::find();
 		$gateways = array_map(function($name) {
-	        return Omnipay\Common\GatewayFactory::create($name);
-	    }, $gateways);
-	    return $gateways;
+			return Omnipay\Common\GatewayFactory::create($name);
+		}, $gateways);
+		return $gateways;
 	}
 
 }

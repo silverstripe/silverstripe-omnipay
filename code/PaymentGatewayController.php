@@ -21,7 +21,7 @@ class PaymentGatewayController extends Controller{
 	 * @param  string             $returnurl   the application url to re-redirect to
 	 * @return string                          the resulting redirect url
 	 */
-	public static function get_return_url(GatewayMessage $message, $status = 'complete', $returnurl = null){
+	public static function get_return_url(GatewayMessage $message, $status = 'complete', $returnurl = null) {
 		return Director::absoluteURL(
 			Controller::join_links(
 				'paymentendpoint', //as defined in _config/routes.yml
@@ -38,7 +38,7 @@ class PaymentGatewayController extends Controller{
 	 * but will not update the Payment/Transaction models if they are not found,
 	 * or allowed to be updated.
 	 */
-	public function index(){
+	public function index() {
 		$message = $this->getRequestMessage();
 		if (!$message) {
 			//TODO: log failure && store a message for user?
@@ -69,7 +69,7 @@ class PaymentGatewayController extends Controller{
 	 * Get the message storing the identifier for this payment
 	 * @return GatewayMessage the transaction
 	 */
-	private function getRequestMessage(){
+	private function getRequestMessage() {
 		return GatewayMessage::get()
 				->filter('Identifier', $this->request->param('Identifier'))
 				->first();
@@ -80,7 +80,7 @@ class PaymentGatewayController extends Controller{
 	 * If a url hasn't been stored in the url, then redirect to base url.
 	 * @return string the url
 	 */
-	private function getRedirectUrl(){
+	private function getRedirectUrl() {
 		$url = $this->request->param('ReturnURL');
 		if ($url) {
 			return base64_decode(urldecode($url));

@@ -23,11 +23,11 @@ class PaymentMessage extends DataObject{
 		'User.Name' => "User"
 	);
 
-	public function getCMSFields(){
+	public function getCMSFields() {
 		return parent::getCMSFields()->makeReadOnly();
 	}
 
-	public function onBeforeWrite(){
+	public function onBeforeWrite() {
 		parent::onBeforeWrite();
 		//automatically set the current user id for new payment messages
 		if (!$this->UserID && !$this->isInDB()) {
@@ -58,7 +58,7 @@ class GatewayMessage extends PaymentMessage{
 	 * Only allow setting identifier, if one doesn't exist yet.
 	 * @param string $id identifier
 	 */
-	public function setIdentifier($id){
+	public function setIdentifier($id) {
 		if (!$this->Identifier) {
 			$this->setField('Identifier', $id);
 		}
@@ -68,10 +68,10 @@ class GatewayMessage extends PaymentMessage{
 	 * Generate a unique url-friendly identifier, if one doesn't exist yet.
 	 * @return string|null the new identifier, if created.
 	 */
-	public function generateIdentifier(){
+	public function generateIdentifier() {
 		if (!$this->Identifier) {
 			$id = $this->PaymentID.uniqid();
-			while (GatewayMessage::get()->filter('Identifier',$id)->exists()) {
+			while (self::get()->filter('Identifier', $id)->exists()) {
 				$id = $this->PaymentID.uniqid();
 			}
 			$this->Identifier = $id;
@@ -82,7 +82,15 @@ class GatewayMessage extends PaymentMessage{
 
 }
 
-class GatewayRequestMessage extends GatewayMessage{}
-class GatewayResponseMessage extends GatewayMessage{}
-class GatewayRedirectResponseMessage extends GatewayMessage{}
-class GatewayErrorMessage extends GatewayMessage{}
+class GatewayRequestMessage extends GatewayMessage{
+
+}
+class GatewayResponseMessage extends GatewayMessage{
+
+}
+class GatewayRedirectResponseMessage extends GatewayMessage{
+
+}
+class GatewayErrorMessage extends GatewayMessage{
+
+}

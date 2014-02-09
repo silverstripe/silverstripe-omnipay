@@ -11,9 +11,9 @@ class Payable extends DataExtension {
 		'Payments' => 'Payment'
 	);
 
-	public function updateCMSFields(FieldList $fields){
+	public function updateCMSFields(FieldList $fields) {
 		$fields->addFieldToTab("Root.Payments",
-			GridField::create("Payments","Payments", $this->owner->Payments() ,
+			GridField::create("Payments", "Payments", $this->owner->Payments(),
 				GridFieldConfig_RecordEditor::create()
 					->removeComponentsByType('GridFieldAddNewButton')
 					->removeComponentsByType('GridFieldDeleteAction')

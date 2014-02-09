@@ -32,7 +32,7 @@ class GatewayResponse{
 		return $this->response && $this->response->isRedirect();
 	}
 
-	public function setOmnipayResponse(Omnipay\Common\Message\AbstractResponse $response){
+	public function setOmnipayResponse(Omnipay\Common\Message\AbstractResponse $response) {
 		$this->response = $response;
 
 		return $this;
@@ -48,7 +48,7 @@ class GatewayResponse{
 		return $this;
 	}
 
-	public function getMessage(){
+	public function getMessage() {
 		return $this->message;
 	}
 

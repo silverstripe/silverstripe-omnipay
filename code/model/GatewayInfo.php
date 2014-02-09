@@ -27,11 +27,13 @@ class GatewayInfo{
 		return $allowed;
 	}
 
-	public static function nice_title($name){
+	public static function nice_title($name) {
 		$gateway = null;
 		try {
 			$gateway = GatewayFactory::create($name);
-		} catch (Exception $e) {/** do nothing */}
+		} catch (Exception $e) {
+			/** do nothing */
+		}
 		return _t(
 			"Payment.".strtoupper($name),
 			$gateway ? $gateway->getName() : $name
@@ -73,7 +75,7 @@ class GatewayInfo{
 	 * @param string $gateway gateway name
 	 * @return array required parameters
 	 */
-	public static function required_fields($gateway){
+	public static function required_fields($gateway) {
 		$parameters = Config::inst()->forClass('Payment')->parameters;
 		$fields = array();
 		if(isset($parameters[$gateway]['required_fields']) &&

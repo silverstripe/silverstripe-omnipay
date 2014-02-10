@@ -21,13 +21,12 @@ class PaymentGatewayController extends Controller{
 	 * @param  string             $returnurl   the application url to re-redirect to
 	 * @return string                          the resulting redirect url
 	 */
-	public static function get_return_url(GatewayMessage $message, $status = 'complete', $returnurl = null) {
+	public static function get_return_url(GatewayMessage $message, $status = 'complete') {
 		return Director::absoluteURL(
 			Controller::join_links(
 				'paymentendpoint', //as defined in _config/routes.yml
 				$message->Identifier,
-				$status,
-				urlencode(base64_encode($returnurl))
+				$status
 			)
 		);
 	}
@@ -40,29 +39,35 @@ class PaymentGatewayController extends Controller{
 	 */
 	public function index() {
 		$message = $this->getRequestMessage();
-		if (!$message) {
-			//TODO: log failure && store a message for user?
-			return $this->redirect($this->getRedirectUrl());
+		if (!$message || !$message->Payment()->exists()) {
+			return $this->httpError(404, _t("Payment.NOTFOUND", "Payment could not be found."));
 		}
 		$payment = $message->Payment();
 		$service = PurchaseService::create($payment);
+		//redirect if payment is already a success
+		if ($payment->isComplete()) {
 
-		//check if payment is already a success
-		if (!$payment || $payment->isComplete()) {
-			return $this->redirect($this->getRedirectUrl());
+			return $this->redirect($this->getSuccessUrl($message));
 		}
-		//store redirect url in payment model
-		$service->setReturnUrl($this->getRedirectUrl());
-
+		$redirect = $this->getFailureUrl($message);
 		//do the payment update
 		switch ($this->request->param('Status')) {
 			case "complete":
 				$response = $service->completePurchase();
-				return $this->redirect($response->getRedirectURL());
-			case "cancel":
-				//$response = $payment->void();
+				if($response->isSuccessful()){
+					$redirect = $this->getSuccessUrl($message);
+				}
 				break;
+			case "cancel":
+				//TODO: store cancellation message
+				$redirect = $this->getFailureUrl($message);
+				break;
+			default:
+
+				return $this->httpError(404, _t("Payment.INVALIDURL", "Invalid payment url."));
 		}
+
+		return $this->redirect($redirect);
 	}
 
 	/**
@@ -76,16 +81,21 @@ class PaymentGatewayController extends Controller{
 	}
 
 	/**
-	 * Get the url to redirect to.
-	 * If a url hasn't been stored in the url, then redirect to base url.
+	 * Get the success url to redirect to.
+	 * If a url hasn't been stored, then redirect to base url.
 	 * @return string the url
 	 */
-	private function getRedirectUrl() {
-		$url = $this->request->param('ReturnURL');
-		if ($url) {
-			return base64_decode(urldecode($url));
-		}
-		return Director::baseURL();
+	private function getSuccessUrl($message) {
+		return $message->SuccessURL ? $message->SuccessURL : Director::baseURL();
+	}
+
+	/**
+	 * Get the failure url to redirect to.
+	 * If a url hasn't been stored, then redirect to base url.
+	 * @return string the url
+	 */
+	private function getFailureUrl($message) {
+		return $message->FailureURL ? $message->FailureURL : Director::baseURL();
 	}
 
 }

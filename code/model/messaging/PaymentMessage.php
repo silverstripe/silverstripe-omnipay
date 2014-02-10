@@ -84,6 +84,11 @@ class GatewayMessage extends PaymentMessage{
 
 class GatewayRequestMessage extends GatewayMessage{
 
+	private static $db = array(
+		'SuccessURL' => 'Text',
+		'FailureURL' => 'Text'
+	);
+
 }
 class GatewayResponseMessage extends GatewayMessage{
 

@@ -22,11 +22,15 @@ Payment:
 		Status: Captured
 
 GatewayMessage:
-	transaction1:
-		ClassName: GatewayRequestMessage
-		Type: Purchase
+	message1:
+		ClassName: PurchaseRequest
 		Identifier: UNIQUEHASH23q5123tqasdf
 		Reference:
 		Message:
 		Code:
+		PaymentID: =>Payment.payment2
+		SuccessURL: 'shop/complete'
+		FailureURL: 'shop/incomplete'
+	message2:
+		ClassName: PurchaseRedirectResponse
 		PaymentID: =>Payment.payment2

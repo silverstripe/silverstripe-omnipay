@@ -6,57 +6,46 @@ class PaymentGatewayControllerTest extends PaymentTest{
 		'payment.yml'
 	);
 
-	protected $autoFollowRedirection = false;
-
-	public function setUp(){
-		parent::setUp();
-
-		Config::inst()->update("Payment", "allowed_gateways", array(
-			'PayPal_Express',
-			'PaymentExpress_PxPay',
-			'Manual',
-			'Dummy'
-		));
-
-	}
-
 	public function testReturnUrlGeneration() {
-		$transaction = $this->objFromFixture('GatewayMessage','transaction1');
-		$url = PaymentGatewayController::get_return_url($transaction,'action',"shop/complete");
+		$transaction = $this->objFromFixture('GatewayMessage', 'message1');
+		$url = PaymentGatewayController::get_return_url($transaction, 'action');
 		$this->assertEquals(
-			Director::absoluteURL("paymentendpoint/UNIQUEHASH23q5123tqasdf/action/c2hvcC9jb21wbGV0ZQ%3D%3D"),
+			Director::absoluteURL("paymentendpoint/UNIQUEHASH23q5123tqasdf/action"),
 			$url,
 			"generated url"
 		);
 	}
 
 	public function testSucessfulEndpoint() {
-
-		PaymentService::set_http_client($this->getHttpClient());
-		PaymentService::set_http_request($this->getHttpRequest());
-
-		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayPurchaseSuccess.txt');//add success mock response from file
-
-		//Note the string 'c2hvcC9jb21wbGV0ZQ%3D%3D' is just "shop/complete" base64 encoded, then url encoded
-		$response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/complete/c2hvcC9jb21wbGV0ZQ%3D%3D"); //mimic gateway update
-
-		$transaction = GatewayMessage::get()
-						->filter('Identifier','UNIQUEHASH23q5123tqasdf')
+		$this->setMockHttpResponse(
+			'PaymentExpress/Mock/PxPayCompletePurchaseSuccess.txt'
+		);
+		//mock the 'result' get variable into the current request
+		$this->getHttpRequest()->query->replace(array('result' => 'abc123'));
+		//mimic a redirect or request from offsite gateway
+		$response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/complete");
+		$message = GatewayMessage::get()
+						->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
 						->first();
 		//redirect works
 		$headers = $response->getHeaders();
-		$this->assertEquals(Director::baseURL()."shop/complete", $headers['Location'], "redirected to shop/complete");
-
-		$payment = $transaction->Payment();
-
-		//TODO: model is appropriately updated - need to
-		//$this->assertEquals('Captured', $payment->Status);
-
+		$this->assertEquals(
+			Director::baseURL()."shop/complete", 
+			$headers['Location'],
+			"redirected to shop/complete"
+		);
+		$payment = $message->Payment();
+		$this->assertDOSContains(array(
+			array('ClassName' => 'PurchaseRequest'),
+			array('ClassName' => 'PurchaseRedirectResponse'),
+			array('ClassName' => 'CompletePurchaseRequest'),
+			array('ClassName' => 'PurchasedResponse')
+		), $payment->Messages());
 	}
 
-	public function testBadReturnURLs(){
+	public function testBadReturnURLs() {
 		$response = $this->get("paymentendpoint/ASDFHSADFunknonwhash/complete/c2hvcC9jb2");
-
+		$this->assertEquals(404, $response->getStatusCode());
 	}
 
 	public function testSecurity() {
@@ -67,7 +56,6 @@ class PaymentGatewayControllerTest extends PaymentTest{
 		//see https://github.com/burnbright/silverstripe-omnipay/issues/13
 	}
 
-	//TODO: test purchase -> completePurchase (this failed because gateaway passed identifier was $message->ID, not $message->Identifier)
-	//TODO: test authorize -> completeAuthorize
-
+	//this failed because gateaway passed identifier was $message->ID, not $message->Identifier
+	//TODO: test purchase -> completePurchase
 }

@@ -18,13 +18,14 @@ class PurchaseService extends PaymentService{
 		if (!$this->payment->isInDB()) {
 			$this->payment->write();
 		}
-		$this->returnurl = isset($data['returnUrl']) ?
+		$message = $this->createMessage('PurchaseRequest');
+		$message->SuccessURL = isset($data['returnUrl']) ?
 							$data['returnUrl'] :
 							$this->returnurl;
-		$this->cancelurl = isset($data['cancelUrl']) ?
+		$message->FailureURL = isset($data['cancelUrl']) ?
 							$data['cancelUrl'] :
 							$this->cancelurl;
-		$message = $this->createMessage('PurchaseRequest');
+		$message->write();
 		$request = $this->oGateway()->purchase(array(
 			'card' => new CreditCard($data),
 			'amount' => (float) $this->payment->MoneyAmount,
@@ -32,10 +33,10 @@ class PurchaseService extends PaymentService{
 			'transactionId' => $message->Identifier,
 			'clientIp' => isset($data['clientIp']) ? $data['clientIp'] : null,
 			'returnUrl' => PaymentGatewayController::get_return_url(
-								$message, 'complete', $this->returnurl
+								$message, 'complete'
 							),
 			'cancelUrl' => PaymentGatewayController::get_return_url(
-								$message, 'cancel', $this->cancelurl
+								$message, 'cancel'
 							)
 		));
 		$this->logToFile($request->getParameters(), "PurchaseRequest_post");

@@ -126,10 +126,10 @@ Payment:
         PaymentExpress_PxPost:
             username: 'EXAMPLEUSER'
             password: '235llgwxle4tol23l'
-                        required_fields:
-                                - 'issueNumber'
-                                - 'startMonth'
-                                - 'startYear'
+                required_fields:
+                        - 'issueNumber'
+                        - 'startMonth'
+                        - 'startYear'
 ```
 
 ### Make a purchase
@@ -170,10 +170,24 @@ class ShopPayment extends DataExtension {
 }
 ```
 
-## Further Documentation
+## Debugging payments
 
-https://github.com/burnbright/silverstripe-omnipay/blob/master/docs/en/index.md
+A useful way to debug payment issues is to enable file logging:
+
+```yaml
+---
+Name: payment
+---
+Payment:
+    file_logging: true #or use 'verbose' for more detailed output
+```
 
 ## Caveats and Troubleshooting
 
+Logs will be saved to `debug.log` in the root of your SilverStripe directory.
+
  * Payments have both an amount and a currency. That means you should check if all currencies match if you will be adding them up.
+
+## Further Documentation
+
+https://github.com/burnbright/silverstripe-omnipay/blob/master/docs/en/index.md

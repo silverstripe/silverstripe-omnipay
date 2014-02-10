@@ -54,7 +54,7 @@ class PurchaseService extends PaymentService{
 				$this->createMessage('PurchasedResponse', $response);
 				$this->payment->Status = 'Captured';
 				$gatewayresponse->setMessage("Payment successful");
-				$this->extend('onCaptured', $gatewayresponse);
+				$this->payment->extend('onCaptured', $gatewayresponse);
 			} elseif ($response->isRedirect()) {
 				// redirect to off-site payment gateway
 				$this->createMessage('PurchaseRedirectResponse', $response);
@@ -96,7 +96,7 @@ class PurchaseService extends PaymentService{
 				$this->createMessage('PurchasedResponse', $response);
 				$this->payment->Status = 'Captured';
 				$this->payment->write();
-				$this->extend('onCaptured', $gatewayresponse);
+				$this->payment->extend('onCaptured', $gatewayresponse);
 			} else {
 				$this->createMessage('CompletePurchaseError', $response);
 			}

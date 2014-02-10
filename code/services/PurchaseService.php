@@ -44,31 +44,31 @@ class PurchaseService extends PaymentService{
 			$response = $this->response = $request->send();
 			//update payment model
 			if (GatewayInfo::is_manual($this->payment->Gateway)) {
+				//initiate manual payment
 				$this->createMessage('AuthorizedResponse', $response);
 				$this->payment->Status = 'Authorized';
-				$this->payment->write();
 				$gatewayresponse->setMessage("Manual payment authorised");
 			} elseif ($response->isSuccessful()) {
+				//successful payment
 				$this->createMessage('PurchasedResponse', $response);
 				$this->payment->Status = 'Captured';
-				$this->payment->write();
 				$gatewayresponse->setMessage("Payment successful");
 				$this->extend('onCaptured', $gatewayresponse);
 			} elseif ($response->isRedirect()) {
 				// redirect to off-site payment gateway
 				$this->createMessage('PurchaseRedirectResponse', $response);
 				$this->payment->Status = 'Authorized';
-				$this->payment->write();
 				$gatewayresponse->setMessage("Redirecting to gateway");
 			} else {
+				//handle error
 				$this->createMessage('PurchaseError', $response);
 				$gatewayresponse->setMessage(
 					"Error (".$response->getCode()."): ".$response->getMessage()
 				);
 			}
+			$this->payment->write();
 			$gatewayresponse->setOmnipayResponse($response);
-		} catch (Exception $e) {
-			//TODO: only handle 'some' exceptions, throw the rest
+		} catch (Omnipay\Common\Exception\OmnipayException $e) {
 			$this->createMessage('PurchaseError', $e->getMessage());
 			$gatewayresponse->setMessage($e->getMessage());
 		}
@@ -100,7 +100,7 @@ class PurchaseService extends PaymentService{
 				$this->createMessage('CompletePurchaseError', $response);
 			}
 			$gatewayresponse->setOmnipayResponse($response);
-		} catch (\Exception $e) {
+		} catch (Omnipay\Common\Exception\OmnipayException $e) {
 			$this->createMessage("CompletePurchaseError", $e->getMessage());
 		}
 

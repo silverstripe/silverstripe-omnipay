@@ -109,29 +109,33 @@ abstract class PaymentService extends Object{
 	 * Record a transaction on this for this payment.
 	 * @param string $type the type of transaction to create.
 	 *        This is any class that is (or extends) PaymentMessage.
-	 * @param array|string|AbstractResponse $data the response to record, or data to store
+	 * @param array|string|AbstractResponse|AbstractRequest|OmnipayException $data the response to record, or data to store
 	 * @return GatewayTransaction newly created dataobject, saved to database.
 	 */
 	protected function createMessage($type, $data = null) {
-		$output = array(
-			"PaymentID" => $this->payment->ID,
-			"Gateway" => $this->payment->Gateway
-		);
+		$output = array();
 		if (is_string($data)) {
-			$output =  array_merge(array(
+			$output =  array(
 				'Message' => $data
-			), $output);
-		}if (is_array($data)) {
-			$output =  array_merge($data, $output);
+			);
+		} elseif (is_array($data)) {
+			$output = $data;
+		} elseif ($data instanceof Omnipay\Common\Exception\OmnipayException) {
+			$output = array(
+				"Message" => $data->getMessage(),
+				"Code" => $data->getCode(),
+				"Exception" => get_class($data),
+				"Backtrace" => $data->getTraceAsString()
+			);
 		} elseif ($data instanceof AbstractResponse) {
-			$output =  array_merge(array(
+			$output =  array(
 				"Message" => $data->getMessage(),
 				"Code" => $data->getCode(),
 				"Reference" => $data->getTransactionReference(),
 				"Data" => $data->getData()
-			), $output);
+			);
 		} elseif ($data instanceof AbstractRequest) {
-			$output =  array_merge(array(
+			$output = array(
 				'Token' => $data->getToken(),
 				'CardReference' => $data->getCardReference(),
 				'Amount' => $data->getAmount(),
@@ -143,9 +147,14 @@ abstract class PaymentService extends Object{
 				'ClientIp' => $data->getClientIp(),
 				'ReturnUrl' => $data->getReturnUrl(),
 				'CancelUrl' => $data->getCancelUrl(),
-				'NotifyUrl' => $data->getNotifyUrl()
-			), $output);
+				'NotifyUrl' => $data->getNotifyUrl(),
+				'Parameters' => $data->getParameters()
+			);
 		}
+		$output = array_merge($output, array(
+			"PaymentID" => $this->payment->ID,
+			"Gateway" => $this->payment->Gateway
+		));
 		$this->logToFile($output, $type);
 		$message = $type::create($output);
 		if (method_exists($message, 'generateIdentifier')) {
@@ -161,15 +170,16 @@ abstract class PaymentService extends Object{
 	 * Helper function for logging gateway requests
 	 */
 	protected function logToFile($data, $type = "") {
-		if ((bool) Config::inst()->get('Payment', 'file_logging')) {
-			$logstyle = Config::inst()->get('Payment', 'file_logging');
-			if ($logstyle === "expanded") {
-				Debug::log($type." (".$this->Gateway.")\n\n".
-					print_r($data, true));
-			} else {
-				Debug::log(implode(",", array(
-					$type,
-					$this->Gateway,
+		if($logstyle = Payment::config()->file_logging){
+			$title = $type." (".$this->payment->Gateway.")";
+			if ($logstyle === "verbose") {
+				Debug::log(
+					$title."\n\n".
+					print_r($data, true)
+				);
+			} elseif($logstyle) {
+				Debug::log(implode(", ", array(
+					$title,
 					isset($data['Message']) ? $data['Message'] : " ",
 					isset($data['Code']) ? $data['Code'] : " ",
 				)));

@@ -38,7 +38,7 @@ class PurchaseService extends PaymentService{
 								$message, 'cancel', $this->cancelurl
 							)
 		));
-		$this->logToFile($request->getParameters());
+		$this->logToFile($request->getParameters(), "PurchaseRequest_post");
 		$gatewayresponse = $this->createGatewayResponse();
 		try {
 			$response = $this->response = $request->send();
@@ -69,7 +69,7 @@ class PurchaseService extends PaymentService{
 			$this->payment->write();
 			$gatewayresponse->setOmnipayResponse($response);
 		} catch (Omnipay\Common\Exception\OmnipayException $e) {
-			$this->createMessage('PurchaseError', $e->getMessage());
+			$this->createMessage('PurchaseError', $e);
 			$gatewayresponse->setMessage($e->getMessage());
 		}
 		$gatewayresponse->setRedirectURL($this->getRedirectURL());
@@ -101,7 +101,7 @@ class PurchaseService extends PaymentService{
 			}
 			$gatewayresponse->setOmnipayResponse($response);
 		} catch (Omnipay\Common\Exception\OmnipayException $e) {
-			$this->createMessage("CompletePurchaseError", $e->getMessage());
+			$this->createMessage("CompletePurchaseError", $e);
 		}
 
 		return $gatewayresponse;

@@ -31,10 +31,11 @@ class GatewayMessage extends PaymentMessage{
 	 * @return string|null the new identifier, if created.
 	 */
 	public function generateIdentifier() {
+		$generator = Injector::inst()->create('RandomGenerator');
 		if (!$this->Identifier) {
-			$id = $this->PaymentID.uniqid();
+			$id = $this->PaymentID . '-' . substr($generator->randomToken(), 0, 30);
 			while (self::get()->filter('Identifier', $id)->exists()) {
-				$id = $this->PaymentID.uniqid();
+				$id = $this->PaymentID . '-' . substr($generator->randomToken(), 0, 30);
 			}
 			$this->Identifier = $id;
 			return $id;

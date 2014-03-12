@@ -92,7 +92,8 @@ abstract class PaymentService extends Object{
 	 * @return AbstractGateway omnipay gateway class
 	 */
 	public function oGateway() {
-		$gateway = GatewayFactory::create(
+		$factory = new GatewayFactory;
+		$gateway = $factory->create(
 			$this->payment->Gateway,
 			self::$httpclient,
 			self::$httprequest

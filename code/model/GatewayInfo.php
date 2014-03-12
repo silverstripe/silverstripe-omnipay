@@ -30,7 +30,8 @@ class GatewayInfo{
 	public static function nice_title($name) {
 		$gateway = null;
 		try {
-			$gateway = GatewayFactory::create($name);
+			$factory = new GatewayFactory();
+			$gateway = $factory->create($name);
 		} catch (Exception $e) {
 			/** do nothing */
 		}
@@ -57,7 +58,8 @@ class GatewayInfo{
 	 * @return boolean the gateway offsite or not
 	 */
 	public static function is_offsite($gateway) {
-		$gateway = GatewayFactory::create($gateway);
+		$factory = new GatewayFactory;
+		$gateway = $factory->create($gateway);
 		return $gateway->supportsCompletePurchase() || $gateway->supportsCompleteAuthorize();
 	}
 

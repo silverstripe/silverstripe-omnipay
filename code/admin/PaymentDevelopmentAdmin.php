@@ -63,7 +63,8 @@ class PaymentDevelopmentAdmin extends Controller{
 	private function PaymentTypes() {
 		$gateways =  Omnipay\Common\GatewayFactory::find();
 		$gateways = array_map(function($name) {
-			return Omnipay\Common\GatewayFactory::create($name);
+			$facebook = new Omnipay\Common\GatewayFactory;
+			return $factory->create($name);
 		}, $gateways);
 		return $gateways;
 	}

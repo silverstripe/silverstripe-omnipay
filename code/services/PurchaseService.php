@@ -26,18 +26,17 @@ class PurchaseService extends PaymentService{
 							$data['cancelUrl'] :
 							$this->cancelurl;
 		$message->write();
-		$request = $this->oGateway()->purchase(array(
-			'card' => new CreditCard($data),
-			'amount' => (float) $this->payment->MoneyAmount,
-			'currency' => $this->payment->MoneyCurrency,
-			'transactionId' => $message->Identifier,
-			'clientIp' => isset($data['clientIp']) ? $data['clientIp'] : null,
-			'returnUrl' => PaymentGatewayController::get_return_url(
-								$message, 'complete'
-							),
-			'cancelUrl' => PaymentGatewayController::get_return_url(
-								$message, 'cancel'
-							)
+		$request = $this->oGateway()->purchase(array_merge(
+			$data,
+			array(
+				'card' => new CreditCard($data),
+				'amount' => (float) $this->payment->MoneyAmount,
+				'currency' => $this->payment->MoneyCurrency,
+				'transactionId' => $message->Identifier,
+				'clientIp' => isset($data['clientIp']) ? $data['clientIp'] : null,
+				'returnUrl' => PaymentGatewayController::get_return_url($message, 'complete'),
+				'cancelUrl' => PaymentGatewayController::get_return_url($message, 'cancel')
+			)
 		));
 		$this->logToFile($request->getParameters(), "PurchaseRequest_post");
 		$gatewayresponse = $this->createGatewayResponse();

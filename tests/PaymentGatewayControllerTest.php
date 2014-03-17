@@ -16,7 +16,7 @@ class PaymentGatewayControllerTest extends PaymentTest{
 		);
 	}
 
-	public function testSucessfulEndpoint() {
+	public function testCompleteEndpoint() {
 		$this->setMockHttpResponse(
 			'PaymentExpress/Mock/PxPayCompletePurchaseSuccess.txt'
 		);
@@ -34,6 +34,28 @@ class PaymentGatewayControllerTest extends PaymentTest{
 			$headers['Location'],
 			"redirected to shop/complete"
 		);
+		$payment = $message->Payment();
+		$this->assertDOSContains(array(
+			array('ClassName' => 'PurchaseRequest'),
+			array('ClassName' => 'PurchaseRedirectResponse'),
+			array('ClassName' => 'CompletePurchaseRequest'),
+			array('ClassName' => 'PurchasedResponse')
+		), $payment->Messages());
+	}
+
+	public function testNotifyEndpoint() {
+		$this->setMockHttpResponse(
+			'PaymentExpress/Mock/PxPayCompletePurchaseSuccess.txt'
+		);
+		//mock the 'result' get variable into the current request
+		$this->getHttpRequest()->query->replace(array('result' => 'abc123'));
+		//mimic a redirect or request from offsite gateway
+		$response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/notify");
+		$message = GatewayMessage::get()
+						->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
+						->first();
+		//redirect works
+		$this->assertNull($response->getHeader('Location'));
 		$payment = $message->Payment();
 		$this->assertDOSContains(array(
 			array('ClassName' => 'PurchaseRequest'),

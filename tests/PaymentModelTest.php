@@ -31,8 +31,11 @@ class PaymentModelTest extends PaymentTest {
 			'Manual' => 'Manual',
 			'Dummy' => 'Dummy'
 		);
-		$actual = GatewayInfo::get_supported_gateways();
-		$this->assertEquals($expected, $actual, "supported gateways array is created correctly");
+		$gateways = GatewayInfo::get_supported_gateways();
+		$this->assertArrayHasKey('PayPal_Express', $gateways);
+		$this->assertArrayHasKey('PaymentExpress_PxPay', $gateways);
+		$this->assertArrayHasKey('Manual', $gateways);
+		$this->assertArrayHasKey('Dummy', $gateways);
 	}
 
 }

@@ -42,6 +42,7 @@ class PurchaseService extends PaymentService{
 		$gatewayresponse = $this->createGatewayResponse();
 		try {
 			$response = $this->response = $request->send();
+			$gatewayresponse->setOmnipayResponse($response);
 			//update payment model
 			if (GatewayInfo::is_manual($this->payment->Gateway)) {
 				//initiate manual payment
@@ -67,7 +68,6 @@ class PurchaseService extends PaymentService{
 				);
 			}
 			$this->payment->write();
-			$gatewayresponse->setOmnipayResponse($response);
 		} catch (Omnipay\Common\Exception\OmnipayException $e) {
 			$this->createMessage('PurchaseError', $e);
 			$gatewayresponse->setMessage($e->getMessage());

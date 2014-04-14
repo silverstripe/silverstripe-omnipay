@@ -17,14 +17,39 @@ use Omnipay\Common\Message\AbstractRequest;
 
 abstract class PaymentService extends Object{
 
+	/**
+	 * @var Guzzle\Http\ClientInterface
+	 */	
 	private static $httpclient;
+	
+	/**
+	 * @var Guzzle\Http\Message\Request
+	 */	
 	private static $httprequest;
 
+	/**
+	 * @var Payment
+	 */
 	protected $payment;
+
+	/**
+	 * @var String
+	 */
 	protected $returnurl;
+	
+	/**
+	 * @var String
+	 */
 	protected $cancelurl;
+	
+	/**
+	 * @var Guzzle\Http\Message\Response
+	 */
 	protected $response;
 
+	/**
+	 * @param Payment
+	 */
 	public function __construct(Payment $payment) {
 		$this->payment = $payment;
 	}

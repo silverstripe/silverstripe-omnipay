@@ -52,7 +52,8 @@ class GatewayInfo{
 	}
 
 	/**
-	 * Checks if the given gateway name is an off-site gaeway.
+	 * Checks if the given gateway name is an off-site gateway.
+	 * 
 	 * @param  string  $gateway gateway name
 	 * @throws RuntimeException
 	 * @return boolean the gateway offsite or not
@@ -60,7 +61,13 @@ class GatewayInfo{
 	public static function is_offsite($gateway) {
 		$factory = new GatewayFactory;
 		$gateway = $factory->create($gateway);
-		return $gateway->supportsCompletePurchase() || $gateway->supportsCompleteAuthorize();
+		return (
+			($gateway->supportsCompletePurchase() || $gateway->supportsCompleteAuthorize())
+			// Some offsite gateways don't separate between authorize and complete requests,
+			// so we need a different way to determine they're off site in the first place
+			// without kicking off a purchase request within omnipay.
+			|| (method_exists($gateway, 'isOffsite') && $gateway->isOffsite())
+		);
 	}
 
 	/**

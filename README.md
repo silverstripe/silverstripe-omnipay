@@ -69,6 +69,9 @@ Payment:
     file_logging: 1
     allowed_gateways:
         - 'Dummy'
+    parameters:
+        Paypal_Express:
+            testMode: true
 ---
 Only:
     environment: 'live'

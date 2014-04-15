@@ -1,5 +1,5 @@
 {
-	"name": "burnbright/silverstripe-omnipay",
+	"name": "wildflower/silverstripe-omnipay",
 	"description": "SilverStripe Omnipay Payment Module",
 	"type": "silverstripe-module",
 	"license": "BSD-3-Clause",
@@ -16,8 +16,8 @@
 	},
 	"authors": [
 		{
-			"name": "Jeremy Shipman",
-			"homepage": "https://github.com/jedateach",
+			"name": "Haydn Flower",
+			"homepage": "https://github.com/wildflower",
 			"role": "Developer"
 		}
 	]

@@ -1,12 +1,12 @@
 {
-	"name": "burnbright/silverstripe-omnipay",
+	"name": "wildflower/silverstripe-omnipay",
 	"description": "SilverStripe Omnipay Payment Module",
 	"type": "silverstripe-module",
 	"license": "BSD-3-Clause",
 	"keywords": ["silverstripe","payment","omnipay"],
 	"require": {
 		"silverstripe/framework": "3.1.*",
-		"omnipay/omnipay": "1.1.x"
+		"omnipay/omnipay": "~2.1"
 	},
 	"require-dev": {
 		"guzzle/plugin-mock": "~3.1"
@@ -16,8 +16,8 @@
 	},
 	"authors": [
 		{
-			"name": "Jeremy Shipman",
-			"homepage": "https://github.com/jedateach",
+			"name": "Haydn Flower",
+			"homepage": "https://github.com/wildflower",
 			"role": "Developer"
 		}
 	]

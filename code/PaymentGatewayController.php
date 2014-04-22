@@ -43,7 +43,6 @@ class PaymentGatewayController extends Controller{
 			return $this->httpError(404, _t("Payment.NOTFOUND", "Payment could not be found."));
 		}
 		$payment = $message->Payment();
-		$service = PurchaseService::create($payment);
 		//redirect if payment is already a success
 		if ($payment->isComplete()) {
 
@@ -53,7 +52,8 @@ class PaymentGatewayController extends Controller{
 		//do the payment update
 		switch ($this->request->param('Status')) {
 			case "complete":
-				$response = $service->completePurchase();
+				$response = PurchaseService::create($payment)
+								->completePurchase();
 				if($response->isSuccessful()){
 					$redirect = $this->getSuccessUrl($message);
 				}

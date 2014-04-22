@@ -52,6 +52,10 @@ class GatewayResponse{
 		return $this->message;
 	}
 
+	public function getPayment() {
+		return $this->payment;
+	}
+
 	public function setRedirectURL($url) {
 		$this->redirect = $url;
 

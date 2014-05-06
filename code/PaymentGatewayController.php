@@ -43,31 +43,39 @@ class PaymentGatewayController extends Controller{
 			return $this->httpError(404, _t("Payment.NOTFOUND", "Payment could not be found."));
 		}
 		$payment = $message->Payment();
+		$service = PurchaseService::create($payment);
+		
 		//redirect if payment is already a success
 		if ($payment->isComplete()) {
-
 			return $this->redirect($this->getSuccessUrl($message));
 		}
-		$redirect = $this->getFailureUrl($message);
+
 		//do the payment update
+		$response = null;
 		switch ($this->request->param('Status')) {
 			case "complete":
-				$response = PurchaseService::create($payment)
-								->completePurchase();
-				if($response->isSuccessful()){
-					$redirect = $this->getSuccessUrl($message);
+				$serviceResponse = $service->completePurchase();
+				if($serviceResponse->isSuccessful()){
+					$response = $this->redirect($this->getSuccessUrl($message));
+				} else {
+					$response = $this->redirect($this->getFailureUrl($message));
 				}
+				break;
+			case "notify":
+				$serviceResponse = $service->completePurchase();
+				// Allow implementations where no redirect happens,
+				// since gateway failsafe callbacks might expect a 2xx HTTP response
+				$response = new SS_HTTPResponse('', 200);
 				break;
 			case "cancel":
 				//TODO: store cancellation message
-				$redirect = $this->getFailureUrl($message);
+				$response = $this->redirect($this->getFailureUrl($message));
 				break;
 			default:
-
-				return $this->httpError(404, _t("Payment.INVALIDURL", "Invalid payment url."));
+				$response = $this->httpError(404, _t("Payment.INVALIDURL", "Invalid payment url."));
 		}
 
-		return $this->redirect($redirect);
+		return $response;
 	}
 
 	/**

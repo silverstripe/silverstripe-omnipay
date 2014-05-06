@@ -8,8 +8,17 @@
 class GatewayResponse{
 
 	private $response;
+	
 	private $payment;
+	
 	private $message;
+	
+	/**
+	 * @var String URL to an endpoint within SilverStripe that can process
+	 * the response, usually {@link PaymentGatewayController}.
+	 * This controller might further redirect the user, based on the
+	 * $SuccessURL and $FailureURL messages in {@link GatewayRequestMessage}.
+	 */
 	private $redirect;
 
 	public function __construct(Payment $payment) {

@@ -35,6 +35,7 @@ class PurchaseService extends PaymentService{
 				'transactionId' => $message->Identifier,
 				'clientIp' => isset($data['clientIp']) ? $data['clientIp'] : null,
 				'returnUrl' => PaymentGatewayController::get_return_url($message, 'complete'),
+				'notifyUrl' => PaymentGatewayController::get_return_url($message, 'notify'),
 				'cancelUrl' => PaymentGatewayController::get_return_url($message, 'cancel')
 			)
 		));

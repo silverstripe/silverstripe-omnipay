@@ -5,11 +5,15 @@ use Omnipay\Common\CreditCard;
 class PurchaseService extends PaymentService{
 
 	/**
-	 * Attempt to make a payment
-	 * @param  array $data returnUrl/cancelUrl + customer creditcard
-	 * and billing/shipping details.
-	 * @return ResponseInterface omnipay's response class,
-	 * specific to the chosen gateway.
+	 * Attempt to make a payment.
+	 * 
+	 * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
+	 * 	Some keys (e.g. "amount") are overwritten with data from the associated {@link $payment}.
+	 *  If this array is constructed from user data (e.g. a form submission), please take care
+	 *  to whitelist accepted fields, in order to ensure sensitive gateway parameters like "freeShipping" can't be set.
+	 *  If using {@link Form->getData()}, only fields which exist in the form are returned,
+	 *  effectively whitelisting against arbitrary user input.
+	 * @return ResponseInterface omnipay's response class, specific to the chosen gateway.
 	 */
 	public function purchase($data = array()) {
 		if ($this->payment->Status !== "Created") {

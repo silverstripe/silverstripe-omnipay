@@ -229,12 +229,20 @@ abstract class PaymentService extends Object{
 		self::$httpclient = $httpClient;
 	}
 
+	public static function get_http_client() {
+		return self::$httpclient;
+	}
+
 	/**
 	 * Set the symphony http request (for testing)
 	 * @param Symfony\Component\HttpFoundation\Request $httpRequest symphony http request for testing
 	 */
 	public static function set_http_request(Symfony\Component\HttpFoundation\Request $httpRequest) {
 		self::$httprequest = $httpRequest;
+	}
+
+	public static function get_http_request() {
+		return self::$httprequest;
 	}
 
 }

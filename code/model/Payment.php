@@ -39,7 +39,7 @@ final class Payment extends DataObject{
 
 	public function getCMSFields() {
 		$fields = new FieldList(
-			TextField::create("Money", _t("Payment.MONEY", "Money"), $this->dbObject('Money')->Nice()),
+			TextField::create("MoneyValue", _t("Payment.MONEY", "Money"), $this->dbObject('Money')->Nice()),
 			TextField::create("GatewayTitle", _t("Payment.GATEWAY", "Gateway"))
 		);
 		$fields = $fields->makeReadonly();
@@ -50,6 +50,8 @@ final class Payment extends DataObject{
 					->removeComponentsByType('GridFieldDeleteAction')
 			)
 		);
+
+		$this->extend('updateCMSFields', $fields);
 
 		return $fields;
 	}

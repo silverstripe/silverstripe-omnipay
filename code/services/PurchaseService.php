@@ -68,6 +68,7 @@ class PurchaseService extends PaymentService{
 			} else {
 				//handle error
 				$this->createMessage('PurchaseError', $response);
+				$this->payment->Status = 'Void';
 				$gatewayresponse->setMessage(
 					"Error (".$response->getCode()."): ".$response->getMessage()
 				);
@@ -75,6 +76,8 @@ class PurchaseService extends PaymentService{
 			$this->payment->write();
 		} catch (Omnipay\Common\Exception\OmnipayException $e) {
 			$this->createMessage('PurchaseError', $e);
+			$this->payment->Status = 'Void';
+			$this->payment->write();
 			$gatewayresponse->setMessage($e->getMessage());
 		}
 		$gatewayresponse->setRedirectURL($this->getRedirectURL());
@@ -100,11 +103,12 @@ class PurchaseService extends PaymentService{
 			if ($response->isSuccessful()) {
 				$this->createMessage('PurchasedResponse', $response);
 				$this->payment->Status = 'Captured';
-				$this->payment->write();
 				$this->payment->extend('onCaptured', $gatewayresponse);
 			} else {
 				$this->createMessage('CompletePurchaseError', $response);
+				$this->payment->Status = 'Void';
 			}
+			$this->payment->write();
 		} catch (Omnipay\Common\Exception\OmnipayException $e) {
 			$this->createMessage("CompletePurchaseError", $e);
 		}

@@ -46,7 +46,7 @@ class PurchaseServiceTest extends PaymentTest {
 			'expiryMonth' => '5',
 			'expiryYear' => date("Y", strtotime("+1 year"))
 		));
-		$this->assertEquals("Created", $payment->Status, "is the status has not been updated");
+		$this->assertEquals("Void", $payment->Status, "Payment has been void");
 		$this->assertEquals(1222, $payment->Amount);
 		$this->assertEquals("GBP", $payment->Currency);
 		$this->assertFalse($response->isSuccessful());
@@ -93,7 +93,7 @@ class PurchaseServiceTest extends PaymentTest {
 		$this->assertDOSContains(array(
 			array('ClassName' => 'PurchaseError')
 		), $payment->Messages());
-
+		$this->assertEquals("Void", $payment->Status, "Payment has been void");
 		//TODO:
 			//invalid/incorrect card number/date..lhun check (InvalidCreditCardException)
 			//InvalidRequestException thrown when gateway needs specific parameters
@@ -111,7 +111,7 @@ class PurchaseServiceTest extends PaymentTest {
 		));
 		$this->assertFalse($response->isSuccessful()); //payment has not been captured
 		$this->assertFalse($response->isRedirect());
-		$this->assertSame("Created", $payment->Status);
+		$this->assertEquals("Void", $payment->Status, "Payment has been void");
 
 		//check messaging
 		$this->assertDOSContains(array(
@@ -156,7 +156,7 @@ class PurchaseServiceTest extends PaymentTest {
 		$response = $service->purchase();
 		$this->assertFalse($response->isSuccessful()); //payment has not been captured
 		$this->assertFalse($response->isRedirect()); //redirect won't occur, because of failure
-		$this->assertSame("Created", $payment->Status);
+		$this->assertEquals("Void", $payment->Status, "Payment has been void");
 
 		//check messaging
 		$this->assertDOSContains(array(
@@ -193,8 +193,8 @@ class PurchaseServiceTest extends PaymentTest {
 			array('ClassName' => 'CompletePurchaseRequest'),
 			array('ClassName' => 'CompletePurchaseError')
 		), $payment->Messages());
+		$this->assertEquals("Void", $payment->Status, "Payment has been void");
 	}
-
 
 	public function testNonExistantGateway() {
 		//exception when trying to run functions that require a gateway
@@ -205,13 +205,13 @@ class PurchaseServiceTest extends PaymentTest {
 
 		$this->setExpectedException("RuntimeException");
 		try{
-		$result = $service->purchase();
+			$result = $service->purchase();
 		}catch(RuntimeException $e){
 			$this->markTestIncomplete();
-		$totalNZD = Payment::get()->filter('MoneyCurrency', "NZD")->sum();
-		$this->assertEquals(27.23, $totalNZD);
-		$service->purchase();
-		$service->completePurchase();
+			$totalNZD = Payment::get()->filter('MoneyCurrency', "NZD")->sum();
+			$this->assertEquals(27.23, $totalNZD);
+			$service->purchase();
+			$service->completePurchase();
 			//just to assert that exception is thrown
 			throw $e;
 		}

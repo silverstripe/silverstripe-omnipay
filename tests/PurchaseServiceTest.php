@@ -97,6 +97,7 @@ class PurchaseServiceTest extends PaymentTest {
 		//TODO:
 			//invalid/incorrect card number/date..lhun check (InvalidCreditCardException)
 			//InvalidRequestException thrown when gateway needs specific parameters
+		$this->markTestIncomplete();
 	}
 
 	public function testFailedOnSitePurchase() {
@@ -164,6 +165,7 @@ class PurchaseServiceTest extends PaymentTest {
 		), $payment->Messages());
 
 		//TODO: fail in various ways
+		$this->markTestIncomplete();
 	}
 
 	public function testFailedOffSiteCompletePurchase() {
@@ -202,14 +204,17 @@ class PurchaseServiceTest extends PaymentTest {
 			)->setReturnUrl("complete");
 
 		$this->setExpectedException("RuntimeException");
+		try{
 		$result = $service->purchase();
-		//TODO: execution halts on exception, so we can't keep testing..
-		//but we can still use the payment model in calculations etc
+		}catch(RuntimeException $e){
+			$this->markTestIncomplete();
 		$totalNZD = Payment::get()->filter('MoneyCurrency', "NZD")->sum();
 		$this->assertEquals(27.23, $totalNZD);
-		//TODO: call gateway functions
 		$service->purchase();
 		$service->completePurchase();
+			//just to assert that exception is thrown
+			throw $e;
+		}
 	}
 
 }

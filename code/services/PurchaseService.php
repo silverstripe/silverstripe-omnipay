@@ -103,12 +103,13 @@ class PurchaseService extends PaymentService{
 			if ($response->isSuccessful()) {
 				$this->createMessage('PurchasedResponse', $response);
 				$this->payment->Status = 'Captured';
+				$this->payment->write();
 				$this->payment->extend('onCaptured', $gatewayresponse);
 			} else {
 				$this->createMessage('CompletePurchaseError', $response);
 				$this->payment->Status = 'Void';
+				$this->payment->write();
 			}
-			$this->payment->write();
 		} catch (Omnipay\Common\Exception\OmnipayException $e) {
 			$this->createMessage("CompletePurchaseError", $e);
 		}

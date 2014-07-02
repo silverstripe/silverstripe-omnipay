@@ -87,12 +87,14 @@ class GatewayFieldsFactory{
 				$fields['startMonth'] = new FieldGroup(_t("PaymentForm.START", "Start"),
 					$fields['startMonth'], $fields['startYear']
 				);
+				$fields['startMonth']->addExtraClass('card_startyear');
 				unset($fields['startYear']);
 			}
 			if (isset($fields['expiryMonth']) && isset($fields['expiryYear'])) {
 				$fields['expiryMonth'] = new FieldGroup(_t("PaymentForm.EXPIRY", "Expiry"),
 					$fields['expiryMonth'], $fields['expiryYear']
 				);
+				$fields['expiryMonth']->addExtraClass('card_expiry');
 				unset($fields['expiryYear']);
 			}
 		}

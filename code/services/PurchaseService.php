@@ -92,7 +92,8 @@ class PurchaseService extends PaymentService{
 	public function completePurchase() {
 		$gatewayresponse = $this->createGatewayResponse();
 		$request = $this->oGateway()->completePurchase(array(
-			'amount' => (float) $this->payment->MoneyAmount
+			'amount' => (float) $this->payment->MoneyAmount,
+			'currency' => $this->payment->MoneyCurrency
 		));
 		$this->createMessage('CompletePurchaseRequest', $request);
 		$response = null;

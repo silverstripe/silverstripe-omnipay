@@ -87,6 +87,16 @@ class GatewayInfo{
         return in_array($gateway,$manualGateways);
     }
 
+    /**
+     * @param string $gateway - gateway name
+     * @return boolean - can the gateway save cards or not
+     */
+    public static function can_save_cards($gateway) {
+        $factory = new GatewayFactory;
+        $gateway = $factory->create($gateway);
+        return $gateway->supportsCreateCard(); // we don't check for update & delete b/c not all support them
+    }
+
 	/**
 	 * Get the required parameters for a given gateway
 	 * @param string $gateway gateway name

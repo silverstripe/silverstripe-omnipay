@@ -22,6 +22,10 @@ class PurchaseService extends PaymentService{
 		if (!$this->payment->isInDB()) {
 			$this->payment->write();
 		}
+
+		// Are we using a tokenized card?
+		$savedCard = $this->payment->SavedCard();
+
 		//update success/fail urls
 		$this->update($data);
 
@@ -32,6 +36,7 @@ class PurchaseService extends PaymentService{
 
 		$gatewaydata = array_merge($data,array(
 			'card' => $this->getCreditCard($data),
+			'cardReference' => $savedCard && $savedCard->exists() ? $savedCard->CardReference : null,
 			'amount' => (float) $this->payment->MoneyAmount,
 			'currency' => $this->payment->MoneyCurrency,
 			//set all gateway return/cancel/notify urls to PaymentGatewayController endpoint

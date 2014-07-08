@@ -6,6 +6,12 @@
  * This class is used for storing a payment amount, and it's status of being
  * paid or not, and the gateway used to make payment.
  *
+ * @property string Gateway
+ * @property Money Money
+ * @property string Status
+ * @method SavedCard SavedCard()
+ * @method HasManyList Messages()
+ *
  * @package payment
  */
 final class Payment extends DataObject{
@@ -16,6 +22,10 @@ final class Payment extends DataObject{
 		'Status' => "Enum('Created,Authorized,Captured,Refunded,Void','Created')",
 		'Identifier' => 'Varchar'
 	);
+
+    private static $has_one = array(
+        'SavedCard' => 'SavedCard',
+    );
 
 	private static $has_many = array(
 		'Messages' => 'PaymentMessage'

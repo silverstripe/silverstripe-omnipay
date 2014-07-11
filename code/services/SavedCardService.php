@@ -58,7 +58,7 @@ class SavedCardService extends PaymentService {
                 $gatewayresponse->setMessage("Card created successfully");
 
                 // create the saved card
-                $card = new SavedCard(array(
+                $card = new SavedCreditCard(array(
                     'CardReference' => $response->getCardReference(),
                     'LastFourDigits' => substr($data['number'], -4),
                     'Name' => $data['name'],
@@ -88,11 +88,11 @@ class SavedCardService extends PaymentService {
     }
 
 
-    public function updateCard(SavedCard $card, $data = array()) {
+    public function updateCard(SavedCreditCard $card, $data = array()) {
         // TODO
     }
 
-    public function deleteCard(SavedCard $card) {
+    public function deleteCard(SavedCreditCard $card) {
         // TODO
     }
 

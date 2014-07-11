@@ -9,7 +9,7 @@
  * @property string Gateway
  * @property Money Money
  * @property string Status
- * @method SavedCard SavedCard()
+ * @method SavedCreditCard SavedCreditCard()
  * @method HasManyList Messages()
  *
  * @package payment
@@ -24,7 +24,7 @@ final class Payment extends DataObject{
 	);
 
     private static $has_one = array(
-        'SavedCard' => 'SavedCard',
+        'SavedCreditCard' => 'SavedCreditCard',
     );
 
 	private static $has_many = array(

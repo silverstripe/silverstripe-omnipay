@@ -16,10 +16,10 @@ class SavedCardServiceTest extends PaymentTest {
         $this->assertFalse($response->isRedirect());
         $this->assertSame("Created", $payment->Status, 'does not process payment');
 
-        /** @var SavedCard $card */
+        /** @var SavedCreditCard $card */
         $card = $payment->SavedCard();
         $this->assertNotNull($card);
-        $this->assertInstanceOf('SavedCard', $card);
+        $this->assertInstanceOf('SavedCreditCard', $card);
         $this->assertEquals('My Test Card 1', $card->Name);
         $this->assertEquals('1111', $card->LastFourDigits);
         $this->assertEquals('cus_1MZSEtqSghKx99', $card->CardReference);
@@ -42,7 +42,7 @@ class SavedCardServiceTest extends PaymentTest {
         ));
         $this->assertTrue($response->isSuccessful());
 
-        /** @var SavedCard $card */
+        /** @var SavedCreditCard $card */
         $card = $payment->SavedCard();
         $this->assertEquals('************1111', $card->Name);
         $this->assertEquals('1111', $card->LastFourDigits);

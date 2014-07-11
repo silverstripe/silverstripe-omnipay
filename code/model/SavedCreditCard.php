@@ -13,7 +13,7 @@
  *
  * @package omnipay
  */
-class SavedCard extends DataObject {
+class SavedCreditCard extends DataObject {
 
     private static $db = array(
         'CardReference' => 'Varchar(255)',

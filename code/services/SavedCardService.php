@@ -11,13 +11,8 @@ class SavedCardService extends PaymentService {
     /**
      * Attempt to save a new credit card.
      *
-     * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
-     * 	Some keys (e.g. "amount") are overwritten with data from the associated {@link $payment}.
-     *  If this array is constructed from user data (e.g. a form submission), please take care
-     *  to whitelist accepted fields, in order to ensure sensitive gateway parameters like "freeShipping" can't be set.
-     *  If using {@link Form->getData()}, only fields which exist in the form are returned,
-     *  effectively whitelisting against arbitrary user input.
-     * @return ResponseInterface omnipay's response class, specific to the chosen gateway.
+     * @param  array $data
+     * @return \Omnipay\Common\Message\ResponseInterface omnipay's response class, specific to the chosen gateway.
      */
     public function createCard($data = array()) {
         if ($this->payment->Status !== "Created") {
@@ -86,7 +81,6 @@ class SavedCardService extends PaymentService {
 
         return $gatewayresponse;
     }
-
 
     public function updateCard(SavedCreditCard $card, $data = array()) {
         // TODO

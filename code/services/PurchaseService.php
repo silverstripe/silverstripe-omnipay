@@ -24,7 +24,7 @@ class PurchaseService extends PaymentService{
 		}
 
 		// Are we using a tokenized card?
-		$savedCard = $this->payment->SavedCard();
+		$savedCard = $this->payment->SavedCreditCard();
 
 		//update success/fail urls
 		$this->update($data);

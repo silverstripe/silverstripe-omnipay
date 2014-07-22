@@ -17,7 +17,8 @@ class SavedCardServiceTest extends PaymentTest {
         $this->assertSame("Created", $payment->Status, 'does not process payment');
 
         /** @var SavedCreditCard $card */
-        $card = $payment->SavedCard();
+        $card = $payment->SavedCreditCard();
+	    Debug::dump($card);
         $this->assertNotNull($card);
         $this->assertInstanceOf('SavedCreditCard', $card);
         $this->assertEquals('My Test Card 1', $card->Name);
@@ -43,7 +44,7 @@ class SavedCardServiceTest extends PaymentTest {
         $this->assertTrue($response->isSuccessful());
 
         /** @var SavedCreditCard $card */
-        $card = $payment->SavedCard();
+        $card = $payment->SavedCreditCard();
         $this->assertEquals('************1111', $card->Name);
         $this->assertEquals('1111', $card->LastFourDigits);
     }
@@ -57,7 +58,7 @@ class SavedCardServiceTest extends PaymentTest {
     }
 
     public function testPayWithCard() {
-        $card = $this->getTestPaymentWithSavedCard()->SavedCard();
+        $card = $this->getTestPaymentWithSavedCard()->SavedCreditCard();
         $payment = $this->payment->setGateway('Stripe');
         $payment->setAmount(10.00);
         $payment->setCurrency('NZD');

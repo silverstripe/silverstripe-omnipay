@@ -12,10 +12,7 @@
 		"guzzle/plugin-mock": "~3.1"
 	},
 	"extra": {
-		"installer-name": "omnipay",
-		"branch-alias": {
-			"dev-master": "1.0.x-dev"
-		}
+		"installer-name": "omnipay"
 	},
 	"authors": [
 		{
@@ -24,5 +21,4 @@
 			"role": "Developer"
 		}
 	]
-
 }

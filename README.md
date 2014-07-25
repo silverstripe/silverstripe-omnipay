@@ -15,6 +15,10 @@ This module is a complete rewrite of the past Payment module. It is not backward
 In a nutshell, it provides a thin wrapping of the PHP Omnipay payments library.
 To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
 
+## Version
+
+1.0.0
+
 ## Requirements
 
  * [silverstripe framework](https://github.com/silverstripe/silverstripe-framework) 3.1+

@@ -17,7 +17,7 @@ To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
 
 ## Version
 
-1.0.0
+1.0
 
 ## Requirements
 

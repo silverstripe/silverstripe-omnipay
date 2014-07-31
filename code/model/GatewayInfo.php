@@ -36,7 +36,7 @@ class GatewayInfo{
 			/** do nothing */
 		}
 		return _t(
-			"Payment.".strtoupper($name),
+			"Payment.".$name,
 			$gateway ? $gateway->getName() : $name
 		);
 	}

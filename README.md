@@ -197,6 +197,20 @@ Payment:
     file_logging: true #or use 'verbose' for more detailed output
 ```
 
+## Renaming gateways and translation
+
+You can change the front-end visible name of a gateway using the translation system. The gateway name must match what you entered in the `allowed_gateways` yaml config.
+
+For example, inside mysite/lang/en.yml:
+```yaml
+en:
+  Payment:
+    Paystation_Hosted: "Credit Card"
+    PayPal_Express: "PayPal"
+```
+
+This approach can also be used to provide different translations.
+
 ## Caveats and Troubleshooting
 
 Logs will be saved to `debug.log` in the root of your SilverStripe directory.

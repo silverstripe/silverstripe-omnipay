@@ -217,6 +217,22 @@ Logs will be saved to `debug.log` in the root of your SilverStripe directory.
 
  * Payments have both an amount and a currency. That means you should check if all currencies match if you will be adding them up.
 
+## Migrating from Payment module
+
+Before you import your database and do a DB/build, add the following yaml config to your site:
+```yaml
+---
+Name: payment
+---
+Payment:
+    db:
+        Status: "Enum('Created,Authorized,Captured,Refunded,Void,Incomplete,Success,Failure,Pending','Created')"
+```
+This will re-introduce old enumeration values to the DB.
+
+Run the migration task: yoursite.com/dev/tasks/MigratePaymentTask
+
+
 ## Further Documentation
 
 https://github.com/burnbright/silverstripe-omnipay/blob/master/docs/en/index.md

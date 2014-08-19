@@ -32,7 +32,7 @@ final class Payment extends DataObject{
 		'Money' => 'Money',
 		'GatewayTitle' => 'Gateway',
 		'Status' => 'Status',
-		'Created' => 'Created'
+		'Created.Nice' => 'Created'
 	);
 
 	private static $default_sort = "\"Created\" DESC, \"ID\" DESC";

@@ -36,4 +36,8 @@ class PaymentMessage extends DataObject{
 		}
 	}
 
+	function getTitle(){
+		return $this->i18n_singular_name();
+	}
+
 }

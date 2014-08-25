@@ -10,6 +10,7 @@ class PaymentMessage extends DataObject{
 	private static $db = array(
 		//Created
 		"Message" => "Varchar(255)",
+		"ClientIp" => "Varchar(39)"
 	);
 
 	private static $has_one = array(

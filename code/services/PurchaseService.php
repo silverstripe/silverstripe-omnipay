@@ -26,7 +26,7 @@ class PurchaseService extends PaymentService{
 		$this->update($data);
 
 		//set the client IP address, if not already set
-		if(!$data['clientIp']){
+		if(!isset($data['clientIp'])){
 			$data['clientIp'] = Controller::curr()->getRequest()->getIP();
 		}
 

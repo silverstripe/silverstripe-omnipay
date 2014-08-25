@@ -38,4 +38,18 @@ class PaymentModelTest extends PaymentTest {
 		$this->assertArrayHasKey('Dummy', $gateways);
 	}
 
+	public function testCreateIdentifier() {
+		$payment = new Payment();
+		$payment->write();
+		$this->assertNotNull($payment->Identifier);
+		$this->assertNotEquals('', $payment->Identifier);
+		$this->assertEquals(30, strlen($payment->Identifier));
+	}
+
+	public function testChangeIdentifier() {
+		$payment = $this->objFromFixture('Payment', 'payment2');
+		$payment->Identifier = "somethingelse";
+		$this->assertEquals("UNIQUEHASH23q5123tqasdf", $payment->Identifier);
+	}
+
 }

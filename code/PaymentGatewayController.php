@@ -33,12 +33,17 @@ class PaymentGatewayController extends Controller{
 	 * but will not update the Payment/Transaction models if they are not found,
 	 * or allowed to be updated.
 	 */
-	public function index() {
-		$message = $this->getRequestMessage();
-		if (!$message || !$message->Payment()->exists()) {
+	public function index() {		
+		$payment = $this->getPayment();
+		if (!$payment) {
 			return $this->httpError(404, _t("Payment.NOTFOUND", "Payment could not be found."));
 		}
-		$payment = $message->Payment();
+
+		//isolate the gateway request message containing success / failure urls
+		$message = $payment->Messages()
+			->filter("ClassName", array("PurchaseRequest","AuthorizeRequest"))
+			->first();
+
 		$service = PurchaseService::create($payment);
 		
 		//redirect if payment is already a success
@@ -79,12 +84,13 @@ class PaymentGatewayController extends Controller{
 	}
 
 	/**
-	 * Get the message storing the identifier for this payment
-	 * @return GatewayMessage the transaction
+	 * Get the the payment according to the identifer given in the url
+	 * @return Payament the payment
 	 */
-	private function getRequestMessage() {
-		return GatewayMessage::get()
+	private function getPayment() {
+		return Payment::get()
 				->filter('Identifier', $this->request->param('Identifier'))
+				->filter('Identifier:not', "")
 				->first();
 	}
 

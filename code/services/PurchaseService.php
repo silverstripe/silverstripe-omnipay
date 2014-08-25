@@ -22,27 +22,30 @@ class PurchaseService extends PaymentService{
 		if (!$this->payment->isInDB()) {
 			$this->payment->write();
 		}
-		$message = $this->createMessage('PurchaseRequest');
-		$message->SuccessURL = isset($data['returnUrl']) ?
-							$data['returnUrl'] :
-							$this->returnurl;
-		$message->FailureURL = isset($data['cancelUrl']) ?
-							$data['cancelUrl'] :
-							$this->cancelurl;
-		$message->write();
-		$request = $this->oGateway()->purchase(array_merge(
-			$data,
-			array(
-				'card' => $this->getCreditCard($data),
-				'amount' => (float) $this->payment->MoneyAmount,
-				'currency' => $this->payment->MoneyCurrency,
-				'transactionId' => $message->Identifier,
-				'clientIp' => isset($data['clientIp']) ? $data['clientIp'] : null,
-				'returnUrl' => $this->getEndpointURL('complete', $message->Identifier),
-				'notifyUrl' => $this->getEndpointURL('notify', $message->Identifier),
-				'cancelUrl' => $this->getEndpointURL('cancel', $message->Identifier)
-			)
+		//update success/fail urls
+		$this->update($data);
+
+		$gatewaydata = array_merge($data,array(
+			'card' => $this->getCreditCard($data),
+			'amount' => (float) $this->payment->MoneyAmount,
+			'currency' => $this->payment->MoneyCurrency,
+			//set all gateway return/cancel/notify urls to PaymentGatewayController endpoint
+			'returnUrl' => $this->getEndpointURL("complete", $this->payment->Identifier),
+			'cancelUrl' => $this->getEndpointURL("cancel", $this->payment->Identifier),
+			'notifyUrl' => $this->getEndpointURL("notify", $this->payment->Identifier)
 		));
+		
+		if(!isset($gatewaydata['transactionId'])){
+			$gatewaydata['transactionId'] = $this->payment->Identifier;
+		}
+
+		$message = $this->createMessage('PurchaseRequest', $gatewaydata);
+		$message->SuccessURL = $this->returnurl;
+		$message->FailureURL = $this->cancelurl;
+		$message->write();
+
+		$request = $this->oGateway()->purchase($gatewaydata);
+
 		$this->logToFile($request->getParameters(), "PurchaseRequest_post");
 		$gatewayresponse = $this->createGatewayResponse();
 		try {

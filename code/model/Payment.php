@@ -13,7 +13,8 @@ final class Payment extends DataObject{
 	private static $db = array(
 		'Gateway' => 'Varchar(50)', //this is the omnipay 'short name'
 		'Money' => 'Money', //contains Amount and Currency
-		'Status' => "Enum('Created,Authorized,Captured,Refunded,Void','Created')"
+		'Status' => "Enum('Created,Authorized,Captured,Refunded,Void','Created')",
+		'Identifier' => 'Varchar'
 	);
 
 	private static $has_many = array(
@@ -33,6 +34,10 @@ final class Payment extends DataObject{
 		'GatewayTitle' => 'Gateway',
 		'Status' => 'Status',
 		'Created.Nice' => 'Created'
+	);
+
+	private static $indexes = array(
+		'Identifier' => true,
 	);
 
 	private static $default_sort = "\"Created\" DESC, \"ID\" DESC";
@@ -161,6 +166,38 @@ final class Payment extends DataObject{
 
 	public function forTemplate() {
 		return $this->dbObject('Money');
+	}
+
+	/**
+	 * Only allow setting identifier, if one doesn't exist yet.
+	 * @param string $id identifier
+	 */
+	public function setIdentifier($id) {
+		if (!$this->Identifier) {
+			$this->setField('Identifier', $id);
+		}
+	}
+
+	protected function onBeforeWrite() {
+		parent::onBeforeWrite();
+		if(!$this->Identifier){
+			$this->Identifier = $this->generateUniquePaymentIdentifier();
+		}
+	}
+
+	/**
+	 * Generate an internally unique string that identifies a payment,
+	 * and can be used in URLs.
+	 * @return string Identifier
+	 */
+	public function generateUniquePaymentIdentifier() {
+		$generator = Injector::inst()->create('RandomGenerator');
+		$id = null;
+		do{
+			$id = substr($generator->randomToken(), 0, 30);
+		} while (!$id && self::get()->filter('Identifier', $id)->exists());
+
+		return $id;
 	}
 
 }

@@ -110,6 +110,19 @@ abstract class PaymentService extends Object{
 	}
 
 	/**
+	 * Update class properties via array.
+	 */
+	public function update($data) {
+		if(isset($data['returnUrl'])){
+			$this->setReturnUrl($data['returnUrl']);
+		}
+		if(isset($data['cancelUrl'])){
+			$this->setReturnUrl($data['cancelUrl']);
+		}
+	}
+
+
+	/**
 	 * Get the omnipay gateway associated with this payment,
 	 * with configuration applied.
 	 *
@@ -190,9 +203,6 @@ abstract class PaymentService extends Object{
 		));
 		$this->logToFile($output, $type);
 		$message = $type::create($output);
-		if (method_exists($message, 'generateIdentifier')) {
-			$message->generateIdentifier();
-		}
 		$message->write();
 		$this->payment->Messages()->add($message);
 

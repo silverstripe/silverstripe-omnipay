@@ -38,9 +38,9 @@ class PurchaseService extends PaymentService{
 				'currency' => $this->payment->MoneyCurrency,
 				'transactionId' => $message->Identifier,
 				'clientIp' => isset($data['clientIp']) ? $data['clientIp'] : null,
-				'returnUrl' => PaymentGatewayController::get_return_url($message, 'complete'),
-				'notifyUrl' => PaymentGatewayController::get_return_url($message, 'notify'),
-				'cancelUrl' => PaymentGatewayController::get_return_url($message, 'cancel')
+				'returnUrl' => $this->getEndpointURL('complete', $message->Identifier),
+				'notifyUrl' => $this->getEndpointURL('notify', $message->Identifier),
+				'cancelUrl' => $this->getEndpointURL('cancel', $message->Identifier)
 			)
 		));
 		$this->logToFile($request->getParameters(), "PurchaseRequest_post");

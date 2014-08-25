@@ -132,6 +132,14 @@ abstract class PaymentService extends Object{
 	}
 
 	/**
+	 * Generate a return/notify url for off-site gateways (completePayment).
+	 * @return string endpoint url
+	 */
+	protected function getEndpointURL($action, $identifier) {
+		return PaymentGatewayController::get_endpoint_url($action, $identifier);
+	}
+
+	/**
 	 * Record a transaction on this for this payment.
 	 * @param string $type the type of transaction to create.
 	 *        This is any class that is (or extends) PaymentMessage.

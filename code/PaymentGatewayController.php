@@ -17,17 +17,13 @@ class PaymentGatewayController extends Controller{
 	/**
 	 * Generate an absolute url for gateways to return to, or send requests to.
 	 * @param  GatewayMessage $message message that redirect applies to.
-	 * @param  string             $status      the intended status / action of the gateway
+	 * @param  string             $action      the intended action of the gateway
 	 * @param  string             $returnurl   the application url to re-redirect to
 	 * @return string                          the resulting redirect url
 	 */
-	public static function get_return_url(GatewayMessage $message, $status = 'complete') {
+	public static function get_endpoint_url($action, $identifier) {
 		return Director::absoluteURL(
-			Controller::join_links(
-				'paymentendpoint', //as defined in _config/routes.yml
-				$message->Identifier,
-				$status
-			)
+			Controller::join_links('paymentendpoint', $identifier, $action)
 		);
 	}
 

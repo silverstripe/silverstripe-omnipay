@@ -165,7 +165,6 @@ abstract class PaymentService extends Object{
 				'Token' => $data->getToken(),
 				'CardReference' => $data->getCardReference(),
 				'Amount' => $data->getAmount(),
-				'Amount' => $data->getAmount(),
 				'Currency' => $data->getCurrency(),
 				'Description' => $data->getDescription(),
 				'TransactionId' => $data->getTransactionId(),

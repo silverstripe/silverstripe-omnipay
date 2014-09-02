@@ -164,6 +164,14 @@ final class Payment extends DataObject{
 				$this->Status == 'Void';
 	}
 
+	/**
+	 * Check the payment is captured.
+	 * @return boolean completion
+	 */
+	public function isCaptured() {
+		return $this->Status == 'Captured';
+	}
+
 	public function forTemplate() {
 		return $this->dbObject('Money');
 	}

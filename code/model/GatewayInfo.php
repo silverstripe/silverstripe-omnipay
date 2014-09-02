@@ -72,8 +72,8 @@ class GatewayInfo{
 
 	/**
 	 * Check for special 'manual' payment type.
-	 * @param  string  $gateway [description]
-	 * @return boolean          [description]
+	 * @param  string  $gateway
+	 * @return boolean
 	 */
 	public static function is_manual($gateway) {
 		return $gateway === 'Manual';
@@ -91,8 +91,8 @@ class GatewayInfo{
 			is_array($parameters[$gateway]['required_fields'])){
 				$fields = $parameters[$gateway]['required_fields'];
 		}
-		//always require the following offsite fields
-		if (!self::is_offsite($gateway)) {
+		//always require the following for on-site gateways (and not manual)
+		if (!self::is_offsite($gateway) && !self::is_manual($gateway)) {
 			$fields = array_merge(
 				$fields,
 				array('name','number','expiryMonth','expiryYear','cvv')

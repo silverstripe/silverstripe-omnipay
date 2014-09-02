@@ -76,11 +76,8 @@ class GatewayFieldsFactory{
 							->setMaxLength(5),
 			"issueNumber" => TextField::create('issueNumber', _t("PaymentForm.ISSUENUMBER", "Issue Number"))
 		);
-		//assumption: no credit card fields are ever required for off-site gateways by default
-		$defaults = GatewayInfo::is_offsite($this->gateway) ? 
-						array() :
-						array('name', 'number', 'expiryMonth', 'expiryYear', 'cvv');
-		$this->cullForGateway($fields, $defaults);
+		
+		$this->cullForGateway($fields);
 		//optionally group date fields
 		if ($this->groupdatefields) {
 			if (isset($fields['startMonth']) && isset($fields['startYear'])) {

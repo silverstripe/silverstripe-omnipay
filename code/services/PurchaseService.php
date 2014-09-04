@@ -51,7 +51,6 @@ class PurchaseService extends PaymentService{
 		$message->FailureURL = $this->cancelurl;
 		$message->write();
 
-		$this->logToFile($request->getParameters(), "PurchaseRequest_post");
 		$gatewayresponse = $this->createGatewayResponse();
 		try {
 			$response = $this->response = $request->send();

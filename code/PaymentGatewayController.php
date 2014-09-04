@@ -55,9 +55,7 @@ class PaymentGatewayController extends Controller{
 		$response = null;
 		switch ($this->request->param('Status')) {
 			case "complete":
-				$serviceResponse = $service->completePurchase(array(
-					'clientIp' => $this->request->getIP()
-				));
+				$serviceResponse = $service->completePurchase();
 				if($serviceResponse->isSuccessful()){
 					$response = $this->redirect($this->getSuccessUrl($message));
 				} else {
@@ -65,9 +63,7 @@ class PaymentGatewayController extends Controller{
 				}
 				break;
 			case "notify":
-				$serviceResponse = $service->completePurchase(array(
-					'clientIp' => $this->request->getIP()
-				));
+				$serviceResponse = $service->completePurchase();
 				// Allow implementations where no redirect happens,
 				// since gateway failsafe callbacks might expect a 2xx HTTP response
 				$response = new SS_HTTPResponse('', 200);

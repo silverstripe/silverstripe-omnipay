@@ -99,6 +99,11 @@ class PurchaseService extends PaymentService{
 	public function completePurchase($data = array()) {
 		$gatewayresponse = $this->createGatewayResponse();
 
+		//set the client IP address, if not already set
+		if(!isset($data['clientIp'])){
+			$data['clientIp'] = Controller::curr()->getRequest()->getIP();
+		}
+
 		$gatewaydata = array_merge($data, array(
 			'amount' => (float) $this->payment->MoneyAmount,
 			'currency' => $this->payment->MoneyCurrency

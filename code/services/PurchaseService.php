@@ -130,6 +130,18 @@ class PurchaseService extends PaymentService{
 		return $gatewayresponse;
 	}
 
+	public function cancelPurchase() {
+		//TODO: do lookup? / try to complete purchase?
+		//TODO: omnipay void call
+		$this->payment->Status = 'Void';
+		$this->payment->write();
+		$this->createMessage('VoidRequest', array(
+			"Message" => "The payment was cancelled."
+		));
+
+		//return response
+	}
+
 	/**
 	 * @return \Omnipay\Common\CreditCard
 	 */

@@ -5,11 +5,15 @@ use Omnipay\Common\CreditCard;
 class PurchaseService extends PaymentService{
 
 	/**
-	 * Attempt to make a payment
-	 * @param  array $data returnUrl/cancelUrl + customer creditcard
-	 * and billing/shipping details.
-	 * @return ResponseInterface omnipay's response class,
-	 * specific to the chosen gateway.
+	 * Attempt to make a payment.
+	 * 
+	 * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
+	 * 	Some keys (e.g. "amount") are overwritten with data from the associated {@link $payment}.
+	 *  If this array is constructed from user data (e.g. a form submission), please take care
+	 *  to whitelist accepted fields, in order to ensure sensitive gateway parameters like "freeShipping" can't be set.
+	 *  If using {@link Form->getData()}, only fields which exist in the form are returned,
+	 *  effectively whitelisting against arbitrary user input.
+	 * @return ResponseInterface omnipay's response class, specific to the chosen gateway.
 	 */
 	public function purchase($data = array()) {
 		if ($this->payment->Status !== "Created") {
@@ -18,27 +22,35 @@ class PurchaseService extends PaymentService{
 		if (!$this->payment->isInDB()) {
 			$this->payment->write();
 		}
-		$message = $this->createMessage('PurchaseRequest');
-		$message->SuccessURL = isset($data['returnUrl']) ?
-							$data['returnUrl'] :
-							$this->returnurl;
-		$message->FailureURL = isset($data['cancelUrl']) ?
-							$data['cancelUrl'] :
-							$this->cancelurl;
-		$message->write();
-		$request = $this->oGateway()->purchase(array_merge(
-			$data,
-			array(
-				'card' => $this->getCreditCard($data),
-				'amount' => (float) $this->payment->MoneyAmount,
-				'currency' => $this->payment->MoneyCurrency,
-				'transactionId' => $message->Identifier,
-				'clientIp' => isset($data['clientIp']) ? $data['clientIp'] : null,
-				'returnUrl' => PaymentGatewayController::get_return_url($message, 'complete'),
-				'cancelUrl' => PaymentGatewayController::get_return_url($message, 'cancel')
-			)
+		//update success/fail urls
+		$this->update($data);
+
+		//set the client IP address, if not already set
+		if(!isset($data['clientIp'])){
+			$data['clientIp'] = Controller::curr()->getRequest()->getIP();
+		}
+
+		$gatewaydata = array_merge($data,array(
+			'card' => $this->getCreditCard($data),
+			'amount' => (float) $this->payment->MoneyAmount,
+			'currency' => $this->payment->MoneyCurrency,
+			//set all gateway return/cancel/notify urls to PaymentGatewayController endpoint
+			'returnUrl' => $this->getEndpointURL("complete", $this->payment->Identifier),
+			'cancelUrl' => $this->getEndpointURL("cancel", $this->payment->Identifier),
+			'notifyUrl' => $this->getEndpointURL("notify", $this->payment->Identifier)
 		));
-		$this->logToFile($request->getParameters(), "PurchaseRequest_post");
+		
+		if(!isset($gatewaydata['transactionId'])){
+			$gatewaydata['transactionId'] = $this->payment->Identifier;
+		}
+
+		$request = $this->oGateway()->purchase($gatewaydata);
+
+		$message = $this->createMessage('PurchaseRequest', $request);
+		$message->SuccessURL = $this->returnurl;
+		$message->FailureURL = $this->cancelurl;
+		$message->write();
+
 		$gatewayresponse = $this->createGatewayResponse();
 		try {
 			$response = $this->response = $request->send();
@@ -48,17 +60,20 @@ class PurchaseService extends PaymentService{
 				//initiate manual payment
 				$this->createMessage('AuthorizedResponse', $response);
 				$this->payment->Status = 'Authorized';
+				$this->payment->write();
 				$gatewayresponse->setMessage("Manual payment authorised");
 			} elseif ($response->isSuccessful()) {
 				//successful payment
 				$this->createMessage('PurchasedResponse', $response);
 				$this->payment->Status = 'Captured';
 				$gatewayresponse->setMessage("Payment successful");
+				$this->payment->write();
 				$this->payment->extend('onCaptured', $gatewayresponse);
 			} elseif ($response->isRedirect()) {
 				// redirect to off-site payment gateway
 				$this->createMessage('PurchaseRedirectResponse', $response);
 				$this->payment->Status = 'Authorized';
+				$this->payment->write();
 				$gatewayresponse->setMessage("Redirecting to gateway");
 			} else {
 				//handle error
@@ -67,7 +82,6 @@ class PurchaseService extends PaymentService{
 					"Error (".$response->getCode()."): ".$response->getMessage()
 				);
 			}
-			$this->payment->write();
 		} catch (Omnipay\Common\Exception\OmnipayException $e) {
 			$this->createMessage('PurchaseError', $e);
 			$gatewayresponse->setMessage($e->getMessage());
@@ -82,11 +96,20 @@ class PurchaseService extends PaymentService{
 	 * This is ususally only called by PaymentGatewayController.
 	 * @return PaymentResponse encapsulated response info
 	 */
-	public function completePurchase() {
+	public function completePurchase($data = array()) {
 		$gatewayresponse = $this->createGatewayResponse();
-		$request = $this->oGateway()->completePurchase(array(
-			'amount' => (float) $this->payment->MoneyAmount
+
+		//set the client IP address, if not already set
+		if(!isset($data['clientIp'])){
+			$data['clientIp'] = Controller::curr()->getRequest()->getIP();
+		}
+
+		$gatewaydata = array_merge($data, array(
+			'amount' => (float) $this->payment->MoneyAmount,
+			'currency' => $this->payment->MoneyCurrency
 		));
+
+		$request = $this->oGateway()->completePurchase($gatewaydata);
 		$this->createMessage('CompletePurchaseRequest', $request);
 		$response = null;
 		try {
@@ -105,6 +128,18 @@ class PurchaseService extends PaymentService{
 		}
 
 		return $gatewayresponse;
+	}
+
+	public function cancelPurchase() {
+		//TODO: do lookup? / try to complete purchase?
+		//TODO: omnipay void call
+		$this->payment->Status = 'Void';
+		$this->payment->write();
+		$this->createMessage('VoidRequest', array(
+			"Message" => "The payment was cancelled."
+		));
+
+		//return response
 	}
 
 	/**

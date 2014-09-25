@@ -31,8 +31,25 @@ class PaymentModelTest extends PaymentTest {
 			'Manual' => 'Manual',
 			'Dummy' => 'Dummy'
 		);
-		$actual = GatewayInfo::get_supported_gateways();
-		$this->assertEquals($expected, $actual, "supported gateways array is created correctly");
+		$gateways = GatewayInfo::get_supported_gateways();
+		$this->assertArrayHasKey('PayPal_Express', $gateways);
+		$this->assertArrayHasKey('PaymentExpress_PxPay', $gateways);
+		$this->assertArrayHasKey('Manual', $gateways);
+		$this->assertArrayHasKey('Dummy', $gateways);
+	}
+
+	public function testCreateIdentifier() {
+		$payment = new Payment();
+		$payment->write();
+		$this->assertNotNull($payment->Identifier);
+		$this->assertNotEquals('', $payment->Identifier);
+		$this->assertEquals(30, strlen($payment->Identifier));
+	}
+
+	public function testChangeIdentifier() {
+		$payment = $this->objFromFixture('Payment', 'payment2');
+		$payment->Identifier = "somethingelse";
+		$this->assertEquals("UNIQUEHASH23q5123tqasdf", $payment->Identifier);
 	}
 
 }

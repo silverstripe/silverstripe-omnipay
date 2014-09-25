@@ -15,6 +15,10 @@ This module is a complete rewrite of the past Payment module. It is not backward
 In a nutshell, it provides a thin wrapping of the PHP Omnipay payments library.
 To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
 
+## Version
+
+1.0
+
 ## Requirements
 
  * [silverstripe framework](https://github.com/silverstripe/silverstripe-framework) 3.1+
@@ -173,6 +177,14 @@ class ShopPayment extends DataExtension {
 }
 ```
 
+## Security
+
+When customizing the payment flow (e.g. subclassing `PaymentForm` or `OrderProcessor`),
+please take care to only pass whitelisted user input to `PurchaseService` and the underlying
+omnipay gateways. The easiest way to ensure no arbitrary data can be injected
+is by using `Form->getData()` rather than acessing `$_REQUEST` directly,
+since this will only return you data for fields originally defined in the form.
+
 ## Debugging payments
 
 A useful way to debug payment issues is to enable file logging:
@@ -185,11 +197,41 @@ Payment:
     file_logging: true #or use 'verbose' for more detailed output
 ```
 
+## Renaming gateways and translation
+
+You can change the front-end visible name of a gateway using the translation system. The gateway name must match what you entered in the `allowed_gateways` yaml config.
+
+For example, inside mysite/lang/en.yml:
+```yaml
+en:
+  Payment:
+    Paystation_Hosted: "Credit Card"
+    PayPal_Express: "PayPal"
+```
+
+This approach can also be used to provide different translations.
+
 ## Caveats and Troubleshooting
 
 Logs will be saved to `debug.log` in the root of your SilverStripe directory.
 
  * Payments have both an amount and a currency. That means you should check if all currencies match if you will be adding them up.
+
+## Migrating from Payment module
+
+Before you import your database and do a DB/build, add the following yaml config to your site:
+```yaml
+---
+Name: payment
+---
+Payment:
+    db:
+        Status: "Enum('Created,Authorized,Captured,Refunded,Void,Incomplete,Success,Failure,Pending','Created')"
+```
+This will re-introduce old enumeration values to the DB.
+
+Run the migration task: yoursite.com/dev/tasks/MigratePaymentTask
+
 
 ## Further Documentation
 

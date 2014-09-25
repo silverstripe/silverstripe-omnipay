@@ -110,6 +110,19 @@ abstract class PaymentService extends Object{
 	}
 
 	/**
+	 * Update class properties via array.
+	 */
+	public function update($data) {
+		if(isset($data['returnUrl'])){
+			$this->setReturnUrl($data['returnUrl']);
+		}
+		if(isset($data['cancelUrl'])){
+			$this->setReturnUrl($data['cancelUrl']);
+		}
+	}
+
+
+	/**
 	 * Get the omnipay gateway associated with this payment,
 	 * with configuration applied.
 	 *
@@ -129,6 +142,14 @@ abstract class PaymentService extends Object{
 		}
 
 		return $gateway;
+	}
+
+	/**
+	 * Generate a return/notify url for off-site gateways (completePayment).
+	 * @return string endpoint url
+	 */
+	protected function getEndpointURL($action, $identifier) {
+		return PaymentGatewayController::get_endpoint_url($action, $identifier);
 	}
 
 	/**
@@ -165,7 +186,6 @@ abstract class PaymentService extends Object{
 				'Token' => $data->getToken(),
 				'CardReference' => $data->getCardReference(),
 				'Amount' => $data->getAmount(),
-				'Amount' => $data->getAmount(),
 				'Currency' => $data->getCurrency(),
 				'Description' => $data->getDescription(),
 				'TransactionId' => $data->getTransactionId(),
@@ -183,9 +203,6 @@ abstract class PaymentService extends Object{
 		));
 		$this->logToFile($output, $type);
 		$message = $type::create($output);
-		if (method_exists($message, 'generateIdentifier')) {
-			$message->generateIdentifier();
-		}
 		$message->write();
 		$this->payment->Messages()->add($message);
 
@@ -229,12 +246,20 @@ abstract class PaymentService extends Object{
 		self::$httpclient = $httpClient;
 	}
 
+	public static function get_http_client() {
+		return self::$httpclient;
+	}
+
 	/**
 	 * Set the symphony http request (for testing)
 	 * @param Symfony\Component\HttpFoundation\Request $httpRequest symphony http request for testing
 	 */
 	public static function set_http_request(Symfony\Component\HttpFoundation\Request $httpRequest) {
 		self::$httprequest = $httpRequest;
+	}
+
+	public static function get_http_request() {
+		return self::$httprequest;
 	}
 
 }

@@ -97,6 +97,7 @@ class PurchaseServiceTest extends PaymentTest {
 		//TODO:
 			//invalid/incorrect card number/date..lhun check (InvalidCreditCardException)
 			//InvalidRequestException thrown when gateway needs specific parameters
+		$this->markTestIncomplete();
 	}
 
 	public function testFailedOnSitePurchase() {
@@ -164,6 +165,7 @@ class PurchaseServiceTest extends PaymentTest {
 		), $payment->Messages());
 
 		//TODO: fail in various ways
+		$this->markTestIncomplete();
 	}
 
 	public function testFailedOffSiteCompletePurchase() {
@@ -174,9 +176,6 @@ class PurchaseServiceTest extends PaymentTest {
 		$this->getHttpRequest()->query->replace(array('result' => 'abc123'));
 		//mimic a redirect or request from offsite gateway
 		$response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/complete");
-		$message = GatewayMessage::get()
-						->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
-						->first();
 		//redirect works
 		$headers = $response->getHeaders();
 		$this->assertEquals(
@@ -184,7 +183,9 @@ class PurchaseServiceTest extends PaymentTest {
 			$headers['Location'],
 			"redirected to shop/incomplete"
 		);
-		$payment = $message->Payment();
+		$payment = Payment::get()
+					->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
+					->first();
 		$this->assertDOSContains(array(
 			array('ClassName' => 'PurchaseRequest'),
 			array('ClassName' => 'PurchaseRedirectResponse'),
@@ -202,14 +203,17 @@ class PurchaseServiceTest extends PaymentTest {
 			)->setReturnUrl("complete");
 
 		$this->setExpectedException("RuntimeException");
+		try{
 		$result = $service->purchase();
-		//TODO: execution halts on exception, so we can't keep testing..
-		//but we can still use the payment model in calculations etc
+		}catch(RuntimeException $e){
+			$this->markTestIncomplete();
 		$totalNZD = Payment::get()->filter('MoneyCurrency', "NZD")->sum();
 		$this->assertEquals(27.23, $totalNZD);
-		//TODO: call gateway functions
 		$service->purchase();
 		$service->completePurchase();
+			//just to assert that exception is thrown
+			throw $e;
+		}
 	}
 
 }

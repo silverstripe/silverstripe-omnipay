@@ -17,17 +17,13 @@ class PaymentGatewayController extends Controller{
 	/**
 	 * Generate an absolute url for gateways to return to, or send requests to.
 	 * @param  GatewayMessage $message message that redirect applies to.
-	 * @param  string             $status      the intended status / action of the gateway
+	 * @param  string             $action      the intended action of the gateway
 	 * @param  string             $returnurl   the application url to re-redirect to
 	 * @return string                          the resulting redirect url
 	 */
-	public static function get_return_url(GatewayMessage $message, $status = 'complete') {
+	public static function get_endpoint_url($action, $identifier) {
 		return Director::absoluteURL(
-			Controller::join_links(
-				'paymentendpoint', //as defined in _config/routes.yml
-				$message->Identifier,
-				$status
-			)
+			Controller::join_links('paymentendpoint', $identifier, $action)
 		);
 	}
 
@@ -37,46 +33,60 @@ class PaymentGatewayController extends Controller{
 	 * but will not update the Payment/Transaction models if they are not found,
 	 * or allowed to be updated.
 	 */
-	public function index() {
-		$message = $this->getRequestMessage();
-		if (!$message || !$message->Payment()->exists()) {
+	public function index() {		
+		$payment = $this->getPayment();
+		if (!$payment) {
 			return $this->httpError(404, _t("Payment.NOTFOUND", "Payment could not be found."));
 		}
-		$payment = $message->Payment();
+
+		//isolate the gateway request message containing success / failure urls
+		$message = $payment->Messages()
+			->filter("ClassName", array("PurchaseRequest","AuthorizeRequest"))
+			->first();
+
 		$service = PurchaseService::create($payment);
+		
 		//redirect if payment is already a success
 		if ($payment->isComplete()) {
-
 			return $this->redirect($this->getSuccessUrl($message));
 		}
-		$redirect = $this->getFailureUrl($message);
+
 		//do the payment update
+		$response = null;
 		switch ($this->request->param('Status')) {
 			case "complete":
-				$response = $service->completePurchase();
-				if($response->isSuccessful()){
-					$redirect = $this->getSuccessUrl($message);
+				$serviceResponse = $service->completePurchase();
+				if($serviceResponse->isSuccessful()){
+					$response = $this->redirect($this->getSuccessUrl($message));
+				} else {
+					$response = $this->redirect($this->getFailureUrl($message));
 				}
 				break;
+			case "notify":
+				$serviceResponse = $service->completePurchase();
+				// Allow implementations where no redirect happens,
+				// since gateway failsafe callbacks might expect a 2xx HTTP response
+				$response = new SS_HTTPResponse('', 200);
+				break;
 			case "cancel":
-				//TODO: store cancellation message
-				$redirect = $this->getFailureUrl($message);
+				//TODO: store cancellation message / void payment
+				$response = $this->redirect($this->getFailureUrl($message));
 				break;
 			default:
-
-				return $this->httpError(404, _t("Payment.INVALIDURL", "Invalid payment url."));
+				$response = $this->httpError(404, _t("Payment.INVALIDURL", "Invalid payment url."));
 		}
 
-		return $this->redirect($redirect);
+		return $response;
 	}
 
 	/**
-	 * Get the message storing the identifier for this payment
-	 * @return GatewayMessage the transaction
+	 * Get the the payment according to the identifer given in the url
+	 * @return Payament the payment
 	 */
-	private function getRequestMessage() {
-		return GatewayMessage::get()
+	private function getPayment() {
+		return Payment::get()
 				->filter('Identifier', $this->request->param('Identifier'))
+				->filter('Identifier:not', "")
 				->first();
 	}
 

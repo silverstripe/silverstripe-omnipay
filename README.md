@@ -7,17 +7,16 @@
 [![Total Downloads](https://poser.pugx.org/burnbright/silverstripe-omnipay/downloads.png)](https://packagist.org/packages/burnbright/silverstripe-omnipay)
 [![Latest Unstable Version](https://poser.pugx.org/burnbright/silverstripe-omnipay/v/unstable.png)](https://packagist.org/packages/burnbright/silverstripe-omnipay)
 
-The aim of this module is to make it easy for developers to eaisly integrate the ability to pay for things with their SilverStripe application.
+The aim of this module is to make it easy for developers to add online payments to their SilverStripe application. It makes heavy use of the [Omnipay Library](https://github.com/thephpleague/omnipay).
 There are many gateway options to choose from, and integrating with additional gateways has a structured approach that should be understandable.
+
 A high quality, simple to use payment module will help to boost the SilverStripe ecosystem, as it allows applications to be profitable.
 
-This module is a complete rewrite of the past Payment module. It is not backwards-compatible.
-In a nutshell, it provides a thin wrapping of the PHP Omnipay payments library.
-To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
+This module is a complete rewrite of the past Payment module. It is not backwards-compatible, but a migration task is available. In a nutshell, it wraps the PHP Omnipay payments library and provides some additional functionality. To understand more about omnipay, see: https://github.com/thephpleague/omnipay
 
 ## Version
 
-1.0
+1.1
 
 ## Requirements
 
@@ -32,8 +31,17 @@ To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
  * Provide visitors with one, or many gateways to choose from.
  * Provides form fields, which can change per-gateway.
  * Caters for different types of gateways: on-site capturing, off-site capturing, and manual payment.
- * Wraps the Omnipay php library.
+ * Wraps the [Omnipay](https://github.com/thephpleague/omnipay) php library.
  * Multiple currencies.
+
+## Compatible Payment Gateways
+
+There are many gateways the come [out of the box](https://github.com/thephpleague/omnipay/tree/1.1#payment-gateways).
+Note that currently this module uses version 1.1 of the ominpay library. Most gateways are packaged with the core library, some you can find seperate. Once we switch to version 2 of the omnipay library, all gateways will be seperate.
+
+Searching packagist is useful: https://packagist.org/search/?q=omnipay
+
+It is not too difficult to write your own gateway integration either, if needed.
 
 ## Installation
 

@@ -22,7 +22,7 @@ To understand more about omnipay, see: https://github.com/adrianmacneil/omnipay
 ## Requirements
 
  * [silverstripe framework](https://github.com/silverstripe/silverstripe-framework) 3.1+
- * [omnipay](https://github.com/omnipay/omnipay) + it's dependencies - which include guzzle and some symphony libraries.
+ * [omnipay](https://github.com/omnipay/omnipay) 1.1 + it's dependencies - which include guzzle and some symphony libraries.
 
 ## Features
 

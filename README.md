@@ -1,4 +1,5 @@
 # SilverStripe Payments via Omnipay
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/burnbright/silverstripe-omnipay?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 [![Build Status](https://api.travis-ci.org/burnbright/silverstripe-omnipay.png)](https://travis-ci.org/burnbright/silverstripe-omnipay)
 [![Code Coverage](https://scrutinizer-ci.com/g/burnbright/silverstripe-omnipay/badges/coverage.png?s=90fe071f1fec0564c6ee8db6678a73ae5aca9207)](https://scrutinizer-ci.com/g/burnbright/silverstripe-omnipay/)

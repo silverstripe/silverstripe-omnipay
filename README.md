@@ -166,6 +166,33 @@ Of course you don't need to chain all of these functions, as you may want to red
 
 After payment has been made, the user will be redirected to the given return url (or cancel url, if they cancelled).
 
+### Passing correct data to the purchase function
+
+The omnipay library has a defined set of parameters that need to be passed in. Here is a list of parameters that you should map your data to:
+```
+transactionId
+firstName
+lastName
+email
+company
+billingAddress1
+billingAddress2
+billingCity
+billingPostcode
+billingState
+billingCountry
+billingPhone
+shippingAddress1
+shippingAddress2
+shippingCity
+shippingPostcode
+shippingState
+shippingCountry
+shippingPhone
+```
+
+**Note:** `transactionId` can be a reference that identifies the thing you are paying for, such as an order reference id. It usually shows up on bank statements for reconciliation purposes, but ultimately depends how the gateway uses it.
+
 ### onCaptured hook
 
 To call your custom code when returning from an off-site gateway, you'll need to

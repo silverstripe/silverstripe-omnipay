@@ -117,7 +117,7 @@ abstract class PaymentService extends Object{
 			$this->setReturnUrl($data['returnUrl']);
 		}
 		if(isset($data['cancelUrl'])){
-			$this->setReturnUrl($data['cancelUrl']);
+			$this->setCancelUrl($data['cancelUrl']);
 		}
 	}
 

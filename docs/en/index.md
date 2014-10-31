@@ -39,7 +39,7 @@ Here are the possible states a payment can have
 
  * Created - new payment model
  * Authorized - payment capture has been authorised by gateway
- * Captured - money has been secussfully recieved
+ * Captured - money has been sucessfully received
  * Completed - completely paid
  * Refund - funds have been returned to payer
  * Voided - payment has been cancelled
@@ -49,7 +49,7 @@ Here are the possible states a payment can have
 
 On-site gateways require credit card details to be gathered on the application site, and off-site credit card details are gathered on another 3rd party website.
 
-For off-site gateways, redirects **back** from the external gateway will first to to `PaymentGatewayController`, and then again redirect the user to your application. The user won't notice the redirect to `PaymentGatewayController`.
+For off-site gateways, redirects **back** from the external gateway will first go to `PaymentGatewayController`, and then again redirect the user to your application. The user won't notice the redirect to `PaymentGatewayController`.
 
 ## Responsibilities
 
@@ -76,7 +76,7 @@ This payment module is responsible for:
 * Handling responses from external gateways
 * Integrating with omnipay
 
-The omnipay library is responsible sending requests to the gateway servers, and parsing responses in to a consistent format.
+The omnipay library is responsible for sending requests to the gateway servers, and parsing responses in to a consistent format.
 
 
 ## Data model
@@ -85,7 +85,7 @@ Developers have flexibility in choosing how `Payment` DataObjects are connected 
 
 Your model you connect payments to will generally be something like: `Bill`, `Invoice`, `Order`, `Donation`, `Registration`
 
-An extesion (`Payable`) has been written to provide the above functionality.
+An extension (`Payable`) has been written to provide the above functionality.
 
 
 ## Gateway Features
@@ -158,7 +158,7 @@ Here is how different gateway scenarios can play out:
 
 ### Off-site 'purchase' gateway:
 
- * Purcahse requested / or request failed
+ * Purchase requested / or request failed
  * Purchase request successful / or gateway responds with failure
  
   ...client now visits external gateway...

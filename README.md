@@ -104,7 +104,45 @@ Payment:
 
 The [SilverStripe documentation](http://doc.silverstripe.com/framework/en/topics/configuration#setting-configuration-via-yaml-files) explains more about yaml config files.
 
-## Usage
+## Integrating with your application
+
+You can integrate your application with this module in a few varying ways, with varying levels of detail and complexity.
+
+### Payment Controller
+
+A `PaymentController` has been created to handle the user tasks of:
+
+ * Choosing from a list of optional gateways (if necessary)
+ * Providing a form for on-site gateways, or gateways that require specific data that needs to be captured from the user, which hasn't already been captured in your model.
+ * Retrying payment (possibly with another gateway)
+
+`PaymentController` is intended to be nested within another of your application's contollers, where the `Payable` model has been persisted to the database, and is still accessible on subsequent requests.
+
+It extends `Page_Controller` and so that the Page templates are used, and any functions you have defined on Page are still available to the template.
+
+The constructor uses a similar format to `Form`, where the arguments are:
+
+ 1. The parent controller - usually `$this`
+ 2. The action the controller is being constructed in - e.g. `payment`
+ 3. The `Payable` (thing being paid for). This should have the `Payable` extension applied - e.g. a `Registration` or `Order` object.
+ 4. The total cost of the `Payable` as a floating point number (not the remaining amount to be paid) - e.g. `40.50`
+
+```php
+public function payment() {
+    //get previously stored registration
+    $registration = EventRegistration::get()
+                        ->byID(Session::get("Event".$this->ID."Registration"));
+    if(!$registration){
+        //go back to controller index
+        return $this->redirect($this->Link());
+    }
+    //create a PaymentController for handling payment UI
+    $controller = new PaymentController($this, "payment", $registration, $registration->Total);
+    $controller->setSuccessURL($this->Link('complete'));
+
+    return $controller;
+}
+```
 
 ### List available gateways
 

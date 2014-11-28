@@ -63,6 +63,8 @@ You can also choose to enable file logging by setting `file_logging` to 1.
 Name: payment
 ---
 Payment:
+    defaults:
+        MoneyCurrency: NZD
     allowed_gateways:
         - 'PayPal_Express'
         - 'PaymentExpress_PxPay'

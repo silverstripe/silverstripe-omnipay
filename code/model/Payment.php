@@ -22,7 +22,8 @@ final class Payment extends DataObject{
 	);
 
 	private static $defaults = array(
-		'Status' => 'Created'
+		'Status' => 'Created',
+		'MoneyCurrency' => 'NZD'
 	);
 
 	private static $casting = array(
@@ -81,10 +82,13 @@ final class Payment extends DataObject{
 	 * @param  string $currency the currency to set
 	 * @return  Payment this object for chaining
 	 */
-	public function init($gateway, $amount, $currency) {
+	public function init($gateway, $amount, $currency = null) {
 		$this->setGateway($gateway);
 		$this->setAmount($amount);
-		$this->setCurrency($currency);
+		if($currency){
+			$this->setCurrency($currency);
+		}
+
 		return $this;
 	}
 

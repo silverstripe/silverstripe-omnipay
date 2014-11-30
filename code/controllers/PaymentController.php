@@ -41,20 +41,36 @@ class PaymentController extends Page_Controller{
 	 * Set the url to visit after a payment completes.
 	 * @param string $url
 	 */
-	public function setSuccessURL($url){
+	public function setSuccessURL($url) {
 		$this->successurl = $url;
 
 		return $this;
 	}
 
 	/**
+	 * Get the success url 
+	 * @return string
+	 */
+	public function getSuccessURL() {
+		return $this->successurl;
+	}
+
+	/**
 	 * Set the url to visit after cancelling a payment.
 	 * @param string $url
 	 */
-	public function setCancelURL($url){
+	public function setCancelURL($url) {
 		$this->cancelurl = $url;
 
 		return $this;
+	}
+
+	/**
+	 * Get the cancel url
+	 * @return string|null
+	 */
+	public function getCancelURL() {
+		return $this->cancelurl;
 	}
 
 	/**
@@ -63,6 +79,39 @@ class PaymentController extends Page_Controller{
 	 */
 	public function isPaid() {
 		return ($this->payable->TotalPaid() >= $this->amount);
+	}
+
+	/**
+	 * Get the object being paid for
+	 * @return DataObjectInterface
+	 */
+	public function getPayable(){
+		return $this->payable;
+	}
+
+	/**
+	 * Get the amount
+	 * @return float
+	 */
+	public function getAmount(){
+		return $this->amount;
+	}
+
+	/**
+	 * Set the currency for this payment
+	 */
+	public function setCurrency($currency) {
+		$this->currency = $currency;
+
+		return $this;
+	}
+
+	/**
+	 * Get the currency of the payment
+	 * @return string
+	 */
+	public function getCurrency() {
+		return $this->currency;
 	}
 
 	/**

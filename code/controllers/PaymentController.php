@@ -83,21 +83,22 @@ class PaymentController extends Page_Controller{
 	 */
 	public function index() {
 		$money = $this->getMoney();
-		$content = sprintf(_t(
-			"PaymentController.MAKINGPAYMENT",
-			"Making payment for %s (%s)"
-		), $money->Nice(), $money->getShortName());
 		$newpayment = $this->getCurrentPayment();
 		$form = '';
 		if($newpayment){
 			$form = $this->GatewayDataForm();
-			$content .= " via the ".GatewayInfo::nice_title($newpayment->Gateway)." method";
 		}else{
 			$form = $this->GatewaySelectForm();
 		}
 
+		$data = new ArrayData(array(
+			'CurrentPayment' => $newpayment,
+			'Payable' => $this->payable,
+			'Amount' => $money
+		));
+
 		return array(
-			'Content' => "<p>".$content.".</p>",
+			'Content' => $data->renderWith("PaymentControllerContent"),
 			'Form' => $form
 		);
 	}

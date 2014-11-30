@@ -23,6 +23,9 @@ class Payable extends DataExtension {
 		);
 	}
 
+	/**
+	 * Get the total sum of all captured payments.
+	 */
 	public function TotalPaid() {
 		$paid = 0;
 		if ($payments = $this->owner->Payments()) {
@@ -32,7 +35,12 @@ class Payable extends DataExtension {
 				}
 			}
 		}
+		
 		return $paid;
 	}
 
+	public function PaymentHistory(){
+		return $this->owner->Payments()
+			->filter("Status:not", array("Created"));
+	}
 }

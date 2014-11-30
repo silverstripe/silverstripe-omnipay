@@ -4,6 +4,21 @@ use Omnipay\Common\CreditCard;
 
 class PurchaseService extends PaymentService{
 
+	protected $manualpurchasestatus = "Authorized";
+
+	/**
+	 * For manual payments, choose if the payment
+	 * will become "Authorized" or "Captured" upon
+	 * purchase.
+	 *
+	 * Note: using "Authorized" as the 
+	 */
+	public function setManualPurchaseStatus($status) {
+		$this->manualpurchasestatus = $status;
+
+		return $this;
+	}
+
 	/**
 	 * Attempt to make a payment.
 	 * 
@@ -56,8 +71,10 @@ class PurchaseService extends PaymentService{
 			$response = $this->response = $request->send();
 			$gatewayresponse->setOmnipayResponse($response);
 			//update payment model
-			if (GatewayInfo::is_manual($this->payment->Gateway)) {
-				//initiate manual payment
+			if ($this->manualpurchasestatus == "Authorized" &&
+				GatewayInfo::is_manual($this->payment->Gateway)
+			) {
+				//initiate 'authorized' manual payment
 				$this->createMessage('AuthorizedResponse', $response);
 				$this->payment->Status = 'Authorized';
 				$this->payment->write();

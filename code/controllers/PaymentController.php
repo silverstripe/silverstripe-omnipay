@@ -223,6 +223,8 @@ class PaymentController extends Page_Controller{
 		$response = PurchaseService::create($payment)
 					->setReturnUrl($this->successurl)
 					->setCancelUrl($this->cancelurl)
+					//manual payments need to become "Captured" to work with this controller
+					->setManualPurchaseStatus("Captured")
 					->purchase($data);
 
 		return $response->redirect();

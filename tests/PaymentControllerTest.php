@@ -1,5 +1,5 @@
 <?php
-
+if(class_exists("Page_Controller")){
 class PaymentControllerTest extends PaymentTest{
 
 	protected $extraDataObjects = array(
@@ -85,4 +85,5 @@ class PaymentControllerTest_Payable extends DataObject implements TestOnly{
 		return 100;
 	}
 
+}
 }

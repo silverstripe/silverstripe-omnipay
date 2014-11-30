@@ -9,7 +9,8 @@
 		"omnipay/omnipay": "1.1.x"
 	},
 	"require-dev": {
-		"guzzle/plugin-mock": "~3.1"
+		"guzzle/plugin-mock": "~3.1",
+		"silverstripe/cms": "~3.1"
 	},
 	"extra": {
 		"installer-name": "omnipay"

@@ -1,5 +1,6 @@
 <?php
 
+if(class_exists("Page_Controller")){
 /**
  * Handles making payment(s) for a given DataObject that is extended with Payable.
  */
@@ -291,4 +292,5 @@ class PaymentController extends Page_Controller{
 		return $money;
 	}
 
+}
 }

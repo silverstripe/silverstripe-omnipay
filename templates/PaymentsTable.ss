@@ -2,7 +2,7 @@
 	<thead>
 		<tr>
 			<th>Date</th>
-			<th>Status</th>
+			<th>Method</th>
 			<th>Amount</th>
 			<th>Status</th>
 		</tr>

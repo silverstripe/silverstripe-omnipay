@@ -43,4 +43,17 @@ class Payable extends DataExtension {
 		return $this->owner->Payments()
 			->filter("Status:not", array("Created"));
 	}
+
+	/**
+	 * Cancel any payments that have not completed.
+	 */
+	public function tidyPayments() {
+		foreach($this->Payments() as $payment){
+			if(!$payment->isComplete()){
+				$response = PurchaseService::create($payment)
+					->cancelPurchase();
+			}
+		}
+	}
+
 }

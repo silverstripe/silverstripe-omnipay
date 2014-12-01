@@ -1,3 +1,3 @@
 <p>
-	Making payment for $Amount.Nice<% if CurrentPayment %> via the $CurrentPayment.Gateway method<% end_if %>.
+	Making payment for $Amount.Nice<% if CurrentPayment %> via the $CurrentPayment.GatewayTitle method<% end_if %>.
 </p>

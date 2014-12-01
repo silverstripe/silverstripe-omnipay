@@ -171,11 +171,11 @@ class PaymentController extends Page_Controller{
 	public function GatewaySelectForm() {
 		$gateways = GatewayInfo::get_supported_gateways();
 		$fields = new FieldList(
-			new OptionsetField("Gateway", "Gateway", $gateways)
+			new OptionsetField("Gateway", _t("PaymentController.METHOD", "Payment Method"), $gateways)
 		);
 		$validator = new RequiredFields('Gateway');
 		$actions = new FieldList(
-			new FormAction("select", "Make Payment")
+			new FormAction("select", _t("PaymentController.DIFFERENTMETHOD", "Make Payment"))
 		);
 		$form = new Form($this, "GatewaySelectForm", $fields, $actions, $validator);
 		$this->extend('updateGatewaySelectForm', $form);
@@ -185,7 +185,7 @@ class PaymentController extends Page_Controller{
 
 	public function select($data, $form) {
 		if(!GatewayInfo::is_supported($data['Gateway'])){
-			$form->addErrorMessage("Gateway", "Method is not supported", "bad");
+			$form->addErrorMessage("Gateway", _t("PaymentController.METHODNOTSUPPORTED", "Method is not supported"), "bad");
 			return $this->redirectBack();
 		}
 		//create payment using gateway
@@ -222,8 +222,8 @@ class PaymentController extends Page_Controller{
 		//TODO: never let CC details be stored in session (e.g. validation)
 		//TODO: force requirement of SSL on live sites
 		$actions = new FieldList(
-			$cancelaction = new FormAction("cancel", "Choose Different Method"),
-			$payaction = new FormAction("pay", "Make Payment")
+			$cancelaction = new FormAction("cancel", _t("PaymentController.DIFFERENTMETHOD", "Choose Different Method")),
+			$payaction = new FormAction("pay", _t("PaymentController.DIFFERENTMETHOD", "Make Payment"))
 		);
 		$cancelaction->setAttribute("formnovalidate", "formnovalidate");
 		$validator = new RequiredFields(

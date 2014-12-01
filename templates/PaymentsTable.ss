@@ -9,7 +9,7 @@
 	</thead>
 	<tbody>
 		<% loop $Me %>
-			<tr>
+			<tr class="$Status.LowerCase">
 				<td>$Created.Nice</td>
 				<td>$GatewayTitle</td>
 				<td>$Money.Nice</td>

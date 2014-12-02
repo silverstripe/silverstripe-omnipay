@@ -56,4 +56,11 @@ class Payable extends DataExtension {
 		}
 	}
 
+	public function LastCapturedPayment(){
+		return $this->owner->Payments()
+			->filter("Status", "Captured")
+			->sort("Created", "DESC")
+			->first();
+	}
+
 }

@@ -70,6 +70,8 @@ final class Payment extends DataObject{
 			GatewayInfo::get_supported_gateways()
 		)->setHasEmptyDefault(true), 'Status');
 		$fields->fieldByName('Status')->setHasEmptyDefault(true);
+		
+		$context->addFilter(new PartialMatchFilter('Gateway'));
 
 		return $context;
 	}

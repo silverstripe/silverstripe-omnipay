@@ -75,9 +75,17 @@ class GatewayInfo{
 	 * @param  string  $gateway
 	 * @return boolean
 	 */
-	public static function is_manual($gateway) {
-		return $gateway === 'Manual';
-	}
+    public static function is_manual($gateway) {
+        $manualGateways = Config::inst()->forClass('Payment')->manual_gateways;
+
+        // if not defined in config, set default manula gateway to 'Manual'
+        if (!$manualGateways)
+        {
+            $manualGateways = array('Manual');
+        }
+
+        return in_array($gateway,$manualGateways);
+    }
 
 	/**
 	 * Get the required parameters for a given gateway

@@ -27,7 +27,7 @@ Use this module to provide payment for things like:
 
 ### Architecture
 
-`Payment` is the main data model. It contains information such as the gateway (being) used to make the payment, the monetary amount (ammount + currency), and the status of the payment.
+`Payment` is the main data model. It contains information such as the gateway (being) used to make the payment, the monetary amount (amount + currency), and the status of the payment.
 
 `Payment` has many `Messages`. These represent all the types of logging / transaction messages associated with a single payment.
 

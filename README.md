@@ -149,6 +149,26 @@ Payment:
                         - 'startYear'
 ```
 
+### Make your model Payable
+
+You can optionally add the `Payable` extension to your model (e.g. Order, Subscription, Donation, Registration).
+This will add a has_many `Payment` relationship to your model, and provide some additional functions
+**NOTE:** You must create the associated has_one relationship on `Payment` yourself. This can be done with an extension or via the yaml config system.
+For example, the following extension will be applied to `Payment`:
+```php
+class ShopPayment extends DataExtension {
+    private static $has_one = array(
+        'Order' => 'Order'
+    );
+}
+```
+With yaml:
+```yaml
+Payment:
+    has_one:
+        Order: Order
+```
+
 ### Make a purchase
 
 Using function chaining, we can create and configure a new payment object, and submit a request to the chosen gateway. The response object has a `redirect` function built in that will either redirect the user to the external gateway site, or to the given return url.

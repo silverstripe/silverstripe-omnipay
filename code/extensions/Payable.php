@@ -39,9 +39,32 @@ class Payable extends DataExtension {
 		return $paid;
 	}
 
-	public function PaymentHistory(){
+	/**
+	 * Get a history of payments
+	 * Excluding "Created" payments.
+	 */
+	public function PaymentHistory() {
 		return $this->owner->Payments()
 			->filter("Status:not", array("Created"));
+	}
+
+	/**
+	 * Get the most recently started payment
+	 */
+	public function LastPayment() {
+		return $this->owner->Payments()
+			->sort("Created", "DESC")
+			->first();
+	}
+
+	/**
+	 * Get the most recenty captured payment
+	 */
+	public function LastCapturedPayment() {
+		return $this->owner->Payments()
+			->filter("Status", "Captured")
+			->sort("Created", "DESC")
+			->first();
 	}
 
 	/**
@@ -54,13 +77,6 @@ class Payable extends DataExtension {
 					->cancelPurchase();
 			}
 		}
-	}
-
-	public function LastCapturedPayment(){
-		return $this->owner->Payments()
-			->filter("Status", "Captured")
-			->sort("Created", "DESC")
-			->first();
 	}
 
 }

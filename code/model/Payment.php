@@ -159,6 +159,15 @@ final class Payment extends DataObject{
 	}
 
 	/**
+	 * Get messages applicible to the user.
+	 * @return DataList messages
+	 */
+	public function getUserMessages() {
+		return $this->Messages()
+				->filter("Message:not", "");
+	}
+
+	/**
 	 * This payment requires no more processing.
 	 * @return boolean completion
 	 */

@@ -257,10 +257,8 @@ class PaymentController extends Page_Controller{
 	 */
 	public function pay($data, $form) {
 		$payment = $this->getCurrentPayment();
-		//data from form is safe
-		$data = $form->getData();
-		//TODO: pass in custom data
-		return $this->processPayment($payment, $data);
+		
+		return $this->processPayment($payment, $form->getData());
 	}
 
 	/**
@@ -270,6 +268,14 @@ class PaymentController extends Page_Controller{
 	 * @param  array $data
 	 */
 	protected function processPayment(Payment $payment, $data) {
+		if($this->payable->hasMethod("getOmnipayMappedData")){
+			$odata = $this->payable->getOmnipayMappedData();
+			if(!is_array($odata)){
+				throw new UnexpectedValueException("getOmnipayMappedData must return an array");
+			}
+			$data = array_merge($odata, $data);
+		}
+
 		$response = PurchaseService::create($payment)
 					->setReturnUrl($this->successurl)
 					->setCancelUrl($this->cancelurl)

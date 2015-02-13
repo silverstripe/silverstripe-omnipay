@@ -20,6 +20,7 @@ class PaymentControllerTest extends PaymentTest{
 		$parent = new Page_Controller(new Page(array(
 			'URLSegment' => 'test'
 		)));
+
 		return new PaymentController($parent, "payment", $payable, $payable->Cost);
 	}
 
@@ -68,21 +69,45 @@ class PaymentControllerTest extends PaymentTest{
 		$this->markTestIncomplete();
 	}
 
+	/**
+	 * Test payment via omnipay
+	 */
 	public function testPayment() {
-		//$controller->pay()
-		$this->markTestIncomplete();
+
+		$controller = $this->getController();
+		$payable = $controller->getPayable();
+		//set current payment
+
+		$data = array(
+			'action_pay' => 'Make Payment'
+		);
+		$form = $controller->GatewayDataForm();
+		$form->loadDataFrom($data);
+		$controller->pay($data, $form);
+		
+		$this->assertEquals(100, $payable->TotalPaid());
 	}
 	
 }
 
 class PaymentControllerTest_Payable extends DataObject implements TestOnly{
 
+	protected $customdata = array();
+
 	private static $extensions = array(
 		"Payable"
 	);
 
-	function getCost(){
+	public function setCustomData($customdata) {
+		$this->customdata = $customdata;
+	}
+
+	public function getCost(){
 		return 100;
+	}
+
+	public function getOmnipayMappedData() {
+		return $this->customdata;
 	}
 
 }

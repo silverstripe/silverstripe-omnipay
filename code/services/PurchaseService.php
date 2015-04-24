@@ -109,6 +109,8 @@ class PurchaseService extends PaymentService{
 			'currency' => $this->payment->MoneyCurrency
 		));
 
+		$this->payment->extend('onBeforeCompletePurchase', $gatewaydata);
+
 		$request = $this->oGateway()->completePurchase($gatewaydata);
 		$this->createMessage('CompletePurchaseRequest', $request);
 		$response = null;

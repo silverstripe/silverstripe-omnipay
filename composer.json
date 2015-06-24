@@ -5,7 +5,7 @@
 	"license": "BSD-3-Clause",
 	"keywords": ["silverstripe","payment","omnipay"],
 	"require": {
-		"silverstripe/framework": "~3.1",
+		"silverstripe/framework": ">=3.1",
 		"omnipay/omnipay": "1.1.x"
 	},
 	"require-dev": {

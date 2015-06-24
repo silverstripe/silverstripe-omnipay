@@ -12,6 +12,8 @@ matrix:
       env: DB=PGSQL CORE_RELEASE=3.1
     - php: 5.6
       env: DB=SQLITE CORE_RELEASE=3.2
+    - php: 5.6
+      env: DB=SQLITE CORE_RELEASE=master
     - php: 5.4
       env: DB=SQLITE CORE_RELEASE=3.1 COVERAGE=1
 

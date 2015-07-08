@@ -177,7 +177,7 @@ class PaymentController extends Page_Controller{
 		$actions = new FieldList(
 			new FormAction("select", _t("PaymentController.DIFFERENTMETHOD", "Make Payment"))
 		);
-		$form = new Form($this, "GatewaySelectForm", $fields, $actions, $validator);
+		$form = Form::create($this, "GatewaySelectForm", $fields, $actions, $validator);
 		$this->extend('updateGatewaySelectForm', $form);
 
 		return $form;

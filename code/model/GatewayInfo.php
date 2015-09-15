@@ -6,20 +6,24 @@
 
 use Omnipay\Common\GatewayFactory;
 
-class GatewayInfo{
+class GatewayInfo {
 
 	/**
-	 * Get the available configured payment types, optionally with i18n readable names.
+	 * Get the available configured payment types, optionally with 
+	 * i18n readable names.
 	 * @param bool $nice make the array values i18n readable.
 	 * @return array map of gateway short name to translated long name.
 	 */
 	public static function get_supported_gateways($nice = true) {
 		$allowed = Config::inst()->forClass('Payment')->allowed_gateways;
+
 		if (!is_array($allowed)) {
 			//include the manual payment type by default, if no gateways are configured
 			$allowed = array("Manual");
 		}
+
 		$allowed = array_combine($allowed, $allowed);
+
 		if ($nice) {
 			$allowed = array_map('GatewayInfo::nice_title', $allowed);
 		}
@@ -27,14 +31,29 @@ class GatewayInfo{
 		return $allowed;
 	}
 
+	/**
+	 * Returns the nice title for the given gateway classname. This will use
+	 * the provided {@link Gateway::getName()} method. This can be overridden
+	 * via the SilverStripe Configuration API.
+	 *
+	 * @param string $name
+	 *
+	 * @return string
+	 */
 	public static function nice_title($name) {
 		$gateway = null;
+
 		try {
 			$factory = new GatewayFactory();
 			$gateway = $factory->create($name);
 		} catch (Exception $e) {
 			/** do nothing */
 		}
+
+		if($title = Config::inst()->get($name, 'nice_title')) {
+			return $title;
+		}
+
 		return _t(
 			"Payment.".$name,
 			$gateway ? $gateway->getName() : $name

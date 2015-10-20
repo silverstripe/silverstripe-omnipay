@@ -1,37 +1,37 @@
 Payment:
-	payment1:
-		Gateway: Manual
-		MoneyAmount: 20.23
-		MoneyCurrency: NZD
-		Status: Created
-		Created: 2013-10-10 12:00:00
-		Identifier: ce3a0b03349078d8e85d1de8ded3f0
-	payment2:
-		Gateway: PaymentExpress_PxPay
-		MoneyAmount: 1234.56
-		MoneyCurrency: USD
-		Status: Authorized
-		Identifier: UNIQUEHASH23q5123tqasdf
-	payment3:
-		Gateway: PaymentExpress_PxPay
-		MoneyAmount: 769.50
-		MoneyCurrency: AUD
-		Status: Captured
-	payment4:
-		Gateway: UknownGateway
-		MoneyAmount: 2.50
-		MoneyCurrency: NZD
-		Status: Captured
+  payment1:
+    Gateway: Manual
+    MoneyAmount: 20.23
+    MoneyCurrency: NZD
+    Status: Created
+    Created: 2013-10-10 12:00:00
+    Identifier: ce3a0b03349078d8e85d1de8ded3f0
+  payment2:
+    Gateway: PaymentExpress_PxPay
+    MoneyAmount: 1234.56
+    MoneyCurrency: USD
+    Status: Authorized
+    Identifier: UNIQUEHASH23q5123tqasdf
+  payment3:
+    Gateway: PaymentExpress_PxPay
+    MoneyAmount: 769.50
+    MoneyCurrency: AUD
+    Status: Captured
+  payment4:
+    Gateway: UknownGateway
+    MoneyAmount: 2.50
+    MoneyCurrency: NZD
+    Status: Captured
 
 GatewayMessage:
-	message1:
-		ClassName: PurchaseRequest
-		Reference:
-		Message:
-		Code:
-		PaymentID: =>Payment.payment2
-		SuccessURL: 'shop/complete'
-		FailureURL: 'shop/incomplete'
-	message2:
-		ClassName: PurchaseRedirectResponse
-		PaymentID: =>Payment.payment2
+  message1:
+    ClassName: PurchaseRequest
+    Reference:
+    Message:
+    Code:
+    PaymentID: =>Payment.payment2
+    SuccessURL: 'shop/complete'
+    FailureURL: 'shop/incomplete'
+  message2:
+    ClassName: PurchaseRedirectResponse
+    PaymentID: =>Payment.payment2

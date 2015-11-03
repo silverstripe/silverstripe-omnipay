@@ -6,7 +6,7 @@
 	"keywords": ["silverstripe","payment","omnipay"],
 	"require": {
 		"silverstripe/framework": ">=3.1",
-		"omnipay/omnipay": "1.1.x"
+		"omnipay/omnipay": "~2.0"
 	},
 	"require-dev": {
 		"guzzle/plugin-mock": "~3.1"

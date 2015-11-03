@@ -17,7 +17,7 @@ class PaymentGatewayControllerTest extends PaymentTest{
 
 	public function testCompleteEndpoint() {
 		$this->setMockHttpResponse(
-			'PaymentExpress/Mock/PxPayCompletePurchaseSuccess.txt'
+			'paymentexpress/tests/Mock/PxPayCompletePurchaseSuccess.txt'
 		);
 		//mock the 'result' get variable into the current request
 		$this->getHttpRequest()->query->replace(array('result' => 'abc123'));
@@ -43,7 +43,7 @@ class PaymentGatewayControllerTest extends PaymentTest{
 
 	public function testNotifyEndpoint() {
 		$this->setMockHttpResponse(
-			'PaymentExpress/Mock/PxPayCompletePurchaseSuccess.txt'
+			'paymentexpress/tests/Mock/PxPayCompletePurchaseSuccess.txt'
 		);
 		//mock the 'result' get variable into the current request
 		$this->getHttpRequest()->query->replace(array('result' => 'abc123'));

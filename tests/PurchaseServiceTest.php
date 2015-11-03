@@ -62,7 +62,7 @@ class PurchaseServiceTest extends PaymentTest {
 	public function testOnSitePurchase() {
 		$payment = $this->payment->setGateway('PaymentExpress_PxPost');
 		$service = new PurchaseService($payment);
-		$this->setMockHttpResponse('PaymentExpress/Mock/PxPostPurchaseSuccess.txt');//add success mock response from file
+		$this->setMockHttpResponse('paymentexpress/tests/Mock/PxPostPurchaseSuccess.txt');//add success mock response from file
 		$response = $service->purchase(array(
 			'firstName' => 'joe',
 			'lastName' => 'bloggs',
@@ -103,7 +103,7 @@ class PurchaseServiceTest extends PaymentTest {
 	public function testFailedOnSitePurchase() {
 		$payment = $this->payment->setGateway('PaymentExpress_PxPost');
 		$service = new PurchaseService($payment);
-		$this->setMockHttpResponse('PaymentExpress/Mock/PxPostPurchaseFailure.txt');//add success mock response from file
+		$this->setMockHttpResponse('paymentexpress/tests/Mock/PxPostPurchaseFailure.txt');//add success mock response from file
 		$response = $service->purchase(array(
 			'number' => '4111111111111111', //this creditcard will decline
 			'expiryMonth' => '5',
@@ -123,7 +123,7 @@ class PurchaseServiceTest extends PaymentTest {
 	public function testOffSitePurchase() {
 		$payment = $this->payment->setGateway('PaymentExpress_PxPay');
 		$service = new PurchaseService($payment);
-		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayPurchaseSuccess.txt');//add success mock response from file
+		$this->setMockHttpResponse('paymentexpress/tests/Mock/PxPayPurchaseSuccess.txt');//add success mock response from file
 		$response = $service->purchase();
 		$this->assertFalse($response->isSuccessful()); //payment has not been captured
 		$this->assertTrue($response->isRedirect());
@@ -133,7 +133,7 @@ class PurchaseServiceTest extends PaymentTest {
 		$this->assertSame("Authorized", $payment->Status);
 		//... user would normally be redirected to external gateway at this point ...
 		//mock complete purchase response
-		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayCompletePurchaseSuccess.txt');
+		$this->setMockHttpResponse('paymentexpress/tests/Mock/PxPayCompletePurchaseSuccess.txt');
 		//mock the 'result' get variable into the current request
 		$this->getHttpRequest()->query->replace(array('result' => 'abc123'));
 		$response = $service->completePurchase();
@@ -152,7 +152,7 @@ class PurchaseServiceTest extends PaymentTest {
 	public function testFailedOffSitePurchase() {
 		$payment = $this->payment->setGateway('PaymentExpress_PxPay');
 		$service = new PurchaseService($payment);
-		$this->setMockHttpResponse('PaymentExpress/Mock/PxPayPurchaseFailure.txt');//add success mock response from file
+		$this->setMockHttpResponse('paymentexpress/tests/Mock/PxPayPurchaseFailure.txt');//add success mock response from file
 		$response = $service->purchase();
 		$this->assertFalse($response->isSuccessful()); //payment has not been captured
 		$this->assertFalse($response->isRedirect()); //redirect won't occur, because of failure
@@ -170,7 +170,7 @@ class PurchaseServiceTest extends PaymentTest {
 
 	public function testFailedOffSiteCompletePurchase() {
 		$this->setMockHttpResponse(
-			'PaymentExpress/Mock/PxPayCompletePurchaseFailure.txt'
+			'paymentexpress/tests/Mock/PxPayCompletePurchaseFailure.txt'
 		);
 		//mock the 'result' get variable into the current request
 		$this->getHttpRequest()->query->replace(array('result' => 'abc123'));

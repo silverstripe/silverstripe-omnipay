@@ -55,7 +55,7 @@ abstract class PaymentTest extends FunctionalTest{
 	}
 
 	protected function setMockHttpResponse($paths) {
-		$testspath = BASE_PATH.'/vendor/omnipay/omnipay/tests/Omnipay'; //TODO: improve?
+		$testspath = BASE_PATH.'/vendor/omnipay'; //TODO: improve?
 		// $this->mockHttpRequests = array();
 		//$that = $this;
 		$mock = new Guzzle\Plugin\Mock\MockPlugin(null, true);

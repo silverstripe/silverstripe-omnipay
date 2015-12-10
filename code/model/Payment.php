@@ -67,6 +67,7 @@ final class Payment extends DataObject{
 		$fields = $context->getSearchFields();
 
 		$fields->removeByName('Gateway');
+		$fields->removeByName('Created');
 		$fields->insertAfter(DropdownField::create('Gateway', _t('Payment.GATEWAY', 'Gateway'),
 			GatewayInfo::get_supported_gateways()
 		)->setHasEmptyDefault(true), 'Money');

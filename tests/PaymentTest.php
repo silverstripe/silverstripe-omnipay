@@ -1,6 +1,6 @@
 <?php
 
-class PaymentTest extends FunctionalTest{
+abstract class PaymentTest extends FunctionalTest{
 
 	public static $fixture_file = array(
 		'payment.yml'

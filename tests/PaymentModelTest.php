@@ -19,18 +19,12 @@ class PaymentModelTest extends PaymentTest {
 	public function testTitle() {
 		$payment = $this->objFromFixture("Payment", "payment1");
 		$this->assertEquals(
-			"Manual NZ$20.23 10/10/2013",
+			$payment->getGatewayTitle() . " NZ$20.23 10/10/2013",
 			$payment->Title
 		);
 	}
 
 	public function testSupportedGateways() {
-		$expected = array(
-			'PayPal_Express' => 'PayPal Express',
-			'PaymentExpress_PxPay' => 'PaymentExpress PxPay',
-			'Manual' => 'Manual',
-			'Dummy' => 'Dummy'
-		);
 		$gateways = GatewayInfo::get_supported_gateways();
 		$this->assertArrayHasKey('PayPal_Express', $gateways);
 		$this->assertArrayHasKey('PaymentExpress_PxPay', $gateways);

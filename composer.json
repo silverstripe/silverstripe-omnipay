@@ -6,10 +6,13 @@
 	"keywords": ["silverstripe","payment","omnipay"],
 	"require": {
 		"silverstripe/framework": ">=3.1",
-		"omnipay/omnipay": "1.1.x"
+		"omnipay/common": "~2.0"
 	},
 	"require-dev": {
-		"guzzle/plugin-mock": "~3.1"
+		"guzzle/plugin-mock": "~3.1",
+		"omnipay/paypal": "~2.5",
+		"omnipay/dummy": "~2.1",
+		"omnipay/paymentexpress": "~2.1"
 	},
 	"extra": {
 		"installer-name": "omnipay"

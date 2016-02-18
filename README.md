@@ -18,12 +18,12 @@ This module is a complete rewrite of the past Payment module. It is not backward
 
 ## Version
 
-1.1
+2.0
 
 ## Requirements
 
  * [silverstripe framework](https://github.com/silverstripe/silverstripe-framework) 3.1+
- * [omnipay](https://github.com/omnipay/omnipay) 1.1 + it's dependencies - which include guzzle and some symphony libraries.
+ * [omnipay](https://github.com/omnipay/common) 2.0 + it's dependencies - which include guzzle and some symphony libraries.
 
 ## Features
 
@@ -47,9 +47,19 @@ It is not too difficult to write your own gateway integration either, if needed.
 
 ## Installation
 
-[Composer](http://doc.silverstripe.org/framework/en/installation/composer) is currently the only supported way to set up this module:
+[Composer](http://doc.silverstripe.org/framework/en/installation/composer) is currently the only supported way to set 
+up this module:
+
 ```
 composer require burnbright/silverstripe-omnipay
+```
+
+As of version 2.0 this module only requires omnipay/common so you will also need to pull in your payment adapter of 
+choice. Have a look at http://omnipay.thephpleague.com/gateways/official/ where the second column is the package name.
+For example, if you site uses PayPal you would also need to run:
+
+```
+composer require omnipay/paypal
 ```
 
 ## Configuration

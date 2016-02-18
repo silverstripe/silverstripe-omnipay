@@ -1,5 +1,9 @@
 <?php
 
+use Omnipay\Common\GatewayFactory;
+use Omnipay\Common\GatewayInterface;
+use Omnipay\PaymentExpress\Message\PxPayAuthorizeResponse;
+
 class PurchaseServiceTest extends PaymentTest {
 
 	public function testDummyOnSitePurchase() {
@@ -179,7 +183,7 @@ class PurchaseServiceTest extends PaymentTest {
 		//redirect works
 		$headers = $response->getHeaders();
 		$this->assertEquals(
-			Director::baseURL()."shop/incomplete", 
+			Director::baseURL()."shop/incomplete",
 			$headers['Location'],
 			"redirected to shop/incomplete"
 		);
@@ -216,4 +220,58 @@ class PurchaseServiceTest extends PaymentTest {
 		}
 	}
 
+
+	public function testTokenGateway() {
+		$stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
+            ->setMethods(array('purchase', 'getName'))
+            ->getMock();
+
+        $stubGateway->expects($this->once())
+            ->method('purchase')
+            ->with(
+                $this->logicalAnd(
+                    $this->arrayHasKey('token'),
+                    $this->contains('ABC123'),
+                    $this->logicalNot($this->arrayHasKey('card'))
+                )
+            )
+            ->will(
+                $this->returnValue($this->stubRequest())
+            )
+        ;
+
+		$payment = $this->payment->setGateway('PaymentExpress_PxPost');
+
+		/** @var PurchaseService $service */
+		$service = PurchaseService::create($payment);
+		$service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
+
+		$result = $service->purchase(array('token' => 'ABC123'));
+	}
+
+
+	/**
+	 * @param GatewayInterface|PHPUnit_Framework_MockObject_MockObject $stubGateway
+	 * @return PHPUnit_Framework_MockObject_MockObject|GatewayFactory
+	 */
+	protected function stubGatewayFactory($stubGateway) {
+		$factory = $this->getMockBuilder('Omnipay\Common\GatewayFactory')->getMock();
+		$factory->expects($this->any())->method('create')->will($this->returnValue($stubGateway));
+		return $factory;
+	}
+
+    /**
+     * @return PHPUnit_Framework_MockObject_MockObject|Omnipay\Common\Message\AbstractRequest
+     */
+    protected function stubRequest() {
+        $request = $this->getMockBuilder('Omnipay\Common\Message\AbstractRequest')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $response = $this->getMockBuilder('Omnipay\Common\Message\AbstractResponse')
+            ->disableOriginalConstructor()
+            ->getMock();
+        $response->expects($this->any())->method('isSuccessful')->will($this->returnValue(true));
+        $request->expects($this->any())->method('send')->will($this->returnValue($response));
+        return $request;
+    }
 }

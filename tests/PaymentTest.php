@@ -9,9 +9,10 @@ abstract class PaymentTest extends FunctionalTest{
 	//don't follow redirect urls
 	protected $autoFollowRedirection = false;
 
+	/** @var Payment */
 	protected $payment;
-	protected $httpClient;
-	protected $httpRequest;
+
+	protected $httpClient, $httpRequest;
 
 	public function setUp() {
 		parent::setUp();

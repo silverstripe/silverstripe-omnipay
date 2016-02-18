@@ -61,12 +61,14 @@ class GatewayInfo{
 	public static function is_offsite($gateway) {
 		$factory = new GatewayFactory;
 		$gateway = $factory->create($gateway);
+		// Some offsite gateways don't separate between authorize and complete requests,
+		// so we need a different way to determine they're off site in the first place
+		// without kicking off a purchase request within omnipay.
+		if(method_exists($gateway, 'isOffsite')) {
+			return !!$gateway->isOffsite();
+		}
 		return (
 			($gateway->supportsCompletePurchase() || $gateway->supportsCompleteAuthorize())
-			// Some offsite gateways don't separate between authorize and complete requests,
-			// so we need a different way to determine they're off site in the first place
-			// without kicking off a purchase request within omnipay.
-			|| (method_exists($gateway, 'isOffsite') && $gateway->isOffsite())
 		);
 	}
 

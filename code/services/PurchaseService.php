@@ -1,12 +1,14 @@
 <?php
 
 use Omnipay\Common\CreditCard;
+use Omnipay\Common\Message\ResponseInterface;
 
-class PurchaseService extends PaymentService{
+class PurchaseService extends PaymentService
+{
 
 	/**
 	 * Attempt to make a payment.
-	 * 
+	 *
 	 * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
 	 * 	Some keys (e.g. "amount") are overwritten with data from the associated {@link $payment}.
 	 *  If this array is constructed from user data (e.g. a form submission), please take care
@@ -30,8 +32,7 @@ class PurchaseService extends PaymentService{
 			$data['clientIp'] = Controller::curr()->getRequest()->getIP();
 		}
 
-		$gatewaydata = array_merge($data,array(
-			'card' => $this->getCreditCard($data),
+		$gatewaydata = array_merge($data, array(
 			'amount' => (float) $this->payment->MoneyAmount,
 			'currency' => $this->payment->MoneyCurrency,
 			//set all gateway return/cancel/notify urls to PaymentGatewayController endpoint
@@ -39,14 +40,24 @@ class PurchaseService extends PaymentService{
 			'cancelUrl' => $this->getEndpointURL("cancel", $this->payment->Identifier),
 			'notifyUrl' => $this->getEndpointURL("notify", $this->payment->Identifier)
 		));
-		
+
+        // Often, the shop will want to pass in a transaction ID (order #, etc), but if there's
+        // not one we need to set it as Ominpay requires this.
 		if(!isset($gatewaydata['transactionId'])){
 			$gatewaydata['transactionId'] = $this->payment->Identifier;
 		}
 
-		$request = $this->oGateway()->purchase($gatewaydata);
+        // We only look for a card if we aren't already provided with a token
+        // Increasingly we can expect tokens or nonce's to be more common (e.g. Stripe and Braintree)
+        if (empty($gatewaydata['token'])) {
+            $gatewaydata['card'] = $this->getCreditCard($data);
+        }
 
-		$message = $this->createMessage('PurchaseRequest', $request);
+        $this->extend('onBeforePurchase', $gatewaydata);
+        $request = $this->oGateway()->purchase($gatewaydata);
+        $this->extend('onAfterPurchase', $request);
+
+        $message = $this->createMessage('PurchaseRequest', $request);
 		$message->SuccessURL = $this->returnurl;
 		$message->FailureURL = $this->cancelurl;
 		$message->write();
@@ -54,6 +65,7 @@ class PurchaseService extends PaymentService{
 		$gatewayresponse = $this->createGatewayResponse();
 		try {
 			$response = $this->response = $request->send();
+            $this->extend('onAfterSendPurchase', $request, $response);
 			$gatewayresponse->setOmnipayResponse($response);
 			//update payment model
 			if (GatewayInfo::is_manual($this->payment->Gateway)) {
@@ -94,7 +106,7 @@ class PurchaseService extends PaymentService{
 	/**
 	 * Finalise this payment, after off-site external processing.
 	 * This is ususally only called by PaymentGatewayController.
-	 * @return PaymentResponse encapsulated response info
+	 * @return GatewayResponse encapsulated response info
 	 */
 	public function completePurchase($data = array()) {
 		$gatewayresponse = $this->createGatewayResponse();
@@ -110,12 +122,14 @@ class PurchaseService extends PaymentService{
 		));
 
 		$this->payment->extend('onBeforeCompletePurchase', $gatewaydata);
+        $request = $this->oGateway()->completePurchase($gatewaydata);
+        $this->payment->extend('onAfterCompletePurchase', $request);
 
-		$request = $this->oGateway()->completePurchase($gatewaydata);
-		$this->createMessage('CompletePurchaseRequest', $request);
+        $this->createMessage('CompletePurchaseRequest', $request);
 		$response = null;
 		try {
 			$response = $this->response = $request->send();
+            $this->extend('onAfterSendCompletePurchase', $request, $response);
 			$gatewayresponse->setOmnipayResponse($response);
 			if ($response->isSuccessful()) {
 				$this->createMessage('PurchasedResponse', $response);

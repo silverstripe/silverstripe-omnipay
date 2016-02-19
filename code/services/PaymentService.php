@@ -11,6 +11,7 @@
  * @package payment
  */
 
+use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\GatewayFactory;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\AbstractRequest;
@@ -19,12 +20,12 @@ abstract class PaymentService extends Object{
 
 	/**
 	 * @var Guzzle\Http\ClientInterface
-	 */	
+	 */
 	private static $httpclient;
-	
+
 	/**
 	 * @var Guzzle\Http\Message\Request
-	 */	
+	 */
 	private static $httprequest;
 
 	/**
@@ -36,21 +37,32 @@ abstract class PaymentService extends Object{
 	 * @var String
 	 */
 	protected $returnurl;
-	
+
 	/**
 	 * @var String
 	 */
 	protected $cancelurl;
-	
+
 	/**
 	 * @var Guzzle\Http\Message\Response
 	 */
 	protected $response;
 
-	/**
-	 * @param Payment
-	 */
+    /**
+     * @var GatewayFactory
+     */
+	protected $gatewayFactory;
+
+	private static $dependencies = array(
+		'gatewayFactory' => '%$\Omnipay\Common\GatewayFactory',
+	);
+
+
+    /**
+     * @param Payment
+     */
 	public function __construct(Payment $payment) {
+		parent::__construct();
 		$this->payment = $payment;
 	}
 
@@ -130,13 +142,13 @@ abstract class PaymentService extends Object{
 	 * @return AbstractGateway omnipay gateway class
 	 */
 	public function oGateway() {
-		$factory = new GatewayFactory;
-		$gateway = $factory->create(
+		$gateway = $this->getGatewayFactory()->create(
 			$this->payment->Gateway,
 			self::$httpclient,
 			self::$httprequest
 		);
-		$parameters = Config::inst()->forClass('Payment')->parameters;
+
+		$parameters = Config::inst()->get('Payment', 'parameters');
 		if (isset($parameters[$this->payment->Gateway])) {
 			$gateway->initialize($parameters[$this->payment->Gateway]);
 		}
@@ -236,7 +248,29 @@ abstract class PaymentService extends Object{
 		return $gatewayresponse;
 	}
 
+	/**
+	 * @return GatewayFactory
+	 */
+	public function getGatewayFactory() {
+        if (!isset($this->gatewayFactory)) {
+            $this->gatewayFactory = Injector::inst()->get('Omnipay\Common\GatewayFactory');
+        }
+
+		return $this->gatewayFactory;
+	}
+
+	/**
+	 * @param GatewayFactory $gatewayFactory
+	 *
+	 * @return $this
+	 */
+	public function setGatewayFactory($gatewayFactory) {
+		$this->gatewayFactory = $gatewayFactory;
+		return $this;
+	}
+
 	//testing functions (could these instead be injected somehow?)
+
 
 	/**
 	 * Set the guzzle client (for testing)

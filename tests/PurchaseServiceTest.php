@@ -222,6 +222,7 @@ class PurchaseServiceTest extends PaymentTest {
 
 
 	public function testTokenGateway() {
+        Payment::config()->token_key = 'token';
 		$stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
             ->setMethods(array('purchase', 'getName'))
             ->getMock();
@@ -246,9 +247,37 @@ class PurchaseServiceTest extends PaymentTest {
 		$service = PurchaseService::create($payment);
 		$service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
 
-		$result = $service->purchase(array('token' => 'ABC123'));
+		$service->purchase(array('token' => 'ABC123'));
 	}
 
+    public function testTokenGatewayWithAlternateKey() {
+        Payment::config()->token_key = 'my_token';
+        $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
+            ->setMethods(array('purchase', 'getName'))
+            ->getMock();
+
+        $stubGateway->expects($this->once())
+            ->method('purchase')
+            ->with(
+                $this->logicalAnd(
+                    $this->arrayHasKey('token'), // my_token should get normalized to this
+                    $this->contains('ABC123'),
+                    $this->logicalNot($this->arrayHasKey('card'))
+                )
+            )
+            ->will(
+                $this->returnValue($this->stubRequest())
+            )
+        ;
+
+        $payment = $this->payment->setGateway('PaymentExpress_PxPost');
+
+        /** @var PurchaseService $service */
+        $service = PurchaseService::create($payment);
+        $service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
+
+        $service->purchase(array('my_token' => 'ABC123'));
+    }
 
 	/**
 	 * @param GatewayInterface|PHPUnit_Framework_MockObject_MockObject $stubGateway

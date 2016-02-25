@@ -49,8 +49,14 @@ class PurchaseService extends PaymentService
 
         // We only look for a card if we aren't already provided with a token
         // Increasingly we can expect tokens or nonce's to be more common (e.g. Stripe and Braintree)
-        if (empty($gatewaydata['token'])) {
+        $tokenKey = Payment::config()->token_key ?: 'token';
+        if (empty($gatewaydata[$tokenKey])) {
             $gatewaydata['card'] = $this->getCreditCard($data);
+        } elseif ($tokenKey !== 'token') {
+            // some gateways (eg. braintree) use a different key but we need
+            // to normalize that for omnipay
+            $gatewaydata['token'] = $gatewaydata[$tokenKey];
+            unset($gatewaydata[$tokenKey]);
         }
 
         $this->extend('onBeforePurchase', $gatewaydata);

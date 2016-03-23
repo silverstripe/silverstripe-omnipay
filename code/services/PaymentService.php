@@ -161,7 +161,7 @@ abstract class PaymentService extends Object{
 	 * @return string endpoint url
 	 */
 	protected function getEndpointURL($action, $identifier) {
-		return PaymentGatewayController::get_endpoint_url($action, $identifier);
+		return PaymentGatewayController::getEndpointUrl($action, $identifier);
 	}
 
 	/**
@@ -271,29 +271,73 @@ abstract class PaymentService extends Object{
 
 	//testing functions (could these instead be injected somehow?)
 
+    /**
+     * Set the guzzle client (for testing)
+     * @param Guzzle\Http\ClientInterface $httpClient guzzle client for testing
+     */
+    public static function setHttpClient(Guzzle\Http\ClientInterface $httpClient)
+    {
+        self::$httpclient = $httpClient;
+    }
+
+    public static function getHttpClient()
+    {
+        return self::$httpclient;
+    }
+
+    /**
+     * Set the symphony http request (for testing)
+     * @param Symfony\Component\HttpFoundation\Request $httpRequest symphony http request for testing
+     */
+    public static function setHttpRequest(Symfony\Component\HttpFoundation\Request $httpRequest)
+    {
+        self::$httprequest = $httpRequest;
+    }
+
+    public static function getHttpRequest()
+    {
+        return self::$httprequest;
+    }
+
+    // -----------------------------------------------------------------------------------------------------------------
+    // Deprecated methods.
+    // TODO: Remove with 3.0
+    // -----------------------------------------------------------------------------------------------------------------
 
 	/**
 	 * Set the guzzle client (for testing)
 	 * @param Guzzle\Http\ClientInterface $httpClient guzzle client for testing
+     * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use setHttpClient
 	 */
 	public static function set_http_client(Guzzle\Http\ClientInterface $httpClient) {
-		self::$httpclient = $httpClient;
+        Deprecation::notice('3.0', 'Snake-case methods will be deprecated with 3.0, use setHttpClient');
+		self::setHttpClient($httpClient);
 	}
 
+    /**
+     * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use getHttpClient
+     */
 	public static function get_http_client() {
-		return self::$httpclient;
+        Deprecation::notice('3.0', 'Snake-case methods will be deprecated with 3.0, use getHttpClient');
+		return self::getHttpClient();
 	}
 
 	/**
 	 * Set the symphony http request (for testing)
 	 * @param Symfony\Component\HttpFoundation\Request $httpRequest symphony http request for testing
+     * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use setHttpRequest
 	 */
 	public static function set_http_request(Symfony\Component\HttpFoundation\Request $httpRequest) {
-		self::$httprequest = $httpRequest;
+        Deprecation::notice('3.0', 'Snake-case methods will be deprecated with 3.0, use setHttpRequest');
+        self::setHttpRequest($httpRequest);
 	}
 
+    /**
+     * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use getHttpRequest
+     */
 	public static function get_http_request() {
-		return self::$httprequest;
+        Deprecation::notice('3.0', 'Snake-case methods will be deprecated with 3.0, use getHttpRequest');
+		return self::getHttpRequest();
 	}
 
 }

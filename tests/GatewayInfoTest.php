@@ -4,8 +4,8 @@ use Omnipay\Common\AbstractGateway;
 class GatewayInfoTest extends SapphireTest {
 
 	public function testIsOffsite() {
-		$this->assertFalse(GatewayInfo::is_offsite('\GatewayInfoTest_OnsiteGateway'));
-		$this->assertTrue(GatewayInfo::is_offsite('\GatewayInfoTest_OffsiteGateway'));
+		$this->assertFalse(GatewayInfo::isOffsite('\GatewayInfoTest_OnsiteGateway'));
+		$this->assertTrue(GatewayInfo::isOffsite('\GatewayInfoTest_OffsiteGateway'));
 	}
 
 }

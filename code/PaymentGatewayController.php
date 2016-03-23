@@ -14,17 +14,30 @@ class PaymentGatewayController extends Controller{
 		'endpoint'
 	);
 
+    /**
+     * Generate an absolute url for gateways to return to, or send requests to.
+     * @param  string $action the intended action of the gateway
+     * @param  string $identifier the unique payment id
+     * @return string the resulting redirect url
+     */
+    public static function getEndpointUrl($action, $identifier)
+    {
+        return Director::absoluteURL(
+            Controller::join_links('paymentendpoint', $identifier, $action)
+        );
+    }
+
 	/**
 	 * Generate an absolute url for gateways to return to, or send requests to.
 	 * @param  GatewayMessage $message message that redirect applies to.
 	 * @param  string             $action      the intended action of the gateway
 	 * @param  string             $returnurl   the application url to re-redirect to
 	 * @return string                          the resulting redirect url
+     * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use getEndpointUrl
 	 */
 	public static function get_endpoint_url($action, $identifier) {
-		return Director::absoluteURL(
-			Controller::join_links('paymentendpoint', $identifier, $action)
-		);
+        Deprecation::notice('3.0', 'Snake-case methods will be deprecated with 3.0, use getEndpointUrl');
+		return self::getEndpointUrl($action, $identifier);
 	}
 
 	/**
@@ -33,7 +46,7 @@ class PaymentGatewayController extends Controller{
 	 * but will not update the Payment/Transaction models if they are not found,
 	 * or allowed to be updated.
 	 */
-	public function index() {		
+	public function index() {
 		$payment = $this->getPayment();
 		if (!$payment) {
 			return $this->httpError(404, _t("Payment.NOTFOUND", "Payment could not be found."));
@@ -45,7 +58,7 @@ class PaymentGatewayController extends Controller{
 			->first();
 
 		$service = PurchaseService::create($payment);
-		
+
 		//redirect if payment is already a success
 		if ($payment->isComplete()) {
 			return $this->redirect($this->getSuccessUrl($message));

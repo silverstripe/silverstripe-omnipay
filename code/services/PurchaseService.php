@@ -74,7 +74,7 @@ class PurchaseService extends PaymentService
             $this->extend('onAfterSendPurchase', $request, $response);
 			$gatewayresponse->setOmnipayResponse($response);
 			//update payment model
-			if (GatewayInfo::is_manual($this->payment->Gateway)) {
+			if (GatewayInfo::isManual($this->payment->Gateway)) {
 				//initiate manual payment
 				$this->createMessage('AuthorizedResponse', $response);
 				$this->payment->Status = 'Authorized';

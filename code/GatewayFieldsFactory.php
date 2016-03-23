@@ -76,7 +76,7 @@ class GatewayFieldsFactory{
 							->setMaxLength(5),
 			"issueNumber" => TextField::create('issueNumber', _t("PaymentForm.ISSUENUMBER", "Issue Number"))
 		);
-		
+
 		$this->cullForGateway($fields);
 		//optionally group date fields
 		if ($this->groupdatefields) {
@@ -162,7 +162,7 @@ class GatewayFieldsFactory{
 	}
 
 	protected function cullForGateway(&$fields, $defaults = array()) {
-		$selected = array_merge($defaults, GatewayInfo::required_fields($this->gateway));
+		$selected = array_merge($defaults, GatewayInfo::requiredFields($this->gateway));
 		foreach ($fields as $name => $field) {
 			if (!in_array($name, $selected)) {
 				unset($fields[$name]);

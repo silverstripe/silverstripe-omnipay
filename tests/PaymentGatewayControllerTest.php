@@ -7,7 +7,7 @@ class PaymentGatewayControllerTest extends PaymentTest{
 	);
 
 	public function testReturnUrlGeneration() {
-		$url = PaymentGatewayController::get_endpoint_url('action', "UniqueHashHere12345");
+		$url = PaymentGatewayController::getEndpointUrl('action', "UniqueHashHere12345");
 		$this->assertEquals(
 			Director::absoluteURL("paymentendpoint/UniqueHashHere12345/action"),
 			$url,
@@ -26,7 +26,7 @@ class PaymentGatewayControllerTest extends PaymentTest{
 		//redirect works
 		$headers = $response->getHeaders();
 		$this->assertEquals(
-			Director::baseURL()."shop/complete", 
+			Director::baseURL()."shop/complete",
 			$headers['Location'],
 			"redirected to shop/complete"
 		);

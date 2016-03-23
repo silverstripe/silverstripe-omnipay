@@ -69,7 +69,7 @@ final class Payment extends DataObject{
 		$fields->removeByName('Gateway');
 		$fields->removeByName('Created');
 		$fields->insertAfter(DropdownField::create('Gateway', _t('Payment.GATEWAY', 'Gateway'),
-			GatewayInfo::get_supported_gateways()
+			GatewayInfo::getSupportedGateways()
 		)->setHasEmptyDefault(true), 'Money');
 
 		// create a localized status dropdown for the search-context
@@ -120,7 +120,7 @@ final class Payment extends DataObject{
 	}
 
 	public function getGatewayTitle() {
-		return GatewayInfo::nice_title($this->Gateway);
+		return GatewayInfo::niceTitle($this->Gateway);
 	}
 
 	/**

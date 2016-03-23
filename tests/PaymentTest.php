@@ -35,8 +35,8 @@ abstract class PaymentTest extends FunctionalTest{
 						->setAmount(1222)
 						->setCurrency("GBP");
 
-		PaymentService::set_http_client($this->getHttpClient());
-		PaymentService::set_http_request($this->getHttpRequest());
+		PaymentService::setHttpClient($this->getHttpClient());
+		PaymentService::setHttpRequest($this->getHttpRequest());
 	}
 
 	protected function getHttpClient() {

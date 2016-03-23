@@ -25,7 +25,7 @@ class PaymentModelTest extends PaymentTest {
 	}
 
 	public function testSupportedGateways() {
-		$gateways = GatewayInfo::get_supported_gateways();
+		$gateways = GatewayInfo::getSupportedGateways();
 		$this->assertArrayHasKey('PayPal_Express', $gateways);
 		$this->assertArrayHasKey('PaymentExpress_PxPay', $gateways);
 		$this->assertArrayHasKey('Manual', $gateways);

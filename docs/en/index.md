@@ -88,6 +88,72 @@ Your model you connect payments to will generally be something like: `Bill`, `In
 An extension (`Payable`) has been written to provide the above functionality.
 
 
+## Configuration
+
+You can configure the allowed Gateways for payments using YAML config files. Example:
+
+```
+Payment:
+  allowed_gateways:
+    - Manual
+    - PayPal_Express
+    - Stripe
+```
+
+To configure Gateway properties, please create an entry for each Gateway under `GatewayInfo`. Example:
+
+```
+GatewayInfo:
+  PayPal_Express:
+    properties:
+      username: 'my.api.username'
+      password: 'APIPASSWORD'
+      testMode: true
+      # More gateway properties
+  Stripe:
+    use_authorize: true
+    properties:
+      # Gateway Properties
+```
+
+Each Gateway can have the following settings:
+
+ - `is_manual` *boolean*: Set this to true if this gateway should be considered a "Manual" Payment (eg. Invoice)
+ - `use_authorize` *boolean*: Whether or not this Gateway should prefer authorize over purchase
+ - `use_async_notification` *boolean*: When set to true, this Gateway will receive asynchronous notifications from the Payment provider
+ - `token_key` *string*: Key for the token parameter
+ - `required_fields` *array*: An array of required form-fields
+ - `properties` *map*: All gateway properties that will be passed along to the Omnipay Gateway instance
+
+### Changing parameters for live environment
+
+You can define separate properties for different environments. Here's an example of that:
+
+```
+GatewayConfig:
+  PayPal_Express:
+    use_authorize: true
+    token_key: 'token'
+    parameters:
+      username: 'sandbox.user.com'
+      password: '1234567890'
+      signature: 'RandomLettersAndNumbers012345'
+      testMode: true
+
+---
+Only:
+  environment: 'live'
+---
+# Supply different credentials for "live" environment.
+GatewayConfig:
+  PayPal_Express:
+    parameters:
+      username: 'live.user.ccom'
+      password: '0987654321'
+      signature: 'live-signature'
+      testMode: false # Make sure to override this to false
+```
+
 ## Gateway Features
 
 Different gateways have different features. This means you may get a different level of functionality, depending on the gateway you choose.
@@ -160,7 +226,7 @@ Here is how different gateway scenarios can play out:
 
  * Purchase requested / or request failed
  * Purchase request successful / or gateway responds with failure
- 
+
   ...client now visits external gateway...
 
  * Complete purchase requested / or request failed (triggered by client return, or by a call from gateway server)

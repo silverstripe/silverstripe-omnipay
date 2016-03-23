@@ -16,15 +16,15 @@ use Omnipay\Common\GatewayFactory;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\AbstractRequest;
 
-abstract class PaymentService extends Object{
-
+abstract class PaymentService extends Object
+{
 	/**
 	 * @var Guzzle\Http\ClientInterface
 	 */
 	private static $httpclient;
 
 	/**
-	 * @var Guzzle\Http\Message\Request
+	 * @var Symfony\Component\HttpFoundation\Request
 	 */
 	private static $httprequest;
 
@@ -142,15 +142,16 @@ abstract class PaymentService extends Object{
 	 * @return AbstractGateway omnipay gateway class
 	 */
 	public function oGateway() {
+        $gatewayName = $this->payment->Gateway;
 		$gateway = $this->getGatewayFactory()->create(
-			$this->payment->Gateway,
+            $gatewayName,
 			self::$httpclient,
 			self::$httprequest
 		);
 
-		$parameters = Config::inst()->get('Payment', 'parameters');
-		if (isset($parameters[$this->payment->Gateway])) {
-			$gateway->initialize($parameters[$this->payment->Gateway]);
+		$parameters = GatewayInfo::getParameters($gatewayName);
+		if (is_array($parameters)) {
+			$gateway->initialize($parameters);
 		}
 
 		return $gateway;

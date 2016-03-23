@@ -25,15 +25,16 @@ Configure your yaml file:
 Name: payment
 ---
 Payment:
-    file_logging: 1
-    allowed_gateways:
-        - 'PayPal_Express'
+  file_logging: 1
+  allowed_gateways:
+    - 'PayPal_Express'
+GatewayInfo:
+  PayPal_Express:
     parameters:
-        PayPal_Express:
-            username: 'name-facilitator_api1.yourdomain.com'
-            password: '327593262995'
-            signature: 'ABACEFAFASVAEVAWEVAEVAWEAEDASDFSAFasdf.ASVawevawevasdva'
-            testMode: true
+      username: 'name-facilitator_api1.yourdomain.com'
+      password: '327593262995'
+      signature: 'ABACEFAFASVAEVAWEVAEVAWEAEDASDFSAFasdf.ASVawevawevasdva'
+      testMode: true
 ```
 
 Don't forgt to add `testMode: true` so that we use the PayPal sandbox.

@@ -49,7 +49,7 @@ class PurchaseService extends PaymentService
 
         // We only look for a card if we aren't already provided with a token
         // Increasingly we can expect tokens or nonce's to be more common (e.g. Stripe and Braintree)
-        $tokenKey = Payment::config()->token_key ?: 'token';
+        $tokenKey = GatewayInfo::getTokenKey($this->payment->Gateway);
         if (empty($gatewaydata[$tokenKey])) {
             $gatewaydata['card'] = $this->getCreditCard($data);
         } elseif ($tokenKey !== 'token') {

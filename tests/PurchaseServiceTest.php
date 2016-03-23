@@ -222,7 +222,9 @@ class PurchaseServiceTest extends PaymentTest {
 
 
 	public function testTokenGateway() {
-        Payment::config()->token_key = 'token';
+        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPost', array(
+            'token_key' => 'token'
+        ));
 		$stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
             ->setMethods(array('purchase', 'getName'))
             ->getMock();
@@ -251,7 +253,9 @@ class PurchaseServiceTest extends PaymentTest {
 	}
 
     public function testTokenGatewayWithAlternateKey() {
-        Payment::config()->token_key = 'my_token';
+        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPost', array(
+            'token_key' => 'my_token'
+        ));
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
             ->setMethods(array('purchase', 'getName'))
             ->getMock();

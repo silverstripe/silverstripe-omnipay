@@ -22,12 +22,13 @@ abstract class PaymentTest extends FunctionalTest{
 			'Manual',
 			'Dummy'
 		);
-		Payment::config()->parameters = array(
-			'PaymentExpress_PxPay' => array(
-				'username' => 'EXAMPLEUSER',
-				'password' => '235llgwxle4tol23l'
-			)
-		);
+
+        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+           'parameters' => array(
+                'username' => 'EXAMPLEUSER',
+                'password' => '235llgwxle4tol23l'
+           )
+        ));
 
 		//set up a payment here to make tests shorter
 		$this->payment = Payment::create()

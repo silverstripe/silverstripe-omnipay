@@ -47,14 +47,14 @@ It is not too difficult to write your own gateway integration either, if needed.
 
 ## Installation
 
-[Composer](http://doc.silverstripe.org/framework/en/installation/composer) is currently the only supported way to set 
+[Composer](http://doc.silverstripe.org/framework/en/installation/composer) is currently the only supported way to set
 up this module:
 
 ```
 composer require burnbright/silverstripe-omnipay
 ```
 
-As of version 2.0 this module only requires omnipay/common so you will also need to pull in your payment adapter of 
+As of version 2.0 this module only requires omnipay/common so you will also need to pull in your payment adapter of
 choice. Have a look at http://omnipay.thephpleague.com/gateways/official/ where the second column is the package name.
 For example, if you site uses PayPal you would also need to run:
 
@@ -64,7 +64,21 @@ composer require omnipay/paypal
 
 ## Configuration
 
-You can configure gateway settings in your `mysite/_config/payment.yml` file. Here you can select a list of allowed gateways, and separately set the gateway-specific settings.
+You can configure gateway settings in your `mysite/_config/payment.yml` file.
+Here you can select a list of allowed gateways, and separately set the gateway-specific settings.
+
+You configure the allowed gateways by setting the `allowed_gateway` config on `Payment`.
+
+To configure the individual Gateway parameters, use `GatewayInfo` and add a key for every Gateway you want to configure.
+
+Each Gateway can have the following settings:
+
+| Setting                  | Type      | Description
+| ------------------------ | --------- | ---
+| `is_manual`              | *boolean* | Set this to true if this gateway should be considered a "Manual" Payment (eg. Invoice)
+| `token_key`              | *string*  | Key for the token parameter
+| `required_fields`        | *array*   | An array of required form-fields
+| `properties`             | *map*     | All gateway properties that will be passed along to the Omnipay Gateway instance
 
 You can also choose to enable file logging by setting `file_logging` to 1.
 
@@ -73,42 +87,48 @@ You can also choose to enable file logging by setting `file_logging` to 1.
 Name: payment
 ---
 Payment:
-    allowed_gateways:
-        - 'PayPal_Express'
-        - 'PaymentExpress_PxPay'
-        - 'Manual'
+  allowed_gateways:
+    - 'PayPal_Express'
+    - 'PaymentExpress_PxPay'
+    - 'Manual'
+
+GatewayInfo:
+  PayPal_Express:
     parameters:
-        PayPal_Express:
-            username: 'example.username.test'
-            password: 'txjjllae802325'
-            signature: 'wk32hkimhacsdfa'
-        PaymentExpress_PxPost:
-            username: 'EXAMPLEUSER'
-            password: '235llgwxle4tol23l'
+      username: 'example.username.test'
+      password: 'txjjllae802325'
+      signature: 'wk32hkimhacsdfa'
+  PaymentExpress_PxPost:
+    parameters:
+      username: 'EXAMPLEUSER'
+      password: '235llgwxle4tol23l'
 ---
 Except:
-    environment: 'live'
+  environment: 'live'
 ---
 Payment:
-    file_logging: 1
-    allowed_gateways:
-        - 'Dummy'
+  file_logging: 1
+  allowed_gateways:
+    - 'Dummy'
+
+GatewayInfo:
+  Paypal_Express:
     parameters:
-        Paypal_Express:
-            testMode: true
+      testMode: true
 ---
 Only:
-    environment: 'live'
+  environment: 'live'
 ---
-Payment:
+GatewayInfo:
+  PayPal_Express:
     parameters:
-        PayPal_Express:
-            username: 'liveexample.test'
-            password: 'livepassawe23'
-            signature: 'laivfe23235235'
-        PaymentExpress_PxPost:
-            username: 'LIVEUSER'
-            password: 'n23nl2ltwlwjle'
+      username: 'liveexample.test'
+      password: 'livepassawe23'
+      signature: 'laivfe23235235'
+  PaymentExpress_PxPost:
+    parameters:
+      username: 'LIVEUSER'
+      password: 'n23nl2ltwlwjle'
 ---
 ```
 
@@ -121,7 +141,7 @@ The [SilverStripe documentation](http://doc.silverstripe.com/framework/en/topics
 In your application, you may want to allow users to choose between a few different payment gateways. This can be useful for users if their first attempt is declined.
 
 ```php
-$gateways = GatewayInfo::get_supported_gateways();
+$gateways = GatewayInfo::getSupportedGateways();
 ```
 
 If no allowed gateways are configured, then the module will default to providing
@@ -140,23 +160,25 @@ If the gateway is off-site, then no credit-card fields will be returned.
 
 Fields have also been appropriately grouped, incase you only want to retrieve the credit card related fields, for example.
 
-Required fields can be configured in the yaml config file, as this information is unfortunately not provided by omnipay:
+Required fields can be configured in the yaml config file, as this information is unfortunately not provided by Omnipay:
 
 ```yaml
 ---
 Name: payment
 ---
 Payment:
-    allowed_gateways:
-        - 'PaymentExpress_PxPost'
+  allowed_gateways:
+    - 'PaymentExpress_PxPost'
+
+GatewayInfo:
+  PaymentExpress_PxPost:
     parameters:
-        PaymentExpress_PxPost:
-            username: 'EXAMPLEUSER'
-            password: '235llgwxle4tol23l'
-                required_fields:
-                        - 'issueNumber'
-                        - 'startMonth'
-                        - 'startYear'
+      username: 'EXAMPLEUSER'
+      password: '235llgwxle4tol23l'
+    required_fields:
+      - 'issueNumber'
+      - 'startMonth'
+      - 'startYear'
 ```
 
 ### Make your model Payable
@@ -165,6 +187,7 @@ You can optionally add the `Payable` extension to your model (e.g. Order, Subscr
 This will add a has_many `Payment` relationship to your model, and provide some additional functions
 **NOTE:** You must create the associated has_one relationship on `Payment` yourself. This can be done with an extension or via the yaml config system.
 For example, the following extension will be applied to `Payment`:
+
 ```php
 class ShopPayment extends DataExtension {
     private static $has_one = array(
@@ -172,11 +195,13 @@ class ShopPayment extends DataExtension {
     );
 }
 ```
+
 With yaml:
+
 ```yaml
 Payment:
-    has_one:
-        Order: Order
+  has_one:
+    Order: Order
 ```
 
 ### Make a purchase
@@ -199,6 +224,7 @@ After payment has been made, the user will be redirected to the given return url
 ### Passing correct data to the purchase function
 
 The omnipay library has a defined set of parameters that need to be passed in. Here is a list of parameters that you should map your data to:
+
 ```
 transactionId
 firstName
@@ -229,6 +255,7 @@ To call your custom code when returning from an off-site gateway, you'll need to
 introduce an extension that utilises the onCaptured extension point.
 
 For example:
+
 ```php
 class ShopPayment extends DataExtension {
 
@@ -261,7 +288,7 @@ A useful way to debug payment issues is to enable file logging:
 Name: payment
 ---
 Payment:
-    file_logging: true #or use 'verbose' for more detailed output
+  file_logging: true #or use 'verbose' for more detailed output
 ```
 
 ## Renaming gateways and translation
@@ -269,6 +296,7 @@ Payment:
 You can change the front-end visible name of a gateway using the translation system. The gateway name must match what you entered in the `allowed_gateways` yaml config.
 
 For example, inside mysite/lang/en.yml:
+
 ```yaml
 en:
   Payment:
@@ -287,14 +315,16 @@ Logs will be saved to `debug.log` in the root of your SilverStripe directory.
 ## Migrating from Payment module
 
 Before you import your database and do a DB/build, add the following yaml config to your site:
+
 ```yaml
 ---
 Name: payment
 ---
 Payment:
-    db:
-        Status: "Enum('Created,Authorized,Captured,Refunded,Void,Incomplete,Success,Failure,Pending','Created')"
+  db:
+    Status: "Enum('Created,Authorized,Captured,Refunded,Void,Incomplete,Success,Failure,Pending','Created')"
 ```
+
 This will re-introduce old enumeration values to the DB.
 
 Run the migration task: yoursite.com/dev/tasks/MigratePaymentTask

@@ -1,10 +1,28 @@
 <?php
 
-/**
- * Provides information about gateways.
- */
 use Omnipay\Common\GatewayFactory;
 
+/**
+ * Provides information about gateways.
+ *
+ * Use this class in YAML to configure your gateway settings.
+ * Eg.
+ * <code>
+ * GatewayInfo:
+ *  PayPal_Express:
+ *    parameters:
+ *      username: 'my.user.name'
+ *      # more parameters…
+ * </code>
+ *
+ * The following config settings are allowed per gateway:
+ * * `is_manual` *boolean*: Set this to true if this gateway should be considered a "Manual" Payment (eg. Invoice)
+ * * `use_authorize` *boolean*: Whether or not this Gateway should prefer authorize over purchase
+ * * `use_async_notification` *boolean*: When set to true, this Gateway will receive asynchronous notifications from the Payment provider
+ * * `token_key` *string*: Key for the token parameter
+ * * `required_fields` *array*: An array of required form-fields
+ * * `properties` *map*: All gateway properties that will be passed along to the Omnipay Gateway instance
+ */
 class GatewayInfo
 {
     /**
@@ -85,7 +103,11 @@ class GatewayInfo
             return !!$gateway->isOffsite();
         }
 
-        return ($gateway->supportsCompletePurchase() || $gateway->supportsCompleteAuthorize());
+        if($gateway instanceof \Omnipay\Common\AbstractGateway){
+            return ($gateway->supportsCompletePurchase() || $gateway->supportsCompleteAuthorize());
+        }
+
+        return false;
     }
 
     /**
@@ -95,7 +117,18 @@ class GatewayInfo
      */
     public static function isManual($gateway)
     {
+        if (self::getConfigSetting($gateway, 'is_manual')) {
+            return true;
+        }
+
         $manualGateways = Payment::config()->manual_gateways;
+        if (is_array($manualGateways)) {
+            Deprecation::notice(
+                '3.0',
+                'Please refrain from using Payment:manual_gateways config. ' .
+                'Mark individual gateways with `is_manual` instead (see docs).'
+            );
+        }
 
         // if not defined in config, set default manual gateway to 'Manual'
         if (!$manualGateways) {
@@ -103,6 +136,58 @@ class GatewayInfo
         }
 
         return in_array($gateway, $manualGateways);
+    }
+
+    /**
+     * Check if the given gateway should use authorize payments
+     * @param string $gateway the gateway name
+     * @return boolean
+     */
+    public static function shouldUseAuthorize($gateway)
+    {
+        // Manual gateways are "authorized" by nature
+        if (self::isManual($gateway)) {
+            return true;
+        }
+
+        return self::getConfigSetting($gateway, 'use_authorize') == true;
+    }
+
+    /**
+     * Check if the given gateway should use asynchronous notifications
+     * @param string $gateway the gateway name
+     * @return boolean
+     */
+    public static function shouldUseAsyncNotifications($gateway)
+    {
+        // Manual gateways can be excluded
+        if (self::isManual($gateway)) {
+            return false;
+        }
+
+        return self::getConfigSetting($gateway, 'use_async_notification') == true;
+    }
+
+    /**
+     * Get the token key value configured for the given gateway
+     * @param string $gateway the gateway name
+     * @param string $default the default token key if not found in config
+     * @return string
+     */
+    public static function getTokenKey($gateway, $default = 'token')
+    {
+        $tokenKey = Payment::config()->token_key;
+        if($tokenKey){
+            Deprecation::notice(
+                '3.0',
+                'Please refrain from setting token_key as config parameter of Payment. ' .
+                'Use GatewayInfo and set the token key on a gateway basis (see docs).'
+            );
+        } else {
+            $tokenKey = self::getConfigSetting($gateway, 'token_key');
+        }
+
+        return is_string($tokenKey) ? $tokenKey : $default;
     }
 
     /**
@@ -115,7 +200,17 @@ class GatewayInfo
         $parameters = self::getParameters($gateway);
         $fields = array();
         if (isset($parameters['required_fields']) && is_array($parameters['required_fields'])) {
+            Deprecation::notice(
+                '3.0',
+                'Please refrain from setting required_fields in the gateway parameters. ' .
+                'Put the `required_fields` directly under the gateway (see docs).'
+            );
             $fields = $parameters['required_fields'];
+        } else {
+            $requiredFields = self::getConfigSetting($gateway, 'required_fields');
+            if (is_array($requiredFields)) {
+                $fields = $requiredFields;
+            }
         }
 
         //always require the following for on-site gateways (and not manual)
@@ -129,7 +224,6 @@ class GatewayInfo
         return $fields;
     }
 
-
     /**
      * Get the gateway config-parameters.
      *
@@ -139,10 +233,33 @@ class GatewayInfo
     public static function getParameters($gateway)
     {
         $params = Payment::config()->parameters;
-        if(isset($params[$gateway])){
+        if (isset($params[$gateway])) {
+            Deprecation::notice(
+                '3.0',
+                'Please refrain from setting Gateway parameters under Payment. ' .
+                'Use GatewayConfig instead (see docs).'
+            );
             return $params[$gateway];
         }
-        return null;
+
+        $params = self::getConfigSetting($gateway, 'parameters');
+        return is_array($params) ? $params : null;
+    }
+
+    /**
+     * Get a single config setting for a gateway
+     * @param string $gateway the gateway name
+     * @param string $key the config key to get
+     * @return mixed
+     */
+    public static function getConfigSetting($gateway, $key)
+    {
+        $config = self::config()->get($gateway);
+        if (!is_array($config)) {
+            return null;
+        }
+
+        return isset($config[$key]) ? $config[$key] : null;
     }
 
     // -----------------------------------------------------------------------------------------------------------------

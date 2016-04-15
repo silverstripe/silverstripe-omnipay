@@ -59,13 +59,18 @@ class PaymentGatewayController extends \Controller
 
         $intent = null;
         switch ($payment->Status){
+            // We have to check for both states here, since the notification might come in before the gateway returns
+            // if that's the case, the status of the payment will already be set to 'Authorized'
             case 'PendingAuthorization':
+            case 'Authorized':
                 $intent = ServiceFactory::INTENT_AUTHORIZE;
                 break;
             case 'PendingCapture':
                 $intent = ServiceFactory::INTENT_CAPTURE;
                 break;
+            // Both states have to be checked (see explanation with 'Authorized')
             case 'PendingPurchase':
+            case 'Captured':
                 $intent = ServiceFactory::INTENT_PURCHASE;
                 break;
             case 'PendingRefund':

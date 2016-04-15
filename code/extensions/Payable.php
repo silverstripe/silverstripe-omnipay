@@ -70,4 +70,21 @@ class Payable extends DataExtension {
         return $paid;
     }
 
+    /**
+     * Whether or not the model has payments that are in a pending state.
+     * Can be used to show a waiting screen to the user or similar.
+     * @return bool
+     */
+    public function HasPendingPayments()
+    {
+        return $this->owner->Payments()
+            ->filter('Status', array(
+                'PendingAuthorization',
+                'PendingPurchase',
+                'PendingCapture',
+                'PendingRefund',
+                'PendingVoid'
+            ))->count() > 0;
+    }
+
 }

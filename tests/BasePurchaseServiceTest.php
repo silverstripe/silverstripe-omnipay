@@ -502,6 +502,60 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $this->assertEquals($payment->Status, $this->completeStatus);
     }
 
+    // Test an async response that comes in before the user returns from the offsite form.
+    // Test via PaymentGatewayController
+    public function testPaymentGatewayControllerConfirmationIncomingFirst()
+    {
+        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+            'use_async_notification' => true
+        ));
+
+        // build a stub gateway with the given endpoint
+        $isNotification = true;
+        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function () use (&$isNotification){
+            return $isNotification;
+        });
+        $payment = $this->payment->setGateway('PaymentExpress_PxPay');
+
+        $service = $this->getService($payment);
+
+        // register our mock gateway factory as injection
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+
+        $serviceResponse = $service
+            ->setCancelUrl('my/cancel/url')
+            ->setReturnUrl('my/return/url')
+            ->initiate();
+
+        // we should get a redirect
+        $this->assertTrue($serviceResponse->isRedirect());
+        // Payment should be pending
+        $this->assertEquals($payment->Status, $this->pendingStatus);
+
+        // Notification comes in first!
+        $httpResponse = $this->get('paymentendpoint/'. $payment->Identifier .'/notify');
+
+        $this->assertEquals($httpResponse->getBody(), 'OK');
+        $this->assertEquals($httpResponse->getStatusCode(), 200);
+
+        // reload payment from DB
+        $payment = Payment::get()->byID($payment->ID);
+        // Payment status should be captured or authorized (completed)
+        $this->assertEquals($payment->Status, $this->completeStatus);
+
+        // Now the user comes back from the offsite payment form
+        $httpResponse = $this->get('paymentendpoint/'. $payment->Identifier .'/complete');
+
+        // we should be redirected to the success page
+        $this->assertEquals($httpResponse->getHeader('Location'), BASE_URL . '/my/return/url');
+        $this->assertEquals($httpResponse->getStatusCode(), 302);
+
+        // reload payment from DB
+        $payment = Payment::get()->byID($payment->ID);
+        // Payment status should still be captured or authorized
+        $this->assertEquals($payment->Status, $this->completeStatus);
+    }
+
     protected function buildPaymentGatewayStub($endpoint, Closure $successFunc, $sendMustFail = false)
     {
         //--------------------------------------------------------------------------------------------------------------

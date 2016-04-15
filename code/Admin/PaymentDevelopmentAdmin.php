@@ -1,16 +1,18 @@
 <?php
 
+namespace SilverStripe\Omnipay\Admin;
+
 /**
  * Development tools for payments
  *
  * @package payment
  */
-class PaymentDevelopmentAdmin extends Controller{
+class PaymentDevelopmentAdmin extends \Controller{
 
 	public function index() {
-		$renderer = DebugView::create();
+		$renderer = \DebugView::create();
 		$renderer->writeHeader();
-		$renderer->writeInfo("Installed Omnipay Payment Gateways", Director::absoluteBaseURL());
+		$renderer->writeInfo("Installed Omnipay Payment Gateways", \Director::absoluteBaseURL());
 		$types = $this->PaymentTypes();
 
 		echo "<table style=\"font-size:12px;\" border=1 cellspacing=0>
@@ -61,9 +63,9 @@ class PaymentDevelopmentAdmin extends Controller{
 	 * Get all available payment types
 	 */
 	private function PaymentTypes() {
-		$gateways =  Omnipay\Common\GatewayFactory::find();
+		$gateways =  \Omnipay\Common\GatewayFactory::find();
 		$gateways = array_map(function($name) {
-			$factory = new Omnipay\Common\GatewayFactory;
+			$factory = new \Omnipay\Common\GatewayFactory;
 			return $factory->create($name);
 		}, $gateways);
 		return $gateways;

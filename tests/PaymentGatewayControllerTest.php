@@ -1,5 +1,7 @@
 <?php
 
+use SilverStripe\Omnipay\PaymentGatewayController;
+
 class PaymentGatewayControllerTest extends PaymentTest{
 
 	public static $fixture_file = array(
@@ -62,19 +64,49 @@ class PaymentGatewayControllerTest extends PaymentTest{
 		), $payment->Messages());
 	}
 
+    public function testCancelEndpoint()
+    {
+        // mimic a redirect or request from offsite gateway. The user cancelled the payment
+        $response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/cancel");
+
+        // Should redirect to the cancel/failure url which is being loaded from the fixture
+        $headers = $response->getHeaders();
+        $this->assertEquals(
+            Director::baseURL()."shop/incomplete",
+            $headers['Location'],
+            "redirected to shop/incomplete"
+        );
+
+        $payment = Payment::get()
+            ->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
+            ->first();
+
+        $this->assertDOSContains(array(
+            array('ClassName' => 'PurchaseRequest'),
+            array('ClassName' => 'PurchaseRedirectResponse')
+        ), $payment->Messages());
+
+        $this->assertEquals($payment->Status, 'Void', 'Payment should be void');
+    }
+
+    public function testInvalidAction()
+    {
+        // Try to access a valid payment, but bad action
+        $response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/bogus");
+
+        $this->assertEquals($response->getStatusCode(), 404);
+    }
+
 	public function testBadReturnURLs() {
 		$response = $this->get("paymentendpoint/ASDFHSADFunknonwhash/complete/c2hvcC9jb2");
 		$this->assertEquals(404, $response->getStatusCode());
 	}
 
-	public function testSecurity() {
-		//$this->get(); //mimic mallicious activity
-		//incorrect security token
-		//
-		//database changes shouldn't be made by unauthorised means
-		//see https://github.com/burnbright/silverstripe-omnipay/issues/13
-	}
+    public function testInvalidStatus()
+    {
+        // try to complete a payment that has status "Created"
+        $response = $this->get("paymentendpoint/ce3a0b03349078d8e85d1de8ded3f0/complete");
+        $this->assertEquals($response->getStatusCode(), 403);
+    }
 
-	//this failed because gateaway passed identifier was $message->ID, not $message->Identifier
-	//TODO: test purchase -> completePurchase
 }

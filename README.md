@@ -23,7 +23,7 @@ This module is a complete rewrite of the past Payment module. It is not backward
 ## Requirements
 
  * [silverstripe framework](https://github.com/silverstripe/silverstripe-framework) 3.1+
- * [omnipay](https://github.com/omnipay/common) 2.0 + it's dependencies - which include guzzle and some symphony libraries.
+ * [omnipay](https://github.com/omnipay/common) 2.4 + it's dependencies - which include guzzle and some symphony libraries.
 
 ## Features
 
@@ -38,8 +38,8 @@ This module is a complete rewrite of the past Payment module. It is not backward
 
 ## Compatible Payment Gateways
 
-There are many gateways the come [out of the box](https://github.com/thephpleague/omnipay/tree/1.1#payment-gateways).
-Note that currently this module uses version 1.1 of the ominpay library. Most gateways are packaged with the core library, some you can find seperate. Once we switch to version 2 of the omnipay library, all gateways will be seperate.
+There are many [gateways](https://github.com/thephpleague/omnipay#payment-gateways) available, which you can install separately.
+Note that currently this module uses version 2.x of the Ominpay library.
 
 Searching packagist is useful: https://packagist.org/search/?q=omnipay
 
@@ -67,7 +67,7 @@ composer require omnipay/paypal
 You can configure gateway settings in your `mysite/_config/payment.yml` file.
 Here you can select a list of allowed gateways, and separately set the gateway-specific settings.
 
-You configure the allowed gateways by setting the `allowed_gateway` config on `Payment`.
+You configure the allowed gateways by setting the `allowed_gateway` config on `Payment`. You can also choose to enable file logging by setting `file_logging` to 1.
 
 To configure the individual Gateway parameters, use `GatewayInfo` and add a key for every Gateway you want to configure.
 
@@ -75,12 +75,16 @@ Each Gateway can have the following settings:
 
 | Setting                  | Type      | Description
 | ------------------------ | --------- | ---
-| `is_manual`              | *boolean* | Set this to true if this gateway should be considered a "Manual" Payment (eg. Invoice)
+| `is_manual`              | *boolean* | Set this to true if this Gateway should be considered a "Manual" Payment (eg. Invoice)
+| `use_authorize`          | *boolean* | Whether or not this Gateway should prefer authorize over purchase
+| `use_async_notification` | *boolean* | When set to true, this Gateway will receive asynchronous notifications from the Payment provider
 | `token_key`              | *string*  | Key for the token parameter
 | `required_fields`        | *array*   | An array of required form-fields
-| `properties`             | *map*     | All gateway properties that will be passed along to the Omnipay Gateway instance
-
-You can also choose to enable file logging by setting `file_logging` to 1.
+| `parameters`             | *map*     | All gateway parameters that will be passed along to the Omnipay Gateway instance
+| `is_offsite`             | *boolean* | You can explicitly mark this Gateway as being offsite. Use with caution and only if the system fails to automatically determine this.
+| `allow_capture`          | *boolean* | Whether or not capturing of authorized payments should be allowed. Defaults to true. Some payment providers capture payment automatically after some period of time, or the person using the CMS should not be allowed to capture payments. You can then disable this feature.
+| `allow_refund`           | *boolean* | Whether or not refunding of captured payments should be allowed. Defaults to true.
+| `allow_void`             | *boolean* | Whether or not voiding of authorized payments should be allowed. Defaults to true.
 
 ```yaml
 ---
@@ -129,7 +133,6 @@ GatewayInfo:
     parameters:
       username: 'LIVEUSER'
       password: 'n23nl2ltwlwjle'
----
 ```
 
 The [SilverStripe documentation](http://doc.silverstripe.com/framework/en/topics/configuration#setting-configuration-via-yaml-files) explains more about yaml config files.
@@ -204,17 +207,69 @@ Payment:
     Order: Order
 ```
 
-### Make a purchase
+### The Payment Services and Service Factory
 
-Using function chaining, we can create and configure a new payment object, and submit a request to the chosen gateway. The response object has a `redirect` function built in that will either redirect the user to the external gateway site, or to the given return url.
+There are currently five payment services available, which map to methods exposed by Omnipay.
+Which one you can use in practice depends on the capabilities of the individual Gateway. Some Gateways will support all
+services, while some support only a few (eg. the "Manual" Gateway doesn't support "purchase").
+
+The services are:
+
+ - `PurchaseService` : Directly purchase/capture an amount.
+ - `AuthorizeService`: Authorize a payment amount.
+ - `CaptureService`: Capture a previously authorized amount.
+ - `RefundService`: Refund a previously captured amount.
+ - `VoidService`: Void/Cancel this payment.
+
+Each of these services implements a `initiate` and a `complete` method. The `initiate` method is always required and
+initiates a service. Depending on how the Gateway handles requests, you might also need the `complete` method.
+
+This is the case with offsite payment forms, where `initiate` will redirect the user to the payment form and once he returns
+from the offsite form, `complete` will be called to finalize the payment.
+
+Another (less common) case is, when the payment provider uses asynchronous notifications to confirm changes to payments.
+
+While you can instantiate the services explicitly, the recommended approach is to use the `ServiceFactory`.
+The service factory allows easy customization of which classes should be instantiated for which intent. The
+service-factory can also automatically return an `AuthorizeService` or `PurchaseService`, depending on what was configured
+for the chosen Gateway.
+
+The following constants are available to instantiate Services:
+
+ - `INTENT_PURCHASE` requests a purchase service.
+ - `INTENT_AUTHORIZE` requests an authorize service.
+ - `INTENT_CAPTURE` requests a capture service.
+ - `INTENT_REFUND` requests a refund service.
+ - `INTENT_VOID` requests a void service.
+ - `INTENT_PAYMENT` returns authorize- or purchase-service, depending on selected Gateway.
+
+In code:
 
 ```php
-    $payment = Payment::create()->init("PxPayGateway", 100, "NZD");
-    $response = PurchaseService::create($payment)
-        ->setReturnUrl($this->Link('complete')."/".$donation->ID)
-        ->setCancelUrl($this->Link()."?message=payment cancelled")
-        ->purchase($form->getData());
-    $response->redirect();
+$payment = Payment::create()->init("PxPayGateway", 100, "NZD");
+
+// The service will be a `PurchaseService`
+$service = ServiceFactory::create()->getService($payment, ServiceFactory::INTENT_PURCHASE);
+
+// Initiate the payment
+$response = $service->initiate($data);
+```
+
+### Make a purchase
+
+Using function chaining, we can create and configure a new payment object, and submit a request to the chosen gateway.
+The response object has a `redirectOrRespond` function built in that will either redirect the user to the external gateway site, or to the given return url.
+
+```php
+// create the payment object
+$payment = Payment::create()->init("PxPayGateway", 100, "NZD")->write();
+
+$response = ServiceFactory::create()->getService($payment, ServiceFactory::INTENT_PAYMENT)
+    ->setReturnUrl($this->Link('complete')."/".$donation->ID)
+    ->setCancelUrl($this->Link()."?message=payment cancelled")
+    ->initiate($form->getData());
+
+return $response->redirectOrRespond();
 ```
 
 Of course you don't need to chain all of these functions, as you may want to redirect somewhere else, or do some further setup.
@@ -249,10 +304,10 @@ shippingPhone
 
 **Note:** `transactionId` can be a reference that identifies the thing you are paying for, such as an order reference id. It usually shows up on bank statements for reconciliation purposes, but ultimately depends how the gateway uses it.
 
-### onCaptured hook
+### Extension hooks
 
-To call your custom code when returning from an off-site gateway, you'll need to
-introduce an extension that utilises the onCaptured extension point.
+To call your custom code when a payment was captured, you'll need to
+introduce an extension that utilises the `onCaptured` extension hook.
 
 For example:
 
@@ -270,6 +325,8 @@ class ShopPayment extends DataExtension {
 
 }
 ```
+
+There are many other extension hooks available, you'll find them documented in [docs/en/ExtensionHooks.md](docs/en/ExtensionHooks.md)
 
 ## Security
 
@@ -333,3 +390,7 @@ Run the migration task: yoursite.com/dev/tasks/MigratePaymentTask
 ## Further Documentation
 
 https://github.com/burnbright/silverstripe-omnipay/blob/master/docs/en/index.md
+
+## Attributions
+
+ - Icons used in Payment Admin are part of the [Silk Icon set 1.3](http://www.famfamfam.com/lab/icons/silk/). [Creative Commons Attribution 2.5 License](http://creativecommons.org/licenses/by/2.5/)

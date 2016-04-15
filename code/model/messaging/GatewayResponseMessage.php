@@ -1,4 +1,6 @@
 <?php
-class GatewayResponseMessage extends GatewayMessage{
+
+class GatewayResponseMessage extends GatewayMessage
+{
 
 }

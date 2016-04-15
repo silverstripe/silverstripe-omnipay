@@ -1,8 +1,8 @@
 ---
-Name: omniroutes
+Name: omnipay-routes
 After: framework/routes#coreroutes
 ---
 Director:
   rules:
-    'paymentendpoint/$Identifier/$Status/$ReturnURL' : 'PaymentGatewayController'
-    'dev/payment' : 'PaymentDevelopmentAdmin'
+    'paymentendpoint/$Identifier/$Status/$ReturnURL' : '\SilverStripe\Omnipay\PaymentGatewayController'
+    'dev/payment' : '\SilverStripe\Omnipay\Admin\PaymentDevelopmentAdmin'

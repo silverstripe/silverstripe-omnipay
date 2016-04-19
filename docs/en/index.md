@@ -31,17 +31,13 @@ Use this module to provide payment for things like:
 
 `Payment` has many `Messages`. These represent all the types of logging / transaction messages associated with a single payment.
 
-See more: [Logging](logging.md)
-
 ### Payment state machine
 
-Here are the possible states a payment can have
-
-Created,PendingAuthorization,Authorized,PendingPurchase,PendingCapture,Captured,PendingRefund,Refunded,PendingVoid,Void
+Here are the possible states a payment can have:
 
  * `Created` - new payment model
  * `PendingAuthorization` - authorization is pending. This is an intermediate state before the payment will be Authorized either via user that returns from an offsite gateway or when the payment provider notifies about payment-success via asynchronous callback.
- * `Authorized` - payment capture has been authorised by gateway
+ * `Authorized` - amount has been authorised by gateway
  * `PendingPurchase` - purchase is pending. When initiating a purchase, the payment will enter this state, which is an intermediate state before payment will be Captured
  * `PendingCapture` - capture is pending. When initiating capture, the payment will enter this state, which is an intermediate state before payment will be Captured
  * `Captured` - money has been successfully received.
@@ -66,6 +62,7 @@ There are three different code bases to consider:
  * Omnipay Framework - gateway interaction handling.
 
 Your application is responsible for:
+
 * Configuration of payment gateways, via YAML.
 * Providing system data
     * amount
@@ -78,12 +75,12 @@ Your application is responsible for:
 * Linking one, or many payments to the thing you want to pay for.
 
 This payment module is responsible for:
+
 * Providing a few models to store payment state, and history in
 * Handling responses from external gateways
 * Integrating with omnipay
 
-The omnipay library is responsible for sending requests to the gateway servers, and parsing responses in to a consistent format.
-
+The Omnipay library is responsible for sending requests to the gateway servers, and parsing responses in to a consistent format.
 
 ## Data model
 
@@ -93,11 +90,20 @@ Your model you connect payments to will generally be something like: `Bill`, `In
 
 An extension (`Payable`) has been written to provide the above functionality.
 
+## Gateway Features
+
+Different gateways have different features. This means you may get a different level of functionality, depending on the gateway you choose.
+
+ * Delayed capturing. This means you can submit payment details for approval in one step (authorize) of your application, and actually capture the money in a secondary step (capture).
+ * Enter credit card details on site. Some gateways allow entering credit card details to a form on your website, and other require users to visit another website to enter those details. This is also known as "on site" vs "off site" credit card processing. It is sometimes possible to emulate on site processing using an iframe containing the off-site payment page.
+
+To see what features are supported, for the installed gateways, visit: `your-site-url/dev/payment`.
+
 ### Changing parameters for live environment
 
 You can define separate properties for different environments. Here's an example of that:
 
-```
+```yaml
 GatewayConfig:
   PayPal_Express:
     use_authorize: true
@@ -122,15 +128,6 @@ GatewayConfig:
       testMode: false # Make sure to override this to false
 ```
 
-## Gateway Features
-
-Different gateways have different features. This means you may get a different level of functionality, depending on the gateway you choose.
-
- * Delayed capturing. This means you can submit payment details for approval in one step (authorize) of your application, and actually capture the money in a secondary step (capture).
- * Enter credit card details on site. Some gateways allow entering credit card details to a form on your website, and other require users to visit another website to enter those details. This is also known as "on site" vs "off site" credit card processing. It is sometimes possible to emulate on site processing using an iframe containing the off-site payment page.
-
-To see what features are supported, for the installed gateways, visit: `your-site-url/dev/payment`.
-
 ## Logging
 
 This module logs as much information to the database as possible. This includes:
@@ -141,43 +138,49 @@ This module logs as much information to the database as possible. This includes:
   * Gateway-specific data
   * Who performed actions / made changes
 
+Purchase messages
 
-Payment messages can be Request, Response, or Error.
-
-Errors could later be split into:
- * Communications
- * Validation
- * Failures
-
-PurchaseRequest
+ * PurchaseRequest
+ * AwaitingPurchaseResponse
  * PurchasedResponse
  * PurchaseRedirectResponse
  * PurchaseError
-
-CompletePurchaseRequest
- * PurchasedResponse
+ * CompletePurchaseRequest
  * CompletePurchaseError
 
-AuthorizeRequest
+Authorize messages
+
+ * AuthorizeRequest
+ * AwaitingAuthorizeResponse
  * AuthorizedResponse
  * AuthorizeRedirectResponse
  * AuthorizeError
-
-CompleteAuthorizeRequest
- * AuthorizedResponse
+ * CompleteAuthorizeRequest
  * CompleteAuthorizeError
 
-CaptureRequest
+Capture messages
+
+ * CaptureRequest
  * CapturedResponse
  * CaptureError
 
-RefundRequest
+Refund messages
+
+ * RefundRequest
  * RefundedResponse
  * RefundError
 
-VoidRequest
+Void messages
+
+ * VoidRequest
  * VoidedResponse
  * VoidError
+
+Notification messages
+
+ * NotificationSuccessful
+ * NotificationPending
+ * NotificationError
 
 
 ## Payment scenarios

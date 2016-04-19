@@ -108,13 +108,24 @@ final class Payment extends DataObject
         return $this;
     }
 
+    /**
+     * Locale aware title for a payment.
+     * Consists of Gateway-Name, Money and Currency, Created date.
+     *
+     * Uses a translatable string as template for the output.
+     * @return string
+     */
     public function getTitle()
     {
-        return implode(' ', array(
-            $this->getGatewayTitle(),
-            $this->forTemplate()->Nice(),
-            $this->dbObject('Created')->Date()
-        ));
+        return strftime(_t(
+            'Payment.TitleTemplate',
+            '{Gateway} {Money} %d/%m/%Y',
+            'A template for the payment title',
+            str_replace('%', '%%', array(
+                'Gateway' => $this->getGatewayTitle(),
+                'Money' => $this->dbObject('Money')->Nice()
+            ))
+        ), strtotime($this->Created));
     }
 
     /**

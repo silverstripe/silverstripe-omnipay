@@ -15,6 +15,7 @@ en:
     STATUS_CREATED: Created
     STATUS_REFUNDED: Refunded
     STATUS_VOID: Void
+    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
     db_Gateway: Gateway
     db_Identifier: Identifier
     db_Money: Money

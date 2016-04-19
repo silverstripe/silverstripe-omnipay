@@ -1,9 +1,9 @@
 <?php
 
-class PaymentGatewayControllerTest extends PaymentTest{
+class PaymentGatewayControllerTest extends PaymentTest {
 
 	public static $fixture_file = array(
-		'payment.yml'
+		'payment.yml',
 	);
 
 	public function testReturnUrlGeneration() {
@@ -26,18 +26,18 @@ class PaymentGatewayControllerTest extends PaymentTest{
 		//redirect works
 		$headers = $response->getHeaders();
 		$this->assertEquals(
-			Director::baseURL()."shop/complete", 
+			Director::baseURL() . "shop/complete",
 			$headers['Location'],
 			"redirected to shop/complete"
 		);
 		$payment = Payment::get()
-						->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
-						->first();
+			->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
+			->first();
 		$this->assertDOSContains(array(
 			array('ClassName' => 'PurchaseRequest'),
 			array('ClassName' => 'PurchaseRedirectResponse'),
 			array('ClassName' => 'CompletePurchaseRequest'),
-			array('ClassName' => 'PurchasedResponse')
+			array('ClassName' => 'PurchasedResponse'),
 		), $payment->Messages());
 	}
 
@@ -52,13 +52,13 @@ class PaymentGatewayControllerTest extends PaymentTest{
 		//redirect works
 		$this->assertNull($response->getHeader('Location'));
 		$payment = Payment::get()
-						->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
-						->first();
+			->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
+			->first();
 		$this->assertDOSContains(array(
 			array('ClassName' => 'PurchaseRequest'),
 			array('ClassName' => 'PurchaseRedirectResponse'),
 			array('ClassName' => 'CompletePurchaseRequest'),
-			array('ClassName' => 'PurchasedResponse')
+			array('ClassName' => 'PurchasedResponse'),
 		), $payment->Messages());
 	}
 
@@ -72,7 +72,7 @@ class PaymentGatewayControllerTest extends PaymentTest{
 		//incorrect security token
 		//
 		//database changes shouldn't be made by unauthorised means
-		//see https://github.com/burnbright/silverstripe-omnipay/issues/13
+		//see https://github.com/silverstripe/silverstripe-omnipay/issues/13
 	}
 
 	//this failed because gateaway passed identifier was $message->ID, not $message->Identifier

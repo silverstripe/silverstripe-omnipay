@@ -7,7 +7,6 @@ use SilverStripe\Omnipay\Exception\MissingParameterException;
 use Omnipay\Common\Exception\OmnipayException;
 use SilverStripe\Omnipay\GatewayInfo;
 
-
 class RefundService extends NotificationCompleteService
 {
     protected $endState = 'Refunded';
@@ -113,6 +112,4 @@ class RefundService extends NotificationCompleteService
         $this->payment->write();
         $this->payment->extend('onRefunded', $serviceResponse);
     }
-
-
 }

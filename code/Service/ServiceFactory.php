@@ -2,7 +2,6 @@
 
 namespace SilverStripe\Omnipay\Service;
 
-
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\GatewayInfo;
 

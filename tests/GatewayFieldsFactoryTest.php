@@ -1,22 +1,21 @@
 <?php
 
-class GatewayFieldsFactoryTest extends SapphireTest{
+class GatewayFieldsFactoryTest extends SapphireTest
+{
 
-	public function testFieldGroups() {
+    public function testFieldGroups()
+    {
+        $factory = new GatewayFieldsFactory(
+            "Dummy", array(
+                'Card',
+                'Billing',
+                'Shipping',
+                'Company',
+                'Email'
+            ));
 
-		$factory = new GatewayFieldsFactory(
-			"Dummy", array(
-				'Card',
-				'Billing',
-				'Shipping',
-				'Company',
-				'Email'
-			));
+        $fields = $factory->getFields();
 
-		$fields = $factory->getFields();
-
-		//TODO: assertions
-
-	}
-
+        //TODO: assertions
+    }
 }

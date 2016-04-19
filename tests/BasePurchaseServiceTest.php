@@ -40,7 +40,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
      * @param Payment $payment
      * @return \SilverStripe\Omnipay\Service\PaymentService
      */
-    protected abstract function getService(Payment $payment);
+    abstract protected function getService(Payment $payment);
 
     public function testDummyOnSitePayment()
     {
@@ -397,7 +397,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
         // build a stub gateway with the given endpoint
         $isNotification = false;
-        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function () use (&$isNotification){
+        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function () use (&$isNotification) {
             return $isNotification;
         });
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
@@ -455,7 +455,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
         // build a stub gateway with the given endpoint
         $isNotification = true;
-        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function () use (&$isNotification){
+        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function () use (&$isNotification) {
             return $isNotification;
         });
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
@@ -512,7 +512,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
         // build a stub gateway with the given endpoint
         $isNotification = true;
-        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function () use (&$isNotification){
+        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function () use (&$isNotification) {
             return $isNotification;
         });
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
@@ -574,7 +574,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $mockPaymentRequest = $this->getMockBuilder('Omnipay\PaymentExpress\Message\PxPayPurchaseRequest')
             ->disableOriginalConstructor()->getMock();
 
-        if($sendMustFail){
+        if ($sendMustFail) {
             $mockPaymentRequest->expects($this->any())->method('send')->will($this->throwException(
                 new \Omnipay\Common\Exception\RuntimeException('Mock Exception')
             ));
@@ -595,7 +595,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $mockCompletePaymentRequest = $this->getMockBuilder('Omnipay\PaymentExpress\Message\PxPayCompleteAuthorizeRequest')
             ->disableOriginalConstructor()->getMock();
 
-        if($sendMustFail){
+        if ($sendMustFail) {
             $mockCompletePaymentRequest->expects($this->any())->method('send')->will($this->throwException(
                 new \Omnipay\Common\Exception\RuntimeException('Mock Exception')
             ));

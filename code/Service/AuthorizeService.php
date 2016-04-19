@@ -2,7 +2,6 @@
 
 namespace SilverStripe\Omnipay\Service;
 
-
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 
@@ -52,7 +51,7 @@ class AuthorizeService extends PaymentService
         }
 
         $gateway = $this->oGateway();
-        if(!$gateway->supportsAuthorize()){
+        if (!$gateway->supportsAuthorize()) {
             throw new InvalidConfigurationException(
                 sprintf('The gateway "%s" doesn\'t support authorize', $this->payment->Gateway)
             );
@@ -89,7 +88,7 @@ class AuthorizeService extends PaymentService
                 $serviceResponse->isRedirect() ? 'AuthorizeRedirectResponse' : 'AwaitingAuthorizeResponse',
                 $response
             );
-        } else if($serviceResponse->isError()){
+        } elseif ($serviceResponse->isError()) {
             $this->createMessage('AuthorizeError', $response);
         } else {
             $this->createMessage('AuthorizedResponse', $response);
@@ -111,11 +110,11 @@ class AuthorizeService extends PaymentService
         $flags = $isNotification ? ServiceResponse::SERVICE_NOTIFICATION : 0;
 
         // The payment is already captured
-        if($this->payment->Status === 'Authorized'){
+        if ($this->payment->Status === 'Authorized') {
             return $this->generateServiceResponse($flags);
         }
 
-        if($this->payment->Status !== 'PendingAuthorization'){
+        if ($this->payment->Status !== 'PendingAuthorization') {
             throw new InvalidStateException('Cannot complete this payment. Status is not "PendingAuthorization"');
         }
 
@@ -144,12 +143,12 @@ class AuthorizeService extends PaymentService
 
         $serviceResponse = $this->wrapOmnipayResponse($response, $isNotification);
 
-        if($serviceResponse->isError()) {
+        if ($serviceResponse->isError()) {
             $this->createMessage('CompleteAuthorizeError', $response);
             return $serviceResponse;
         }
 
-        if(!$serviceResponse->isAwaitingNotification()){
+        if (!$serviceResponse->isAwaitingNotification()) {
             $this->createMessage('AuthorizedResponse', $response);
             $this->payment->Status = 'Authorized';
             $this->payment->write();

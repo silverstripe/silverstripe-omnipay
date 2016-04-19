@@ -3,7 +3,6 @@
 
 namespace SilverStripe\Omnipay\Admin\GridField;
 
-
 /**
  * Abstract baseclass for payment actions
  * @package SilverStripe\Omnipay\Admin\GridField

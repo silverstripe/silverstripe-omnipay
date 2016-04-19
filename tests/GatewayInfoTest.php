@@ -135,19 +135,19 @@ class GatewayInfoTest extends SapphireTest
     /**
      * Test the different ways a gateway can be detected as offsite
      */
-	public function testIsOffsite()
+    public function testIsOffsite()
     {
         Config::inst()->update('GatewayInfo', 'OffsiteGateway', array(
             'is_offsite' => true
         ));
 
         // this gateway doesn't implement `completePurchase`
-		$this->assertFalse(GatewayInfo::isOffsite('\GatewayInfoTest_OnsiteGateway'));
+        $this->assertFalse(GatewayInfo::isOffsite('\GatewayInfoTest_OnsiteGateway'));
         // this gateway does implement `completePurchase`
-		$this->assertTrue(GatewayInfo::isOffsite('\GatewayInfoTest_OffsiteGateway'));
+        $this->assertTrue(GatewayInfo::isOffsite('\GatewayInfoTest_OffsiteGateway'));
         // check a gateway that was configured to be offsite (purely based on config)
-		$this->assertTrue(GatewayInfo::isOffsite('OffsiteGateway'));
-	}
+        $this->assertTrue(GatewayInfo::isOffsite('OffsiteGateway'));
+    }
 
     /**
      * Test if the gateway is manual
@@ -315,34 +315,43 @@ class GatewayInfoTest extends SapphireTest
         $this->assertTrue(GatewayInfo::allowRefund('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
     }
-
 }
 
 class GatewayInfoTest_OnsiteGateway extends AbstractGateway implements TestOnly
 {
-	public function getName() {
-		return 'GatewayInfoTest_OnsiteGateway';
-	}
+    public function getName()
+    {
+        return 'GatewayInfoTest_OnsiteGateway';
+    }
 
-	public function getDefaultParameters() {
-		return array();
-	}
+    public function getDefaultParameters()
+    {
+        return array();
+    }
 
-	public function purchase(array $parameters = array()) {}
+    public function purchase(array $parameters = array())
+    {
+    }
 }
 
-class GatewayInfoTest_OffsiteGateway extends AbstractGateway implements TestOnly {
+class GatewayInfoTest_OffsiteGateway extends AbstractGateway implements TestOnly
+{
 
-	public function getName() {
-		return 'GatewayInfoTest_OffsiteGateway';
-	}
+    public function getName()
+    {
+        return 'GatewayInfoTest_OffsiteGateway';
+    }
 
-	public function getDefaultParameters() {
-		return array();
-	}
+    public function getDefaultParameters()
+    {
+        return array();
+    }
 
-	public function purchase(array $parameters = array()) {}
+    public function purchase(array $parameters = array())
+    {
+    }
 
-    public function completePurchase(array $options = array()) {}
-
+    public function completePurchase(array $options = array())
+    {
+    }
 }

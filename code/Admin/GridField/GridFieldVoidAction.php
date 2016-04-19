@@ -1,5 +1,6 @@
 <?php
 namespace SilverStripe\Omnipay\Admin\GridField;
+
 use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Omnipay\Exception\Exception;
 
@@ -78,7 +79,7 @@ class GridFieldVoidAction extends GridFieldPaymentAction
 
             try {
                 $serviceResponse = $voidService->initiate();
-            } catch (Exception $ex){
+            } catch (Exception $ex) {
                 throw new \ValidationException(
                     _t('GridFieldVoidAction.VoidError', 'Unable to void payment. An error occurred.'), 0);
             }

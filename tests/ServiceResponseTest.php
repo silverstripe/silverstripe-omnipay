@@ -214,5 +214,4 @@ class ServiceResponseTest extends SapphireTest
         // tryin to set the URL now should trigger an exception
         $response->setTargetUrl('/my/endpoint');
     }
-
 }

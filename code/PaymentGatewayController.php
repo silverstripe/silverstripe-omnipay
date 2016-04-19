@@ -1,6 +1,7 @@
 <?php
 
 namespace SilverStripe\Omnipay;
+
 use SilverStripe\Omnipay\Service\ServiceFactory;
 
 /**
@@ -14,9 +15,9 @@ use SilverStripe\Omnipay\Service\ServiceFactory;
 class PaymentGatewayController extends \Controller
 {
 
-	private static $allowed_actions = array(
-		'endpoint'
-	);
+    private static $allowed_actions = array(
+        'endpoint'
+    );
 
     /**
      * Generate an absolute url for gateways to return to, or send requests to.
@@ -31,34 +32,36 @@ class PaymentGatewayController extends \Controller
         );
     }
 
-	/**
-	 * Generate an absolute url for gateways to return to, or send requests to.
-	 * @param  string             $action      the intended action of the gateway
-	 * @param  string             $returnurl   the application url to re-redirect to
-	 * @return string                          the resulting redirect url
+    /**
+     * Generate an absolute url for gateways to return to, or send requests to.
+     * @param  string             $action      the intended action of the gateway
+     * @param  string             $returnurl   the application url to re-redirect to
+     * @return string                          the resulting redirect url
      * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use getEndpointUrl
-	 */
-	public static function get_endpoint_url($action, $identifier) {
+     */
+    public static function get_endpoint_url($action, $identifier)
+    {
         \Deprecation::notice('3.0', 'Snake-case methods will be deprecated with 3.0, use getEndpointUrl');
-		return self::getEndpointUrl($action, $identifier);
-	}
+        return self::getEndpointUrl($action, $identifier);
+    }
 
-	/**
-	 * The main action for handling all requests.
-	 * It will redirect back to the application in all cases,
-	 * but will not update the Payment/Transaction models if they are not found,
-	 * or allowed to be updated.
-	 */
-	public function index() {
+    /**
+     * The main action for handling all requests.
+     * It will redirect back to the application in all cases,
+     * but will not update the Payment/Transaction models if they are not found,
+     * or allowed to be updated.
+     */
+    public function index()
+    {
         $response = null;
-		$payment = $this->getPayment();
+        $payment = $this->getPayment();
 
-		if (!$payment) {
-			$this->httpError(404, _t('Payment.NOTFOUND', 'Payment could not be found.'));
-		}
+        if (!$payment) {
+            $this->httpError(404, _t('Payment.NOTFOUND', 'Payment could not be found.'));
+        }
 
         $intent = null;
-        switch ($payment->Status){
+        switch ($payment->Status) {
             // We have to check for both states here, since the notification might come in before the gateway returns
             // if that's the case, the status of the payment will already be set to 'Authorized'
             case 'PendingAuthorization':
@@ -83,37 +86,38 @@ class PaymentGatewayController extends \Controller
                 $this->httpError(403, _t('Payment.InvalidStatus', 'Invalid/unhandled payment status'));
         }
 
-		$service = ServiceFactory::create()->getService($payment, $intent);
+        $service = ServiceFactory::create()->getService($payment, $intent);
 
-		//do the payment update
-		switch ($this->request->param('Status')) {
-			case "complete":
-				$serviceResponse = $service->complete();
-				$response = $serviceResponse->redirectOrRespond();
-				break;
-			case "notify":
-				$serviceResponse = $service->complete(array(), true);
-				$response = $serviceResponse->redirectOrRespond();
-				break;
-			case "cancel":
+        //do the payment update
+        switch ($this->request->param('Status')) {
+            case "complete":
+                $serviceResponse = $service->complete();
+                $response = $serviceResponse->redirectOrRespond();
+                break;
+            case "notify":
+                $serviceResponse = $service->complete(array(), true);
+                $response = $serviceResponse->redirectOrRespond();
+                break;
+            case "cancel":
                 $serviceResponse = $service->cancel();
                 $response = $serviceResponse->redirectOrRespond();
-				break;
-			default:
-				$this->httpError(404, _t('Payment.INVALIDURL', 'Invalid payment url.'));
-		}
+                break;
+            default:
+                $this->httpError(404, _t('Payment.INVALIDURL', 'Invalid payment url.'));
+        }
 
-		return $response;
-	}
+        return $response;
+    }
 
-	/**
-	 * Get the the payment according to the identifer given in the url
-	 * @return \Payment the payment
-	 */
-	private function getPayment() {
-		return \Payment::get()
-				->filter('Identifier', $this->request->param('Identifier'))
-				->filter('Identifier:not', "")
-				->first();
-	}
+    /**
+     * Get the the payment according to the identifer given in the url
+     * @return \Payment the payment
+     */
+    private function getPayment()
+    {
+        return \Payment::get()
+                ->filter('Identifier', $this->request->param('Identifier'))
+                ->filter('Identifier:not', "")
+                ->first();
+    }
 }

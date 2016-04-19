@@ -2,7 +2,6 @@
 
 namespace SilverStripe\Omnipay\Exception;
 
-
 /**
  * Class InvalidConfigurationException
  *
@@ -13,5 +12,4 @@ namespace SilverStripe\Omnipay\Exception;
  */
 class InvalidConfigurationException extends Exception
 {
-
 }

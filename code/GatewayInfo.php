@@ -3,6 +3,7 @@
 namespace SilverStripe\Omnipay;
 use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\GatewayFactory;
+use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 
 /**
  * Provides information about gateways.
@@ -50,8 +51,9 @@ class GatewayInfo
     {
         $allowed = \Payment::config()->allowed_gateways;
         if (!is_array($allowed) || empty($allowed)) {
-            //include the manual payment type by default, if no gateways are configured
-            $allowed = array("Manual");
+            throw new InvalidConfigurationException(
+                'No allowed gateways configured. Use Payment.allowed_gateways config.'
+            );
         }
         $allowed = array_combine($allowed, $allowed);
         if ($nice) {

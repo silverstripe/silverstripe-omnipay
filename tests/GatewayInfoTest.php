@@ -60,6 +60,7 @@ class GatewayInfoTest extends SapphireTest
 
     /**
      * Test the allowed_gateways config
+     * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
      */
     public function testAllowedGateways()
     {
@@ -68,7 +69,8 @@ class GatewayInfoTest extends SapphireTest
         $this->assertTrue(GatewayInfo::isSupported('PayPal_Express'), 'PayPal_Express is in the list of allowed gateways');
 
         Config::inst()->remove('Payment', 'allowed_gateways');
-        $this->assertTrue(GatewayInfo::isSupported('Manual'), 'Manual should be default if there\'s no gateway set');
+        // this should throw an InvalidConfigurationException (no gateways configured)
+        GatewayInfo::getSupportedGateways();
     }
 
     /**

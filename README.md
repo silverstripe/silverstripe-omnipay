@@ -23,11 +23,11 @@ This module is a complete rewrite of the past Payment module. It is not backward
 ## Requirements
 
  * [silverstripe framework](https://github.com/silverstripe/silverstripe-framework) 3.1+
- * [omnipay](https://github.com/omnipay/common) 2.4 + it's dependencies - which include guzzle and some symphony libraries.
+ * [omnipay](https://github.com/omnipay/common) 2.4 + its dependencies - which include guzzle and some symphony libraries.
 
 ## Features
 
- * Gateway configuration via yaml config.
+ * Gateway configuration via YAML config.
  * Payment / transaction model handling.
  * Detailed + structured logging in the database.
  * Provide visitors with one, or many gateways to choose from.
@@ -47,16 +47,15 @@ It is not too difficult to write your own gateway integration either, if needed.
 
 ## Installation
 
-[Composer](http://doc.silverstripe.org/framework/en/installation/composer) is currently the only supported way to set
-up this module:
+[Composer](http://doc.silverstripe.org/framework/en/installation/composer) is currently the only supported way to set up this module:
 
 ```
 composer require silverstripe/silverstripe-omnipay
 ```
 
-As of version 2.0 this module only requires omnipay/common so you will also need to pull in your payment adapter of
-choice. Have a look at http://omnipay.thephpleague.com/gateways/official/ where the second column is the package name.
-For example, if you site uses PayPal you would also need to run:
+As of version 2.0 this module only requires `omnipay/common` so you will also need to pull in your payment adapter of choice. Have a look at http://omnipay.thephpleague.com/gateways/official/ where the second column is the package name.
+
+For example, if your site uses PayPal you would also need to run:
 
 ```
 composer require omnipay/paypal
@@ -65,26 +64,26 @@ composer require omnipay/paypal
 ## Configuration
 
 You can configure gateway settings in your `mysite/_config/payment.yml` file.
-Here you can select a list of allowed gateways, and separately set the gateway-specific settings.
+Here you can define a list of allowed gateways, and separately set the gateway-specific settings.
 
 You configure the allowed gateways by setting the `allowed_gateway` config on `Payment`. You can also choose to enable file logging by setting `file_logging` to 1.
 
-To configure the individual Gateway parameters, use `GatewayInfo` and add a key for every Gateway you want to configure.
+To configure the individual gateway parameters, use `GatewayInfo` and add a key for every Gateway you want to configure.
 
 Each Gateway can have the following settings:
 
 | Setting                  | Type      | Description
 | ------------------------ | --------- | ---
-| `is_manual`              | *boolean* | Set this to true if this Gateway should be considered a "Manual" Payment (eg. Invoice)
-| `use_authorize`          | *boolean* | Whether or not this Gateway should prefer authorize over purchase
-| `use_async_notification` | *boolean* | When set to true, this Gateway will receive asynchronous notifications from the Payment provider
-| `token_key`              | *string*  | Key for the token parameter
+| `is_manual`              | *boolean* | Set this to true if this gateway should be considered a "Manual" gateway (eg. Invoice)
+| `use_authorize`          | *boolean* | Whether or not this gateway should prefer authorize over purchase
+| `use_async_notification` | *boolean* | When set to true, this gateway will receive asynchronous notifications from the payment provider to confirm status changes
+| `token_key`              | *string*  | Key for the token parameter (for gateways that generate tokens for credit-cards)
 | `required_fields`        | *array*   | An array of required form-fields
 | `parameters`             | *map*     | All gateway parameters that will be passed along to the Omnipay Gateway instance
-| `is_offsite`             | *boolean* | You can explicitly mark this Gateway as being offsite. Use with caution and only if the system fails to automatically determine this.
-| `allow_capture`          | *boolean* | Whether or not capturing of authorized payments should be allowed. Defaults to true. Some payment providers capture payment automatically after some period of time, or the person using the CMS should not be allowed to capture payments. You can then disable this feature.
-| `allow_refund`           | *boolean* | Whether or not refunding of captured payments should be allowed. Defaults to true.
-| `allow_void`             | *boolean* | Whether or not voiding of authorized payments should be allowed. Defaults to true.
+| `is_offsite`             | *boolean* | You can explicitly mark this gateway as being offsite. Use with caution and only if the system fails to automatically determine this
+| `allow_capture`          | *boolean* | Whether or not capturing of authorized payments should be allowed. Defaults to *true*. Some payment providers capture payment automatically after some period of time, or the person using the CMS should not be allowed to capture payments. You can then disable this feature
+| `allow_refund`           | *boolean* | Whether or not refunding of captured payments should be allowed. Defaults to *true*
+| `allow_void`             | *boolean* | Whether or not voiding of authorized payments should be allowed. Defaults to *true*
 
 ```yaml
 ---
@@ -103,6 +102,7 @@ GatewayInfo:
       password: 'txjjllae802325'
       signature: 'wk32hkimhacsdfa'
   PaymentExpress_PxPost:
+    use_authorize: true
     parameters:
       username: 'EXAMPLEUSER'
       password: '235llgwxle4tol23l'
@@ -135,7 +135,30 @@ GatewayInfo:
       password: 'n23nl2ltwlwjle'
 ```
 
-The [SilverStripe documentation](http://doc.silverstripe.com/framework/en/topics/configuration#setting-configuration-via-yaml-files) explains more about yaml config files.
+The [SilverStripe documentation](https://docs.silverstripe.org/en/3.3/developer_guides/configuration/configuration/) explains more about YAML config files.
+
+### Gateway naming conventions
+
+The way gateways are named is dictated by the Omnipay module. Since there might be different gateways in one Omnipay-Payment-Driver, we need a way to address these via different names.
+
+The rules are pretty simple: Class names beginning with a namespace marker (`\`) are left intact. Non-namespaced classes are expected to be in the `\Omnipay` namespace. In non-namespaced classes, underscores or slashes (`\`) are used to denote a specific gateway instance.
+
+Examples:
+
+ * `\Custom\Gateway` → `\Custom\Gateway`
+ * `\Custom_Gateway` → `\Custom_Gateway`
+ * `Stripe` → `\Omnipay\Stripe\Gateway`
+ * `PayPal\Express` → `\Omnipay\PayPal\ExpressGateway`
+ * `PayPal_Express` → `\Omnipay\PayPal\ExpressGateway`
+
+
+And another example: [Omnipay PayPal](https://github.com/thephpleague/omnipay-paypal) comes with three different gateway implementations: `ExpressGateway`, `ProGateway` and `RestGateway`. The gateway names for these gateways would be:
+`PayPal_Express`, `PayPal_Pro` and `PayPal_Rest`.
+
+Please follow the rules above to choose the correct gateway name in your configuration files.
+
+Throughout the documentation and examples of this module, you'll find the syntax with underscores. It's easier to read and less error-prone (escaping) than the syntax with namespace markers (`\`).
+ 
 
 ## Usage
 
@@ -147,8 +170,7 @@ In your application, you may want to allow users to choose between a few differe
 $gateways = GatewayInfo::getSupportedGateways();
 ```
 
-If no allowed gateways are configured, then the module will default to providing
-the "Manual" gateway.
+If no allowed gateways are configured, an Exception will be thrown.
 
 ### Get payment form fields
 
@@ -161,9 +183,9 @@ $fields = $factory->getFields();
 
 If the gateway is off-site, then no credit-card fields will be returned.
 
-Fields have also been appropriately grouped, incase you only want to retrieve the credit card related fields, for example.
+Fields have also been appropriately grouped, in case you only want to retrieve the credit card related fields, for example.
 
-Required fields can be configured in the yaml config file, as this information is unfortunately not provided by Omnipay:
+Required fields can be configured in the YAML config file, as this information is unfortunately not provided by Omnipay:
 
 ```yaml
 ---
@@ -188,7 +210,8 @@ GatewayInfo:
 
 You can optionally add the `Payable` extension to your model (e.g. Order, Subscription, Donation, Registration).
 This will add a has_many `Payment` relationship to your model, and provide some additional functions
-**NOTE:** You must create the associated has_one relationship on `Payment` yourself. This can be done with an extension or via the yaml config system.
+
+**NOTE:** You must create the associated has_one relationship on `Payment` yourself. This can be done with an extension or via the YAML config system.
 For example, the following extension will be applied to `Payment`:
 
 ```php
@@ -199,7 +222,7 @@ class ShopPayment extends DataExtension {
 }
 ```
 
-With yaml:
+Or purely with YAML:
 
 ```yaml
 Payment:
@@ -210,19 +233,19 @@ Payment:
 ### The Payment Services and Service Factory
 
 There are currently five payment services available, which map to methods exposed by Omnipay.
-Which one you can use in practice depends on the capabilities of the individual Gateway. Some Gateways will support all
-services, while some support only a few (eg. the "Manual" Gateway doesn't support "purchase").
+Which one you can use in practice depends on the capabilities of the individual gateway. Some gateways will support all
+services, while some support only a few (eg. the "Manual" gateway doesn't support "purchase").
 
 The services are:
 
  - `PurchaseService` : Directly purchase/capture an amount.
- - `AuthorizeService`: Authorize a payment amount.
+ - `AuthorizeService`: Authorize an amount.
  - `CaptureService`: Capture a previously authorized amount.
  - `RefundService`: Refund a previously captured amount.
- - `VoidService`: Void/Cancel this payment.
+ - `VoidService`: Void/Cancel an authorized payment.
 
-Each of these services implements a `initiate` and a `complete` method. The `initiate` method is always required and
-initiates a service. Depending on how the Gateway handles requests, you might also need the `complete` method.
+Each of these services implements an `initiate` and a `complete` method. The `initiate` method is always required and
+initiates a service. Depending on how the gateway handles requests, you might also need the `complete` method.
 
 This is the case with offsite payment forms, where `initiate` will redirect the user to the payment form and once he returns
 from the offsite form, `complete` will be called to finalize the payment.
@@ -350,7 +373,7 @@ Payment:
 
 ## Renaming gateways and translation
 
-You can change the front-end visible name of a gateway using the translation system. The gateway name must match what you entered in the `allowed_gateways` yaml config.
+You can change the front-end visible name of a gateway using the translation system. The gateway name must match what you entered in the `allowed_gateways` YAML config.
 
 For example, inside mysite/lang/en.yml:
 
@@ -371,7 +394,7 @@ Logs will be saved to `debug.log` in the root of your SilverStripe directory.
 
 ## Migrating from Payment module
 
-Before you import your database and do a DB/build, add the following yaml config to your site:
+Before you import your database and do a DB/build, add the following YAML config to your site:
 
 ```yaml
 ---

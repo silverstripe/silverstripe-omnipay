@@ -1,5 +1,10 @@
 <?php
 
+use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Admin\GridField\GridFieldCaptureAction;
+use SilverStripe\Omnipay\Admin\GridField\GridFieldRefundAction;
+use SilverStripe\Omnipay\Admin\GridField\GridFieldVoidAction;
+
 /**
  * An extension for providing payments on a particular data object.
  *
@@ -11,19 +16,28 @@ class Payable extends DataExtension {
 		'Payments' => 'Payment'
 	);
 
-	public function updateCMSFields(FieldList $fields) {
-		$fields->addFieldToTab("Root.Payments",
-			GridField::create("Payments", "Payments", $this->owner->Payments(),
-				GridFieldConfig_RecordEditor::create()
-					->removeComponentsByType('GridFieldAddNewButton')
-					->removeComponentsByType('GridFieldDeleteAction')
-					->removeComponentsByType('GridFieldFilterHeader')
-					->removeComponentsByType('GridFieldPageCount')
-			)
+	public function updateCMSFields(FieldList $fields)
+    {
+        $gridConfig = GridFieldConfig_RecordEditor::create()
+            ->addComponent(new GridFieldCaptureAction(), 'GridFieldEditButton')
+            ->addComponent(new GridFieldRefundAction(), 'GridFieldEditButton')
+            ->addComponent(new GridFieldVoidAction(), 'GridFieldEditButton')
+            ->removeComponentsByType('GridFieldAddNewButton')
+            ->removeComponentsByType('GridFieldDeleteAction')
+            ->removeComponentsByType('GridFieldFilterHeader')
+            ->removeComponentsByType('GridFieldPageCount');
+
+		$fields->addFieldToTab('Root.Payments',
+			GridField::create('Payments', _t('Payment.PLURALNAME','Payments'), $this->owner->Payments(), $gridConfig)
 		);
 	}
 
-	public function TotalPaid() {
+    /**
+     * Get the total captured amount
+     * @return float
+     */
+	public function TotalPaid()
+    {
 		$paid = 0;
 		if ($payments = $this->owner->Payments()) {
 			foreach ($payments as $payment) {
@@ -34,5 +48,26 @@ class Payable extends DataExtension {
 		}
 		return $paid;
 	}
+
+    /**
+     * Get the total captured or authorized amount, excluding Manual payments.
+     * @return float
+     */
+    public function TotalPaidOrAuthorized()
+    {
+        $paid = 0;
+        if ($payments = $this->owner->Payments()) {
+            foreach ($payments as $payment) {
+                // Captured and authorized payments (which aren't manual) should count towards the total
+                if (
+                    $payment->Status == 'Captured' ||
+                    ($payment->Status == 'Authorized' && !GatewayInfo::isManual($payment->Gateway))
+                ) {
+                    $paid += $payment->Amount;
+                }
+            }
+        }
+        return $paid;
+    }
 
 }

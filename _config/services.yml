@@ -1,0 +1,10 @@
+---
+Name: omnipay-services
+---
+ServiceFactory:
+  services:
+    authorize: '\SilverStripe\Omnipay\Service\AuthorizeService'
+    purchase: '\SilverStripe\Omnipay\Service\PurchaseService'
+    refund: '\SilverStripe\Omnipay\Service\RefundService'
+    capture: '\SilverStripe\Omnipay\Service\CaptureService'
+    void: '\SilverStripe\Omnipay\Service\VoidService'

@@ -1,0 +1,7 @@
+---
+Name: omnipay-config
+After: framework/routes#coreroutes
+---
+LeftAndMain:
+  extra_requirements_css:
+    - omnipay/css/omnipay-cms.css

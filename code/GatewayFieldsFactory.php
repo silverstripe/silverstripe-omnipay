@@ -1,5 +1,8 @@
 <?php
 
+use SilverStripe\Omnipay\GatewayInfo;
+use Omnipay\Common\CreditCard;
+
 /**
  * Helper for generating gateway fields, based on best practices.
  *
@@ -100,7 +103,7 @@ class GatewayFieldsFactory{
 	}
 
 	public function getCardTypes() {
-		$card = new Omnipay\Common\CreditCard();
+		$card = new CreditCard();
 		$brands = $card->getSupportedBrands();
 		foreach ($brands as $brand => $x) {
 			$brands[$brand] = _t("PaymentForm.".strtoupper($brand), $brand);

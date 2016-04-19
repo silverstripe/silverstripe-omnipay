@@ -1,62 +1,10 @@
 en:
   PaymentAdmin:
     MENUTITLE: Payments
-  AuthorizeError:
-    PLURALNAME: 'Authorize Errors'
-    SINGULARNAME: 'Authorize Error'
-  AuthorizeRedirectResponse:
-    PLURALNAME: 'Authorize Redirect Responses'
-    SINGULARNAME: 'Authorize Redirect Response'
-  AuthorizeRequest:
-    PLURALNAME: 'Authorize Requests'
-    SINGULARNAME: 'Authorize Request'
-  AuthorizedResponse:
-    PLURALNAME: 'Authorized Responses'
-    SINGULARNAME: 'Authorized Response'
-  CaptureError:
-    PLURALNAME: 'Capture Errors'
-    SINGULARNAME: 'Capture Error'
-  CaptureRequest:
-    PLURALNAME: 'Capture Requests'
-    SINGULARNAME: 'Capture Request'
-  CapturedResponse:
-    PLURALNAME: 'Captured Responses'
-    SINGULARNAME: 'Captured Response'
-  CompleteAuthorizeError:
-    PLURALNAME: 'Complete Authorize Errors'
-    SINGULARNAME: 'Complete Authorize Error'
-  CompleteAuthorizeRequest:
-    PLURALNAME: 'Complete Authorize Requests'
-    SINGULARNAME: 'Complete Authorize Request'
-  CompletePurchaseError:
-    PLURALNAME: 'Complete Purchase Errors'
-    SINGULARNAME: 'Complete Purchase Error'
-  CompletePurchaseRequest:
-    PLURALNAME: 'Complete Purchase Requests'
-    SINGULARNAME: 'Complete Purchase Request'
-  GatewayErrorMessage:
-    PLURALNAME: 'Gateway Error Messages'
-    SINGULARNAME: 'Gateway Error Message'
-  GatewayMessage:
-    PLURALNAME: 'Gateway Messages'
-    SINGULARNAME: 'Gateway Message'
-    db_Code: Code
-    db_Gateway: Gateway
-    db_Reference: Reference
-  GatewayRedirectResponseMessage:
-    PLURALNAME: 'Gateway Redirect Response Messages'
-    SINGULARNAME: 'Gateway Redirect Response Message'
-  GatewayRequestMessage:
-    PLURALNAME: 'Gateway Request Messages'
-    SINGULARNAME: 'Gateway Request Message'
-    db_FailureURL: 'Failure URL'
-    db_SuccessURL: 'Success URL'
-  GatewayResponseMessage:
-    PLURALNAME: 'Gateway Response Messages'
-    SINGULARNAME: 'Gateway Response Message'
   Payment:
     GATEWAY: Gateway
     INVALIDURL: 'Invalid payment url.'
+    InvalidStatus: 'Invalid/unhandled payment status'
     MESSAGES: Messages
     MONEY: Money
     NOTFOUND: 'Payment could not be found.'
@@ -210,6 +158,19 @@ en:
     MAESTRO: Maestro
     FORBRUGSFORENINGEN: Forbrugsforeningen
     LASER: Laser
+  GridFieldCaptureAction:
+    Title: 'Capture Payment'
+    Description: 'Capture authorized Payment'
+    CaptureError: 'Unable to capture payment. An error occurred.'
+  GridFieldRefundAction:
+    Title: 'Refund Payment'
+    Description: 'Refund a captured payment'
+    RefundError: 'Unable to refund payment. An error occurred.'
+  GridFieldVoidAction:
+    Title: 'Void Payment'
+    Description: 'Void an authorized payment'
+    VoidError: 'Unable to void payment. An error occurred.'
+  # Payment message classes
   PaymentMessage:
     PLURALNAME: 'Payment Messages'
     SINGULARNAME: 'Payment Message'
@@ -217,33 +178,107 @@ en:
     db_Message: Message
     has_one_Payment: Payment
     has_one_User: User
-  PurchaseError:
-    PLURALNAME: 'Purchase Errors'
-    SINGULARNAME: 'Purchase Error'
-  PurchaseRedirectResponse:
-    PLURALNAME: 'Purchase Redirect Responses'
-    SINGULARNAME: 'Purchase Redirect Response'
+  GatewayErrorMessage:
+    PLURALNAME: 'Gateway Error Messages'
+    SINGULARNAME: 'Gateway Error Message'
+  GatewayMessage:
+    PLURALNAME: 'Gateway Messages'
+    SINGULARNAME: 'Gateway Message'
+    db_Code: Code
+    db_Gateway: Gateway
+    db_Reference: Reference
+  GatewayRedirectResponseMessage:
+    PLURALNAME: 'Gateway Redirect Response Messages'
+    SINGULARNAME: 'Gateway Redirect Response Message'
+  GatewayRequestMessage:
+    PLURALNAME: 'Gateway Request Messages'
+    SINGULARNAME: 'Gateway Request Message'
+    db_FailureURL: 'Failure URL'
+    db_SuccessURL: 'Success URL'
+  GatewayResponseMessage:
+    PLURALNAME: 'Gateway Response Messages'
+    SINGULARNAME: 'Gateway Response Message'
+  # Authorize messages
+  AuthorizeRequest:
+    PLURALNAME: 'Authorize Requests'
+    SINGULARNAME: 'Authorize Request'
+  AwaitingAuthorizeResponse:
+    PLURALNAME: 'Awaiting Authorize Responses'
+    SINGULARNAME: 'Awaiting Authorize Response'
+  AuthorizeError:
+    PLURALNAME: 'Authorize Errors'
+    SINGULARNAME: 'Authorize Error'
+  AuthorizeRedirectResponse:
+    PLURALNAME: 'Authorize Redirect Responses'
+    SINGULARNAME: 'Authorize Redirect Response'
+  AuthorizedResponse:
+    PLURALNAME: 'Authorized Responses'
+    SINGULARNAME: 'Authorized Response'
+  CompleteAuthorizeError:
+    PLURALNAME: 'Complete Authorize Errors'
+    SINGULARNAME: 'Complete Authorize Error'
+  CompleteAuthorizeRequest:
+    PLURALNAME: 'Complete Authorize Requests'
+    SINGULARNAME: 'Complete Authorize Request'
+  # Capture messages
+  CaptureRequest:
+    PLURALNAME: 'Capture Requests'
+    SINGULARNAME: 'Capture Request'
+  CapturedResponse:
+    PLURALNAME: 'Captured Responses'
+    SINGULARNAME: 'Captured Response'
+  CaptureError:
+    PLURALNAME: 'Capture Errors'
+    SINGULARNAME: 'Capture Error'
+  # Purchase messages
   PurchaseRequest:
     PLURALNAME: 'Purchase Requests'
     SINGULARNAME: 'Purchase Request'
+  AwaitingPurchaseResponse:
+    PLURALNAME: 'Awaiting Purchase Responses'
+    SINGULARNAME: 'Awaiting Purchase Response'
   PurchasedResponse:
     PLURALNAME: 'Purchased Responses'
     SINGULARNAME: 'Purchased Response'
-  RefundError:
-    PLURALNAME: 'Refund Errors'
-    SINGULARNAME: 'Refund Error'
+  PurchaseError:
+    PLURALNAME: 'Purchase Errors'
+    SINGULARNAME: 'Purchase Error'
+  CompletePurchaseRequest:
+    PLURALNAME: 'Complete Purchase Requests'
+    SINGULARNAME: 'Complete Purchase Request'
+  CompletePurchaseError:
+    PLURALNAME: 'Complete Purchase Errors'
+    SINGULARNAME: 'Complete Purchase Error'
+  PurchaseRedirectResponse:
+    PLURALNAME: 'Purchase Redirect Responses'
+    SINGULARNAME: 'Purchase Redirect Response'
+  # Refund messages
   RefundRequest:
     PLURALNAME: 'Refund Requests'
     SINGULARNAME: 'Refund Request'
   RefundedResponse:
     PLURALNAME: 'Refunded Responses'
     SINGULARNAME: 'Refunded Response'
-  VoidError:
-    PLURALNAME: 'Void Errors'
-    SINGULARNAME: 'Void Error'
+  RefundError:
+    PLURALNAME: 'Refund Errors'
+    SINGULARNAME: 'Refund Error'
+  # Void messages
   VoidRequest:
     PLURALNAME: 'Void Requests'
     SINGULARNAME: 'Void Request'
   VoidedResponse:
     PLURALNAME: 'Voided Responses'
     SINGULARNAME: 'Voided Response'
+  VoidError:
+    PLURALNAME: 'Void Errors'
+    SINGULARNAME: 'Void Error'
+  # Notification messages
+  NotificationSuccessful:
+    PLURALNAME: 'Notification Successful'
+    SINGULARNAME: 'Notification Successful'
+  NotificationPending:
+    PLURALNAME: 'Notification Pending'
+    SINGULARNAME: 'Notification Pending'
+  NotificationError:
+    PLURALNAME: 'Notification Errors'
+    SINGULARNAME: 'Notification Error'

@@ -1,0 +1,19 @@
+.cms .ui-icon.btn-icon-button-capture {
+    background: transparent url(../images/money-add.png) no-repeat center center;
+}
+
+.cms .ui-icon.btn-icon-button-refund {
+    background: transparent url(../images/money-refund.png) no-repeat center center;
+}
+
+.cms .ui-icon.btn-icon-button-void {
+    background: transparent url(../images/money-delete.png) no-repeat center center;
+}
+
+.cms .gridfield-button-capture .ui-button-text,
+.cms .gridfield-button-capture .ui-button-text,
+.cms .gridfield-button-capture .ui-button-text
+{
+    padding-left: 1em;
+    padding-right: 1em;
+}

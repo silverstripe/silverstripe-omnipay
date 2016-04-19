@@ -1,4 +1,5 @@
 <?php
+use SilverStripe\Omnipay\GatewayInfo;
 
 class PaymentModelTest extends PaymentTest {
 

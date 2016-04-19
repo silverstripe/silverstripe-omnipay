@@ -37,12 +37,18 @@ See more: [Logging](logging.md)
 
 Here are the possible states a payment can have
 
- * Created - new payment model
- * Authorized - payment capture has been authorised by gateway
- * Captured - money has been sucessfully received
- * Completed - completely paid
- * Refund - funds have been returned to payer
- * Voided - payment has been cancelled
+Created,PendingAuthorization,Authorized,PendingPurchase,PendingCapture,Captured,PendingRefund,Refunded,PendingVoid,Void
+
+ * `Created` - new payment model
+ * `PendingAuthorization` - authorization is pending. This is an intermediate state before the payment will be Authorized either via user that returns from an offsite gateway or when the payment provider notifies about payment-success via asynchronous callback.
+ * `Authorized` - payment capture has been authorised by gateway
+ * `PendingPurchase` - purchase is pending. When initiating a purchase, the payment will enter this state, which is an intermediate state before payment will be Captured
+ * `PendingCapture` - capture is pending. When initiating capture, the payment will enter this state, which is an intermediate state before payment will be Captured
+ * `Captured` - money has been successfully received.
+ * `PendingRefund` - refund is pending. This state will only be used when a refund is started and waiting for an asynchronous confirmation from the payment provider.
+ * `Refund` - funds have been returned to payer
+ * `PendingVoid` - void is pending. This state will only be used when trying to void a payment and waiting for an asynchronous confirmation from the payment provider.
+ * `Void` - payment has been cancelled
 
 
 ## Off-site vs On-site differences
@@ -87,44 +93,6 @@ Your model you connect payments to will generally be something like: `Bill`, `In
 
 An extension (`Payable`) has been written to provide the above functionality.
 
-
-## Configuration
-
-You can configure the allowed Gateways for payments using YAML config files. Example:
-
-```
-Payment:
-  allowed_gateways:
-    - Manual
-    - PayPal_Express
-    - Stripe
-```
-
-To configure Gateway properties, please create an entry for each Gateway under `GatewayInfo`. Example:
-
-```
-GatewayInfo:
-  PayPal_Express:
-    properties:
-      username: 'my.api.username'
-      password: 'APIPASSWORD'
-      testMode: true
-      # More gateway properties
-  Stripe:
-    use_authorize: true
-    properties:
-      # Gateway Properties
-```
-
-Each Gateway can have the following settings:
-
- - `is_manual` *boolean*: Set this to true if this gateway should be considered a "Manual" Payment (eg. Invoice)
- - `use_authorize` *boolean*: Whether or not this Gateway should prefer authorize over purchase
- - `use_async_notification` *boolean*: When set to true, this Gateway will receive asynchronous notifications from the Payment provider
- - `token_key` *string*: Key for the token parameter
- - `required_fields` *array*: An array of required form-fields
- - `properties` *map*: All gateway properties that will be passed along to the Omnipay Gateway instance
-
 ### Changing parameters for live environment
 
 You can define separate properties for different environments. Here's an example of that:
@@ -162,7 +130,6 @@ Different gateways have different features. This means you may get a different l
  * Enter credit card details on site. Some gateways allow entering credit card details to a form on your website, and other require users to visit another website to enter those details. This is also known as "on site" vs "off site" credit card processing. It is sometimes possible to emulate on site processing using an iframe containing the off-site payment page.
 
 To see what features are supported, for the installed gateways, visit: `your-site-url/dev/payment`.
-
 
 ## Logging
 

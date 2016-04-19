@@ -1,11 +1,16 @@
 <?php
 
-class VoidRequest extends GatewayRequestMessage{
-	
+class VoidRequest extends GatewayRequestMessage
+{
+
 }
-class VoidedResponse extends GatewayResponseMessage{
-	
+
+class VoidedResponse extends GatewayResponseMessage
+{
+
 }
-class VoidError extends GatewayErrorMessage{
-	
+
+class VoidError extends GatewayErrorMessage
+{
+
 }

@@ -27,11 +27,11 @@ before_script:
 
 script:
   - "if [ \"$COVERAGE\" = \"\" ]; then phpunit -c omnipay/phpunit.xml.dist; fi"
-  - "if [ \"$COVERAGE\" = \"1\" ]; then phpunit -c omnipay/phpunit.xml.dist --coverage-clover omnipay/coverage.xml; fi"
+  - "if [ \"$COVERAGE\" = \"1\" ]; then phpunit -c omnipay/phpunit.xml.dist --coverage-clover coverage.clover; fi"
 
 after_script:
   - if [ "$COVERAGE" = "1" ]; then
   - cd omnipay
   - wget https://scrutinizer-ci.com/ocular.phar
-  - php ocular.phar code-coverage:upload -v --format=php-clover coverage.xml
+  - php ocular.phar code-coverage:upload -v --format=php-clover coverage.clover
   - fi

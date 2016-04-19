@@ -1,8 +1,8 @@
 # SilverStripe Payments via Omnipay
 
 [![Build Status](https://api.travis-ci.org/silverstripe/silverstripe-omnipay.png)](https://travis-ci.org/silverstripe/silverstripe-omnipay)
-[![Code Coverage](https://scrutinizer-ci.com/g/silverstripe/silverstripe-omnipay/badges/coverage.png?s=90fe071f1fec0564c6ee8db6678a73ae5aca9207)](https://scrutinizer-ci.com/g/silverstripe/silverstripe-omnipay/)
-[![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/silverstripe/silverstripe-omnipay/badges/quality-score.png?s=35408c4d68a36e35d0bc2b4b012bd8fb2c6d4d49)](https://scrutinizer-ci.com/g/silverstripe/silverstripe-omnipay/)
+[![Code Coverage](https://scrutinizer-ci.com/g/silverstripe/silverstripe-omnipay/badges/coverage.png?b=master)](https://scrutinizer-ci.com/g/silverstripe/silverstripe-omnipay/?branch=master)
+[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/silverstripe/silverstripe-omnipay/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/silverstripe/silverstripe-omnipay/?branch=master)
 [![Latest Stable Version](https://poser.pugx.org/silverstripe/silverstripe-omnipay/v/stable.png)](https://packagist.org/packages/silverstripe/silverstripe-omnipay)
 [![Total Downloads](https://poser.pugx.org/silverstripe/silverstripe-omnipay/downloads.png)](https://packagist.org/packages/silverstripe/silverstripe-omnipay)
 [![Latest Unstable Version](https://poser.pugx.org/silverstripe/silverstripe-omnipay/v/unstable.png)](https://packagist.org/packages/silverstripe/silverstripe-omnipay)

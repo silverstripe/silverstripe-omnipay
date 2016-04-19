@@ -60,7 +60,16 @@ class PurchaseService extends PaymentService
         }
 
         $this->extend('onBeforePurchase', $gatewaydata);
-        $request = $this->oGateway()->purchase($gatewaydata);
+
+        $gateway = $this->oGateway();
+        // Checking if gateway supports purchase, otherwise fallback to authorize.
+        // This is, because Manual payments no longer support "purchase" in Omnipay 2.x
+        if($gateway->supportsPurchase()){
+            $request = $gateway->purchase($gatewaydata);
+        } else {
+            $request = $gateway->authorize($gatewaydata);
+        }
+
         $this->extend('onAfterPurchase', $request);
 
         $message = $this->createMessage('PurchaseRequest', $request);
@@ -128,7 +137,12 @@ class PurchaseService extends PaymentService
 		));
 
 		$this->payment->extend('onBeforeCompletePurchase', $gatewaydata);
-        $request = $this->oGateway()->completePurchase($gatewaydata);
+        $gateway = $this->oGateway();
+        if($gateway->supportsCompletePurchase()){
+            $request = $gateway->completePurchase($gatewaydata);
+        } else {
+            $request = $gateway->completeAuthorize($gatewaydata);
+        }
         $this->payment->extend('onAfterCompletePurchase', $request);
 
         $this->createMessage('CompletePurchaseRequest', $request);

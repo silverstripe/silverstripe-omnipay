@@ -15,5 +15,4 @@ class GatewayMessage extends PaymentMessage
         'Message',
         'Code'
     );
-
 }

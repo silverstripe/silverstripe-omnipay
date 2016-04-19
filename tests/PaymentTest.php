@@ -2,7 +2,6 @@
 use SilverStripe\Omnipay\Service\PaymentService;
 use SilverStripe\Omnipay\Service\ServiceFactory;
 
-
 abstract class PaymentTest extends FunctionalTest
 {
     public static $fixture_file = array(
@@ -29,8 +28,8 @@ abstract class PaymentTest extends FunctionalTest
         // remove all extensions applied to ServiceFactory
         $this->factoryExtensions = Object::get_extensions('ServiceFactory');
 
-        if($this->factoryExtensions){
-            foreach ($this->factoryExtensions as $extension){
+        if ($this->factoryExtensions) {
+            foreach ($this->factoryExtensions as $extension) {
                 ServiceFactory::remove_extension($extension);
             }
         }
@@ -53,8 +52,8 @@ abstract class PaymentTest extends FunctionalTest
         parent::tearDownOnce();
 
         // Add removed extensions back once the tests have completed
-        if($this->factoryExtensions){
-            foreach ($this->factoryExtensions as $extension){
+        if ($this->factoryExtensions) {
+            foreach ($this->factoryExtensions as $extension) {
                 ServiceFactory::add_extension($extension);
             }
         }

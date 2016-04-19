@@ -2,7 +2,6 @@
 
 namespace SilverStripe\Omnipay\Service;
 
-
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 
@@ -37,17 +36,18 @@ class PurchaseService extends PaymentService
     }
 
     /**
-	 * Attempt to make a payment.
-	 *
-	 * @inheritdoc
-	 * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
-	 * 	Some keys (e.g. "amount") are overwritten with data from the associated {@link $payment}.
-	 *  If this array is constructed from user data (e.g. a form submission), please take care
-	 *  to whitelist accepted fields, in order to ensure sensitive gateway parameters like "freeShipping" can't be set.
-	 *  If using {@link Form->getData()}, only fields which exist in the form are returned,
-	 *  effectively whitelisting against arbitrary user input.
-	 */
-	public function initiate($data = array()) {
+     * Attempt to make a payment.
+     *
+     * @inheritdoc
+     * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
+     * 	Some keys (e.g. "amount") are overwritten with data from the associated {@link $payment}.
+     *  If this array is constructed from user data (e.g. a form submission), please take care
+     *  to whitelist accepted fields, in order to ensure sensitive gateway parameters like "freeShipping" can't be set.
+     *  If using {@link Form->getData()}, only fields which exist in the form are returned,
+     *  effectively whitelisting against arbitrary user input.
+     */
+    public function initiate($data = array())
+    {
         if ($this->payment->Status !== 'Created') {
             throw new InvalidStateException('Cannot initiate a purchase with this payment. Status is not "Created"');
         }
@@ -57,7 +57,7 @@ class PurchaseService extends PaymentService
         }
 
         $gateway = $this->oGateway();
-        if(!$gateway->supportsPurchase()){
+        if (!$gateway->supportsPurchase()) {
             throw new InvalidConfigurationException(
                 sprintf('The gateway "%s" doesn\'t support purchase', $this->payment->Gateway)
             );
@@ -94,7 +94,7 @@ class PurchaseService extends PaymentService
                 $serviceResponse->isRedirect() ? 'PurchaseRedirectResponse' : 'AwaitingPurchaseResponse',
                 $response
             );
-        } else if($serviceResponse->isError()){
+        } elseif ($serviceResponse->isError()) {
             $this->createMessage('PurchaseError', $response);
         } else {
             $this->createMessage('PurchasedResponse', $response);
@@ -104,22 +104,22 @@ class PurchaseService extends PaymentService
         }
 
         return $serviceResponse;
-	}
+    }
 
-	/**
-	 * Finalise this payment, after off-site external processing.
-	 * This is usually only called by PaymentGatewayController.
-	 * @inheritdoc
-	 */
+    /**
+     * Finalise this payment, after off-site external processing.
+     * This is usually only called by PaymentGatewayController.
+     * @inheritdoc
+     */
     public function complete($data = array(), $isNotification = false)
     {
         $flags = $isNotification ? ServiceResponse::SERVICE_NOTIFICATION : 0;
         // The payment is already captured
-        if($this->payment->Status === 'Captured'){
+        if ($this->payment->Status === 'Captured') {
             return $this->generateServiceResponse($flags);
         }
 
-        if($this->payment->Status !== 'PendingPurchase'){
+        if ($this->payment->Status !== 'PendingPurchase') {
             throw new InvalidStateException('Cannot complete this payment. Status is not "PendingPurchase"');
         }
 
@@ -147,13 +147,13 @@ class PurchaseService extends PaymentService
         }
 
         $serviceResponse = $this->wrapOmnipayResponse($response, $isNotification);
-        if($serviceResponse->isError()){
+        if ($serviceResponse->isError()) {
             $this->createMessage('CompletePurchaseError', $response);
             return $serviceResponse;
         }
 
         // only update payment status if we're not waiting for a notification
-        if(!$serviceResponse->isAwaitingNotification()){
+        if (!$serviceResponse->isAwaitingNotification()) {
             $this->createMessage('PurchasedResponse', $response);
             $this->payment->Status = 'Captured';
             $this->payment->write();
@@ -164,7 +164,7 @@ class PurchaseService extends PaymentService
 
 
         return $serviceResponse;
-	}
+    }
 
     /**
      * Attempt to make a payment.

@@ -2,7 +2,6 @@
 
 namespace SilverStripe\Omnipay\Service;
 
-
 use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\PaymentGatewayController;
@@ -125,7 +124,7 @@ abstract class PaymentService extends \Object
      * @throws InvalidConfigurationException when there's a misconfiguration in the module itself
      * @return ServiceResponse the service response
      */
-    abstract function initiate($data = array());
+    abstract public function initiate($data = array());
 
     /**
      * Complete a previously initiated gateway request.
@@ -137,7 +136,7 @@ abstract class PaymentService extends \Object
      * @throws InvalidConfigurationException when there's a misconfiguration in the module itself
      * @return ServiceResponse the service response
      */
-    abstract function complete($data = array(), $isNotification = false);
+    abstract public function complete($data = array(), $isNotification = false);
 
     /**
      * Cancel a payment
@@ -306,7 +305,7 @@ abstract class PaymentService extends \Object
      */
     protected function wrapOmnipayResponse(AbstractResponse $omnipayResponse, $isNotification = false)
     {
-        if($isNotification){
+        if ($isNotification) {
             $flags = ServiceResponse::SERVICE_NOTIFICATION;
             if (!$omnipayResponse->isSuccessful()) {
                 $flags |= ServiceResponse::SERVICE_ERROR;
@@ -317,7 +316,7 @@ abstract class PaymentService extends \Object
         $isAsync = GatewayInfo::shouldUseAsyncNotifications($this->payment->Gateway);
         $flags = $isAsync ? ServiceResponse::SERVICE_PENDING : 0;
 
-        if(!$omnipayResponse->isSuccessful() && !$omnipayResponse->isRedirect() && !$isAsync){
+        if (!$omnipayResponse->isSuccessful() && !$omnipayResponse->isRedirect() && !$isAsync) {
             $flags |= ServiceResponse::SERVICE_ERROR;
         }
 
@@ -336,12 +335,12 @@ abstract class PaymentService extends \Object
     ) {
         $response = new ServiceResponse($this->payment, $flags);
 
-        if($omnipayData){
+        if ($omnipayData) {
             $response->setOmnipayResponse($omnipayData);
         }
 
         // redirects and notifications don't need a target URL.
-        if(!$response->isNotification() && !$response->isRedirect()){
+        if (!$response->isNotification() && !$response->isRedirect()) {
             $response->setTargetUrl(
                 ($response->isError() || $response->isCancelled())
                     ? $this->getCancelUrl()
@@ -547,5 +546,4 @@ abstract class PaymentService extends \Object
         \Deprecation::notice('3.0', 'Snake-case methods will be deprecated with 3.0, use getHttpRequest');
         return self::getHttpRequest();
     }
-
 }

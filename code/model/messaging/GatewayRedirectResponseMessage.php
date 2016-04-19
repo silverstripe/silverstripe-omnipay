@@ -2,5 +2,4 @@
 
 class GatewayRedirectResponseMessage extends GatewayMessage
 {
-
 }

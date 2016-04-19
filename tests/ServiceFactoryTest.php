@@ -96,13 +96,11 @@ class ServiceFactoryTest extends PaymentTest
 
         ServiceFactory::remove_extension('ServiceFactoryTest_TestExtension');
         ServiceFactory::remove_extension('ServiceFactoryTest_TestExtension2');
-
     }
 }
 
 class ServiceFactoryTest_TestService extends \SilverStripe\Omnipay\Service\PurchaseService implements TestOnly
 {
-
 }
 
 class ServiceFactoryTest_TestExtension extends Extension implements TestOnly

@@ -121,7 +121,6 @@ abstract class BaseNotificationServiceTest extends PaymentTest
 
         // check existance of messages and existence of references
         $this->assertDOSContains($this->successMessages, $this->payment->Messages());
-
     }
 
     public function testSuccessWithLegacyTransactionParameter()

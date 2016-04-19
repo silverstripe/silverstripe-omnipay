@@ -2,7 +2,6 @@
 
 namespace SilverStripe\Omnipay\Exception;
 
-
 /**
  * Class InvalidStateException
  *
@@ -12,5 +11,4 @@ namespace SilverStripe\Omnipay\Exception;
  */
 class MissingParameterException extends Exception
 {
-
 }

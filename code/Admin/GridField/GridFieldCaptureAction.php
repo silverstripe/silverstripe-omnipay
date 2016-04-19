@@ -1,8 +1,8 @@
 <?php
 namespace SilverStripe\Omnipay\Admin\GridField;
+
 use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Omnipay\Exception\Exception;
-
 
 /**
  * A GridField button that can be used to capture an authorized payment
@@ -79,7 +79,7 @@ class GridFieldCaptureAction extends GridFieldPaymentAction
 
             try {
                 $serviceResponse = $captureService->initiate();
-            } catch (Exception $ex){
+            } catch (Exception $ex) {
                 throw new \ValidationException(
                     _t('GridFieldCaptureAction.CaptureError', 'Unable to capture payment. An error occurred.'), 0);
             }

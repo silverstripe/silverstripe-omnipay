@@ -42,5 +42,4 @@ class PaymentAdmin extends ModelAdmin
 
         return $form;
     }
-
 }

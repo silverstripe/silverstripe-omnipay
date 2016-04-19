@@ -10,13 +10,14 @@ use SilverStripe\Omnipay\Admin\GridField\GridFieldVoidAction;
  *
  * @package payment
  */
-class Payable extends DataExtension {
+class Payable extends DataExtension
+{
 
-	private static $has_many = array(
-		'Payments' => 'Payment'
-	);
+    private static $has_many = array(
+        'Payments' => 'Payment'
+    );
 
-	public function updateCMSFields(FieldList $fields)
+    public function updateCMSFields(FieldList $fields)
     {
         $gridConfig = GridFieldConfig_RecordEditor::create()
             ->addComponent(new GridFieldCaptureAction(), 'GridFieldEditButton')
@@ -27,27 +28,27 @@ class Payable extends DataExtension {
             ->removeComponentsByType('GridFieldFilterHeader')
             ->removeComponentsByType('GridFieldPageCount');
 
-		$fields->addFieldToTab('Root.Payments',
-			GridField::create('Payments', _t('Payment.PLURALNAME','Payments'), $this->owner->Payments(), $gridConfig)
-		);
-	}
+        $fields->addFieldToTab('Root.Payments',
+            GridField::create('Payments', _t('Payment.PLURALNAME', 'Payments'), $this->owner->Payments(), $gridConfig)
+        );
+    }
 
     /**
      * Get the total captured amount
      * @return float
      */
-	public function TotalPaid()
+    public function TotalPaid()
     {
-		$paid = 0;
-		if ($payments = $this->owner->Payments()) {
-			foreach ($payments as $payment) {
-				if ($payment->Status == 'Captured') {
-					$paid += $payment->Amount;
-				}
-			}
-		}
-		return $paid;
-	}
+        $paid = 0;
+        if ($payments = $this->owner->Payments()) {
+            foreach ($payments as $payment) {
+                if ($payment->Status == 'Captured') {
+                    $paid += $payment->Amount;
+                }
+            }
+        }
+        return $paid;
+    }
 
     /**
      * Get the total captured or authorized amount, excluding Manual payments.
@@ -86,5 +87,4 @@ class Payable extends DataExtension {
                 'PendingVoid'
             ))->count() > 0;
     }
-
 }

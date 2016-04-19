@@ -211,7 +211,7 @@ class ServiceResponse
      */
     public function setTargetUrl($value)
     {
-        if($this->isRedirect()){
+        if ($this->isRedirect()) {
             throw new ServiceException('Unable to override target URL of redirect response');
         }
         $this->targetUrl = $value;
@@ -237,7 +237,7 @@ class ServiceResponse
     {
         $this->omnipayResponse = $response;
         // also set the target Url if the response is a redirect
-        if($this->isRedirect()){
+        if ($this->isRedirect()) {
             $redirectResponse = $this->omnipayResponse->getRedirectResponse();
             if ($redirectResponse instanceof \Symfony\Component\HttpFoundation\RedirectResponse) {
                 $this->targetUrl = $redirectResponse->getTargetUrl();
@@ -260,7 +260,7 @@ class ServiceResponse
      */
     public function redirectOrRespond()
     {
-        if($this->isRedirect()){
+        if ($this->isRedirect()) {
             $redirectResponse = $this->omnipayResponse->getRedirectResponse();
             if ($redirectResponse instanceof \Symfony\Component\HttpFoundation\RedirectResponse) {
                 $this->targetUrl = $redirectResponse->getTargetUrl();
@@ -270,11 +270,11 @@ class ServiceResponse
             }
         }
 
-        if($this->httpResponse){
+        if ($this->httpResponse) {
             return $this->httpResponse;
         }
 
-        if($this->targetUrl){
+        if ($this->targetUrl) {
             return \Controller::curr()->redirect($this->targetUrl);
         }
 

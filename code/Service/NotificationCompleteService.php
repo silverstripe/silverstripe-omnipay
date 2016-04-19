@@ -5,7 +5,6 @@ namespace SilverStripe\Omnipay\Service;
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 
-
 /**
  * Abstract base class for payment services that operate on an existing transaction. Examples of this are:
  * Void, Refund and Capture.
@@ -57,7 +56,7 @@ abstract class NotificationCompleteService extends PaymentService
         $serviceResponse = $this->handleNotification();
 
         // exit early
-        if($serviceResponse->isError()){
+        if ($serviceResponse->isError()) {
             return $serviceResponse;
         }
 
@@ -97,5 +96,5 @@ abstract class NotificationCompleteService extends PaymentService
      * @param mixed $gatewayMessage the message from Omnipay
      * @return void
      */
-    protected abstract function markCompleted(ServiceResponse $serviceResponse, $gatewayMessage);
+    abstract protected function markCompleted(ServiceResponse $serviceResponse, $gatewayMessage);
 }

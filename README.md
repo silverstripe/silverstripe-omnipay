@@ -1,13 +1,13 @@
 # SilverStripe Payments via Omnipay
 
-[![Build Status](https://api.travis-ci.org/burnbright/silverstripe-omnipay.png)](https://travis-ci.org/burnbright/silverstripe-omnipay)
-[![Code Coverage](https://scrutinizer-ci.com/g/burnbright/silverstripe-omnipay/badges/coverage.png?s=90fe071f1fec0564c6ee8db6678a73ae5aca9207)](https://scrutinizer-ci.com/g/burnbright/silverstripe-omnipay/)
-[![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/burnbright/silverstripe-omnipay/badges/quality-score.png?s=35408c4d68a36e35d0bc2b4b012bd8fb2c6d4d49)](https://scrutinizer-ci.com/g/burnbright/silverstripe-omnipay/)
-[![Latest Stable Version](https://poser.pugx.org/burnbright/silverstripe-omnipay/v/stable.png)](https://packagist.org/packages/burnbright/silverstripe-omnipay)
-[![Total Downloads](https://poser.pugx.org/burnbright/silverstripe-omnipay/downloads.png)](https://packagist.org/packages/burnbright/silverstripe-omnipay)
-[![Latest Unstable Version](https://poser.pugx.org/burnbright/silverstripe-omnipay/v/unstable.png)](https://packagist.org/packages/burnbright/silverstripe-omnipay)
+[![Build Status](https://api.travis-ci.org/silverstripe/silverstripe-omnipay.png)](https://travis-ci.org/silverstripe/silverstripe-omnipay)
+[![Code Coverage](https://scrutinizer-ci.com/g/silverstripe/silverstripe-omnipay/badges/coverage.png?s=90fe071f1fec0564c6ee8db6678a73ae5aca9207)](https://scrutinizer-ci.com/g/silverstripe/silverstripe-omnipay/)
+[![Scrutinizer Quality Score](https://scrutinizer-ci.com/g/silverstripe/silverstripe-omnipay/badges/quality-score.png?s=35408c4d68a36e35d0bc2b4b012bd8fb2c6d4d49)](https://scrutinizer-ci.com/g/silverstripe/silverstripe-omnipay/)
+[![Latest Stable Version](https://poser.pugx.org/silverstripe/silverstripe-omnipay/v/stable.png)](https://packagist.org/packages/silverstripe/silverstripe-omnipay)
+[![Total Downloads](https://poser.pugx.org/silverstripe/silverstripe-omnipay/downloads.png)](https://packagist.org/packages/silverstripe/silverstripe-omnipay)
+[![Latest Unstable Version](https://poser.pugx.org/silverstripe/silverstripe-omnipay/v/unstable.png)](https://packagist.org/packages/silverstripe/silverstripe-omnipay)
 
-Live chat: [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/burnbright/silverstripe-omnipay?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+Live chat: [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/silverstripe/silverstripe-omnipay?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 The aim of this module is to make it easy for developers to add online payments to their SilverStripe application. It makes heavy use of the [Omnipay Library](https://github.com/thephpleague/omnipay).
 There are many gateway options to choose from, and integrating with additional gateways has a structured approach that should be understandable.
@@ -51,7 +51,7 @@ It is not too difficult to write your own gateway integration either, if needed.
 up this module:
 
 ```
-composer require burnbright/silverstripe-omnipay
+composer require silverstripe/silverstripe-omnipay
 ```
 
 As of version 2.0 this module only requires omnipay/common so you will also need to pull in your payment adapter of
@@ -389,7 +389,7 @@ Run the migration task: yoursite.com/dev/tasks/MigratePaymentTask
 
 ## Further Documentation
 
-https://github.com/burnbright/silverstripe-omnipay/blob/master/docs/en/index.md
+https://github.com/silverstripe/silverstripe-omnipay/blob/master/docs/en/index.md
 
 ## Attributions
 

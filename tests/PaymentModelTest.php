@@ -22,11 +22,50 @@ class PaymentModelTest extends PaymentTest
 
     public function testTitle()
     {
+        $oldLocale = i18n::get_locale();
+
         $payment = $this->objFromFixture("Payment", "payment1");
+
+        i18n::set_locale('en_US');
+        i18n::get_translator('core')->getAdapter()->addTranslation(array(
+            'Payment.Manual' => 'Manual',
+            'Payment.TitleTemplate' => '{Gateway} {Money} %d/%m/%Y'
+        ), 'en_US');
+
         $this->assertEquals(
-            $payment->getGatewayTitle() . " NZ$20.23 10/10/2013",
-            $payment->Title
+            'Manual NZ$20.23 10/10/2013',
+            $payment->getTitle()
         );
+
+        i18n::get_translator('core')->getAdapter()->addTranslation(array(
+            'Payment.Manual' => 'Invoice',
+            'Payment.TitleTemplate' => '{Money} via {Gateway} on %Y-%m-%d'
+        ), 'en_US');
+
+        $this->assertEquals(
+            'NZ$20.23 via Invoice on 2013-10-10',
+            $payment->getTitle()
+        );
+
+        i18n::get_translator('core')->getAdapter()->addTranslation(array(
+            'Payment.Manual' => 'Rechnung',
+            'Payment.TitleTemplate' => '{Money} per {Gateway} am %d.%m.%Y'
+        ), 'en_US');
+
+        $this->assertEquals(
+            'NZ$20.23 per Rechnung am 10.10.2013',
+            $payment->getTitle()
+        );
+
+        $payment->Gateway = 'My%Strange%Gatewayname';
+        $payment->Money->setCurrency('EUR');
+
+        $this->assertEquals(
+            '€20.23 per My%Strange%Gatewayname am 10.10.2013',
+            $payment->getTitle()
+        );
+
+        i18n::set_locale($oldLocale);
     }
 
     public function testSupportedGateways()

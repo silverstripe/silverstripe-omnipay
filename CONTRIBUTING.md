@@ -9,6 +9,4 @@
 * Send the pull request(s). Generally you can submit against the master branch.
 * Check that the Travis CI build passed. If not, rinse and repeat.
 
-You can discuss your work on your pull requests, or on the gitter channel: https://gitter.im/silverstripe/silverstripe-omnipay
-
 Have a read of SilverStripe's contributing guidelines if you haven't already: http://doc.silverstripe.org/framework/en/trunk/misc/contributing/code

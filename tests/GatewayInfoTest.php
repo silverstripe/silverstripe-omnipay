@@ -26,14 +26,14 @@ class GatewayInfoTest extends SapphireTest
         ));
 
         i18n::get_translator('core')->getAdapter()->addTranslation(array(
-            'Payment.PayPal_Express' => 'PayPal Express EN',
-            'Payment.PaymentExpress_PxPay' => 'Px Pay Express EN',
-            'Payment.Dummy' => 'Dummy EN'
+            'Gateway.PayPal_Express' => 'PayPal Express EN',
+            'Gateway.PaymentExpress_PxPay' => 'Px Pay Express EN',
+            'Gateway.Dummy' => 'Dummy EN'
         ), 'en_US');
 
         i18n::get_translator('core')->getAdapter()->addTranslation(array(
-            'Payment.Dummy' => 'Dummy DE',
-            'Payment.PaymentExpress_PxPay' => '' // clear
+            'Gateway.Dummy' => 'Dummy DE',
+            'Gateway.PaymentExpress_PxPay' => '' // clear
         ), 'de_DE');
 
         Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(

@@ -48,8 +48,8 @@ class GatewayFieldsFactory
     {
         $fields = new FieldList();
         foreach ($this->fieldgroups as $group) {
-            if (method_exists($this, "get".$group."Fields")) {
-                $fields->merge($this->{"get".$group."Fields"}());
+            if (method_exists($this, 'get'.$group.'Fields')) {
+                $fields->merge($this->{'get'.$group.'Fields'}());
             }
         }
 
@@ -63,41 +63,41 @@ class GatewayFieldsFactory
         for ($x = 1; $x <= 12; $x++) {
             $months[$x] = date('m - F', mktime(0, 0, 0, $x, 1));
         }
-        $year = date("Y");
+        $year = date('Y');
         $range = 5;
-        $startrange = range(date("Y", strtotime("-$range years")), $year);
-        $expiryrange = range($year, date("Y", strtotime("+$range years")));
+        $startrange = range(date('Y', strtotime("-$range years")), $year);
+        $expiryrange = range($year, date('Y', strtotime("+$range years")));
 
         $fields = array(
-            "type" => DropdownField::create('type', _t("PaymentForm.TYPE", "Type"), $this->getCardTypes()),
-            "name" => TextField::create('name', _t("PaymentForm.NAME", "Name on Card")),
-            "number" => TextField::create('number', _t("PaymentForm.NUMBER", "Card Number"))
-                            ->setDescription(_t("PaymentForm.NUMBERDESCRIPTION", "no dashes or spaces")),
-            "startMonth" => DropdownField::create('startMonth', _t("PaymentForm.STARTMONTH", "Month"), $months),
-            "startYear" => DropdownField::create('startYear', _t("PaymentForm.STARTYEAR", "Year"),
+            'type' => DropdownField::create('type', _t('PaymentForm.Type', 'Type'), $this->getCardTypes()),
+            'name' => TextField::create('name', _t('PaymentForm.Name', 'Name on Card')),
+            'number' => TextField::create('number', _t('PaymentForm.Number', 'Card Number'))
+                            ->setDescription(_t('PaymentForm.NumberDescription', 'no dashes or spaces')),
+            'startMonth' => DropdownField::create('startMonth', _t('PaymentForm.StartMonth', 'Month'), $months),
+            'startYear' => DropdownField::create('startYear', _t('PaymentForm.StartYear', 'Year'),
                                 array_combine($startrange, $startrange), $year
                             ),
-            "expiryMonth" => DropdownField::create('expiryMonth', _t("PaymentForm.EXPIRYMONTH", "Month"), $months),
-            "expiryYear" => DropdownField::create('expiryYear', _t("PaymentForm.EXPIRYYEAR", "Year"),
+            'expiryMonth' => DropdownField::create('expiryMonth', _t('PaymentForm.ExpiryMonth', 'Month'), $months),
+            'expiryYear' => DropdownField::create('expiryYear', _t('PaymentForm.ExpiryYear', 'Year'),
                                 array_combine($expiryrange, $expiryrange), $year
                             ),
-            "cvv" => TextField::create('cvv', _t("PaymentForm.CVV", "Security Code"))
+            'cvv' => TextField::create('cvv', _t('PaymentForm.CVV', 'Security Code'))
                             ->setMaxLength(5),
-            "issueNumber" => TextField::create('issueNumber', _t("PaymentForm.ISSUENUMBER", "Issue Number"))
+            'issueNumber' => TextField::create('issueNumber', _t('PaymentForm.IssueNumber', 'Issue Number'))
         );
 
         $this->cullForGateway($fields);
         //optionally group date fields
         if ($this->groupdatefields) {
             if (isset($fields['startMonth']) && isset($fields['startYear'])) {
-                $fields['startMonth'] = new FieldGroup(_t("PaymentForm.START", "Start"),
+                $fields['startMonth'] = new FieldGroup(_t('PaymentForm.Start', 'Start'),
                     $fields['startMonth'], $fields['startYear']
                 );
                 $fields['startMonth']->addExtraClass('card_startyear');
                 unset($fields['startYear']);
             }
             if (isset($fields['expiryMonth']) && isset($fields['expiryYear'])) {
-                $fields['expiryMonth'] = new FieldGroup(_t("PaymentForm.EXPIRY", "Expiry"),
+                $fields['expiryMonth'] = new FieldGroup(_t('PaymentForm.Expiry', 'Expiry'),
                     $fields['expiryMonth'], $fields['expiryYear']
                 );
                 $fields['expiryMonth']->addExtraClass('card_expiry');
@@ -113,7 +113,7 @@ class GatewayFieldsFactory
         $card = new CreditCard();
         $brands = $card->getSupportedBrands();
         foreach ($brands as $brand => $x) {
-            $brands[$brand] = _t("PaymentForm.".strtoupper($brand), $brand);
+            $brands[$brand] = _t('CreditCard.'.strtoupper($brand), $brand);
         }
 
         return $brands;
@@ -122,13 +122,13 @@ class GatewayFieldsFactory
     public function getBillingFields()
     {
         $fields = array(
-            "billingAddress1" => TextField::create('billingAddress1', _t("PaymentForm.BILLINGADDRESS1", "")),
-            "billingAddress2" => TextField::create('billingAddress2', _t("PaymentForm.BILLINGADDRESS2", "")),
-            "city" => TextField::create('billingCity', _t("PaymentForm.BILLINGCITY", "City")),
-            "postcode" => TextField::create('billingPostcode', _t("PaymentForm.BILLINGPOSTCODE", "Postcode")),
-            "state" => TextField::create('billingState', _t("PaymentForm.BILLINGSTATE", "State")),
-            "country" => TextField::create('billingCountry', _t("PaymentForm.BILLINGCOUNTRY", "Country")),
-            "phone" => PhoneNumberField::create('billingPhone', _t("PaymentForm.BILLINGPHONE", "Phone"))
+            'billingAddress1' => TextField::create('billingAddress1', _t('PaymentForm.BillingAddress1', 'Address')),
+            'billingAddress2' => TextField::create('billingAddress2', _t('PaymentForm.BillingAddress2', 'Address line 2')),
+            'city' => TextField::create('billingCity', _t('PaymentForm.BillingCity', 'City')),
+            'postcode' => TextField::create('billingPostcode', _t('PaymentForm.BillingPostcode', 'Postcode')),
+            'state' => TextField::create('billingState', _t('PaymentForm.BillingState', 'State')),
+            'country' => TextField::create('billingCountry', _t('PaymentForm.BillingCountry', 'Country')),
+            'phone' => PhoneNumberField::create('billingPhone', _t('PaymentForm.BillingPhone', 'Phone'))
         );
         $this->cullForGateway($fields);
 
@@ -138,17 +138,17 @@ class GatewayFieldsFactory
     public function getShippingFields()
     {
         $fields = array(
-            "shippingAddress1" => TextField::create(
-                'shippingAddress1', _t("PaymentForm.SHIPPINGADDRESS1", "Shipping Address")
+            'shippingAddress1' => TextField::create(
+                'shippingAddress1', _t('PaymentForm.ShippingAddress1', 'Shipping Address')
             ),
-            "shippingAddress2" => TextField::create(
-                'shippingAddress2', _t("PaymentForm.SHIPPINGADDRESS2", "Shipping Address 2")
+            'shippingAddress2' => TextField::create(
+                'shippingAddress2', _t('PaymentForm.ShippingAddress2', 'Shipping Address 2')
             ),
-            "city" => TextField::create('shippingCity', _t("PaymentForm.SHIPPINGCITY", "Shipping City")),
-            "postcode" => TextField::create('shippingPostcode', _t("PaymentForm.SHIPPINGPOSTCODE", "Shipping Postcode")),
-            "state" => TextField::create('shippingState', _t("PaymentForm.SHIPPINGSTATE", "Shipping State")),
-            "country" => TextField::create('shippingCountry', _t("PaymentForm.SHIPPINGCOUNTRY", "Shipping Country")),
-            "phone" => PhoneNumberField::create('shippingPhone', _t("PaymentForm.SHIPPINGPHONE", "Shipping Phone"))
+            'city' => TextField::create('shippingCity', _t('PaymentForm.ShippingCity', 'Shipping City')),
+            'postcode' => TextField::create('shippingPostcode', _t('PaymentForm.ShippingPostcode', 'Shipping Postcode')),
+            'state' => TextField::create('shippingState', _t('PaymentForm.ShippingState', 'Shipping State')),
+            'country' => TextField::create('shippingCountry', _t('PaymentForm.ShippingCountry', 'Shipping Country')),
+            'phone' => PhoneNumberField::create('shippingPhone', _t('PaymentForm.ShippingPhone', 'Shipping Phone'))
         );
         $this->cullForGateway($fields);
 
@@ -158,7 +158,7 @@ class GatewayFieldsFactory
     public function getEmailFields()
     {
         $fields = array(
-            "email" => EmailField::create('email', _t("PaymentForm.EMAIL", "Email"))
+            'email' => EmailField::create('email', _t('PaymentForm.Email', 'Email'))
         );
         $this->cullForGateway($fields);
 
@@ -168,7 +168,7 @@ class GatewayFieldsFactory
     public function getCompanyFields()
     {
         $fields = array(
-            "company" => TextField::create('company', _t("PaymentForm.COMPANY", "Company"))
+            'company' => TextField::create('company', _t('PaymentForm.Company', 'Company'))
         );
         $this->cullForGateway($fields);
 

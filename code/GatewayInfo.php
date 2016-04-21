@@ -79,7 +79,7 @@ class GatewayInfo
             /** do nothing */
         }
         return _t(
-            "Payment." . $name,
+            'Gateway.' . $name,
             $gateway ? $gateway->getName() : $name
         );
     }

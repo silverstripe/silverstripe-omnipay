@@ -48,14 +48,14 @@ final class Payment extends DataObject
     public function getCMSFields()
     {
         $fields = new FieldList(
-            TextField::create('MoneyValue', _t('Payment.MONEY', 'Money'), $this->dbObject('Money')->Nice()),
-            TextField::create('GatewayTitle', _t('Payment.GATEWAY', 'Gateway'))
+            TextField::create('MoneyValue', _t('Payment.db_Money', 'Money'), $this->dbObject('Money')->Nice()),
+            TextField::create('GatewayTitle', _t('Payment.db_Gateway', 'Gateway'))
         );
         $fields = $fields->makeReadonly();
         $fields->push(
             GridField::create(
                 'Messages',
-                _t('Payment.MESSAGES', 'Messages'),
+                _t('Payment.has_many_Messages', 'Messages'),
                 $this->Messages(),
                 GridFieldConfig_RecordViewer::create()
             )
@@ -76,7 +76,7 @@ final class Payment extends DataObject
 
         $fields->removeByName('Gateway');
         $fields->removeByName('Created');
-        $fields->insertAfter(DropdownField::create('Gateway', _t('Payment.GATEWAY', 'Gateway'),
+        $fields->insertAfter(DropdownField::create('Gateway', _t('Payment.db_Gateway', 'Gateway'),
             GatewayInfo::getSupportedGateways()
         )->setHasEmptyDefault(true), 'Money');
 
@@ -86,7 +86,7 @@ final class Payment extends DataObject
         )->setHasEmptyDefault(true), 'Gateway');
 
         // update "money" to localized title
-        $fields->fieldByName('Money')->setTitle(_t('Payment.MONEY', 'Money'));
+        $fields->fieldByName('Money')->setTitle(_t('Payment.db_Money', 'Money'));
 
         $context->addFilter(new PartialMatchFilter('Gateway'));
 

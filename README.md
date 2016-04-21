@@ -158,7 +158,7 @@ And another example: [Omnipay PayPal](https://github.com/thephpleague/omnipay-pa
 Please follow the rules above to choose the correct gateway name in your configuration files.
 
 Throughout the documentation and examples of this module, you'll find the syntax with underscores. It's easier to read and less error-prone (escaping) than the syntax with namespace markers (`\`).
- 
+
 
 ## Usage
 
@@ -379,7 +379,7 @@ For example, inside mysite/lang/en.yml:
 
 ```yaml
 en:
-  Payment:
+  Gateway:
     Paystation_Hosted: "Credit Card"
     PayPal_Express: "PayPal"
 ```

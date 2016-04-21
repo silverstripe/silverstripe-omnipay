@@ -14,10 +14,10 @@ final class Payment extends DataObject
 {
 
     private static $db = array(
-        'Gateway' => 'Varchar(50)', //this is the omnipay 'short name'
+        'Gateway' => 'Varchar(128)', //this is the omnipay 'short name'
         'Money' => 'Money', //contains Amount and Currency
         'Status' => "Enum('Created,PendingAuthorization,Authorized,PendingPurchase,PendingCapture,Captured,PendingRefund,Refunded,PendingVoid,Void','Created')",
-        'Identifier' => 'Varchar'
+        'Identifier' => 'Varchar(64)'
     );
 
     private static $has_many = array(
@@ -29,7 +29,7 @@ final class Payment extends DataObject
     );
 
     private static $casting = array(
-        "Amount" => "Decimal"
+        'Amount' => 'Decimal'
     );
 
     private static $summary_fields = array(
@@ -43,19 +43,19 @@ final class Payment extends DataObject
         'Identifier' => true,
     );
 
-    private static $default_sort = "\"Created\" DESC, \"ID\" DESC";
+    private static $default_sort = '"Created" DESC, "ID" DESC';
 
     public function getCMSFields()
     {
         $fields = new FieldList(
-            TextField::create("MoneyValue", _t("Payment.MONEY", "Money"), $this->dbObject('Money')->Nice()),
-            TextField::create("GatewayTitle", _t("Payment.GATEWAY", "Gateway"))
+            TextField::create('MoneyValue', _t('Payment.MONEY', 'Money'), $this->dbObject('Money')->Nice()),
+            TextField::create('GatewayTitle', _t('Payment.GATEWAY', 'Gateway'))
         );
         $fields = $fields->makeReadonly();
         $fields->push(
             GridField::create(
-                "Messages",
-                _t("Payment.MESSAGES", "Messages"),
+                'Messages',
+                _t('Payment.MESSAGES', 'Messages'),
                 $this->Messages(),
                 GridFieldConfig_RecordViewer::create()
             )
@@ -95,10 +95,10 @@ final class Payment extends DataObject
 
     /**
      * Set gateway, amount, and currency in one function.
-     * @param  string $gateway omnipay gateway short name
-     * @param  float $amount monetary amount
-     * @param  string $currency the currency to set
-     * @return  Payment this object for chaining
+     * @param string $gateway Omnipay gateway short name
+     * @param float $amount monetary amount
+     * @param string $currency the currency to set
+     * @return $this object for chaining
      */
     public function init($gateway, $amount, $currency)
     {
@@ -172,7 +172,7 @@ final class Payment extends DataObject
     public function setAmount($amount)
     {
         if ($amount instanceof Money) {
-            $this->setField("Money", $amount);
+            $this->setField('Money', $amount);
         } elseif ($this->Status == 'Created' && is_numeric($amount)) {
             $this->MoneyAmount = $amount;
         }
@@ -207,9 +207,10 @@ final class Payment extends DataObject
      */
     public function isComplete()
     {
-        return $this->Status == 'Captured' ||
-        $this->Status == 'Refunded' ||
-        $this->Status == 'Void';
+        return
+            $this->Status == 'Captured' ||
+            $this->Status == 'Refunded' ||
+            $this->Status == 'Void';
     }
 
     /**

@@ -1,0 +1,29 @@
+Test_Order:
+  order1:
+    Created: 2013-10-09 12:00:00
+
+Payment:
+  payment1:
+    Gateway: Manual
+    MoneyAmount: 20.00
+    MoneyCurrency: USD
+    Status: Authorized
+    Test_OrderID: =>Test_Order.order1
+  payment2:
+    Gateway: Manual
+    MoneyAmount: 30.00
+    MoneyCurrency: USD
+    Status: Captured
+    Test_OrderID: =>Test_Order.order1
+  payment3:
+    Gateway: PaymentExpress_PxPay
+    MoneyAmount: 61.00
+    MoneyCurrency: USD
+    Status: PendingCapture
+    Test_OrderID: =>Test_Order.order1
+  payment4:
+    Gateway: PaymentExpress_PxPay
+    MoneyAmount: 7.00
+    MoneyCurrency: USD
+    Status: Authorized
+    Test_OrderID: =>Test_Order.order1

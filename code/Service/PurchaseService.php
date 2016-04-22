@@ -177,6 +177,7 @@ class PurchaseService extends PaymentService
      *  If using {@link Form->getData()}, only fields which exist in the form are returned,
      *  effectively whitelisting against arbitrary user input.
      * @deprecated 3.0 Use the `initiate` method instead
+     * @codeCoverageIgnore
      */
     public function purchase($data = array())
     {
@@ -188,6 +189,7 @@ class PurchaseService extends PaymentService
      * Finalise this payment, after off-site external processing.
      * This is ususally only called by PaymentGatewayController.
      * @deprecated 3.0 Use the `complete` method instead
+     * @codeCoverageIgnore
      */
     public function completePurchase($data = array())
     {

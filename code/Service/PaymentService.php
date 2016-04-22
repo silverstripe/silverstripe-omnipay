@@ -511,6 +511,7 @@ abstract class PaymentService extends \Object
      * Set the guzzle client (for testing)
      * @param \Guzzle\Http\ClientInterface $httpClient guzzle client for testing
      * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use setHttpClient
+     * @codeCoverageIgnore
      */
     public static function set_http_client(ClientInterface $httpClient)
     {
@@ -520,6 +521,7 @@ abstract class PaymentService extends \Object
 
     /**
      * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use getHttpClient
+     * @codeCoverageIgnore
      */
     public static function get_http_client()
     {
@@ -531,6 +533,7 @@ abstract class PaymentService extends \Object
      * Set the symphony http request (for testing)
      * @param \Symfony\Component\HttpFoundation\Request $httpRequest symphony http request for testing
      * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use setHttpRequest
+     * @codeCoverageIgnore
      */
     public static function set_http_request(Request $httpRequest)
     {
@@ -540,6 +543,7 @@ abstract class PaymentService extends \Object
 
     /**
      * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use getHttpRequest
+     * @codeCoverageIgnore
      */
     public static function get_http_request()
     {

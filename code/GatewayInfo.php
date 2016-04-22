@@ -78,6 +78,16 @@ class GatewayInfo
         } catch (\Exception $e) {
             /** do nothing */
         }
+
+        if ($legacyTranslation = _t('Payment.' . $name)) {
+            \Deprecation::notice(
+                '2.0',
+                'Gateway name translations should be in Gateway group, eg. Gateway.' . $name,
+                \Deprecation::SCOPE_GLOBAL
+            );
+            return $legacyTranslation;
+        }
+
         return _t(
             'Gateway.' . $name,
             $gateway ? $gateway->getName() : $name

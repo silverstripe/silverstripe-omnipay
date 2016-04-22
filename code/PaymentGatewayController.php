@@ -57,7 +57,7 @@ class PaymentGatewayController extends \Controller
         $payment = $this->getPayment();
 
         if (!$payment) {
-            $this->httpError(404, _t('Payment.NOTFOUND', 'Payment could not be found.'));
+            $this->httpError(404, _t('Payment.NotFound', 'Payment could not be found.'));
         }
 
         $intent = null;
@@ -103,7 +103,7 @@ class PaymentGatewayController extends \Controller
                 $response = $serviceResponse->redirectOrRespond();
                 break;
             default:
-                $this->httpError(404, _t('Payment.INVALIDURL', 'Invalid payment url.'));
+                $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
         }
 
         return $response;

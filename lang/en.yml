@@ -2,163 +2,58 @@ en:
   PaymentAdmin:
     MENUTITLE: Payments
   Payment:
-    GATEWAY: Gateway
-    INVALIDURL: 'Invalid payment url.'
-    InvalidStatus: 'Invalid/unhandled payment status'
-    MESSAGES: Messages
-    MONEY: Money
-    NOTFOUND: 'Payment could not be found.'
     PLURALNAME: Payments
     SINGULARNAME: Payment
+    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+    InvalidUrl: 'Invalid payment url.'
+    InvalidStatus: 'Invalid/unhandled payment status'
+    NotFound: 'Payment could not be found.'
+    Date: 'Date'
+    Amount: 'Amount'
+    STATUS_PENDINGAUTHORIZATION: 'Pending authorization'
     STATUS_AUTHORIZED: Authorized
+    STATUS_PENDINGCAPTURE: 'Pending capture'
+    STATUS_PENDINGPURCHASE: 'Pending purchase'
     STATUS_CAPTURED: Captured
     STATUS_CREATED: Created
+    STATUS_PENDINGREFUND: 'Pending refund'
     STATUS_REFUNDED: Refunded
+    STATUS_PENDINGVOID: 'Pending void'
     STATUS_VOID: Void
-    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
     db_Gateway: Gateway
     db_Identifier: Identifier
     db_Money: Money
     db_Status: Status
     has_many_Messages: Messages
-    has_one_Order: Order
-    # Provide nice titles for the officially supported omnipay gateways
-    # Instead of providing the gateway names directly from the gateways, try to remove information that is
-    # unnecessary to the end user. The end-user doesn't care if the gateway is PayPal Express, Pro or REST, all that
-    # matters is "PayPal". Therefore all the PayPal gateways have the same title.
-    2Checkout: 2Checkout
-    Agms: AGMS
-    Alipay_Bank: 'Alipay Bank'
-    Alipay_Dual: 'AliPay Dual Func'
-    Alipay_Express: 'Alipay Express'
-    Alipay_MobileExpress: 'Alipay Mobile Express'
-    Alipay_Secured: 'Alipay Secured'
-    Alipay_WapExpress: 'Alipay Wap Express'
-    AuthorizeNet_AIM: 'Authorize.Net AIM'
-    AuthorizeNet_DPM: 'Authorize.Net DPM'
-    AuthorizeNet_SIM: 'Authorize.Net SIM'
-    BarclaysEpdq_Essential: Barclaycard
-    Buckaroo_CreditCard: 'Buckaroo Credit Card'
-    Buckaroo_Ideal: 'Buckaroo iDeal'
-    Buckaroo_PayPal: 'Buckaroo PayPal'
-    Cardgate: Cardgate
-    CardSave: Cardsave
-    CheckoutCom: 'Checkout.com'
-    Coinbase: coinbase
-    Creditcall: creditcall
-    Cybersource: CyberSource
-    Cybersource_Cybersource: CyberSource # This is the SOAP Gateway
-    DataCash: DataCash
-    Dummy: Dummy
-    Ecopayz: ecoPayz
-    Eway_Direct: eWAY
-    Eway_RapidDirect: eWAY
-    Eway_Rapid: eWAY
-    Eway_RapidShared: eWAY
-    Fasapay: FasaPay
-    Fatzebra_Fatzebra: 'Fat Zebra'
-    FirstData_Connect: 'First Data'
-    FirstData_Global: 'First Data'
-    Globalcloudpay: Globalcloudpay
-    GoCardless: GoCardless
-    Helcim_Direct: Helcim
-    Helcim_HostedPages: Helcim
-    Helcim_JS: 'Helcim.JS'
-    Komoju: Komoju
-    Manual: Invoice
-    Migs_ThreeParty: 'MIGS 3-Party'
-    Migs_TwoParty: 'MIGS 2-Party'
-    Mollie: Mollie
-    Multicards: Multicards
-    MultiSafepay: MultiSafepay
-    Netaxept: Netaxept
-    NetBanx: NetBanx
-    Neteller: Neteller
-    NMI_DirectPost: 'NMI Direct Post'
-    Pacnet: Pacnet
-    Pagarme: 'Pagar.me'
-    PayFast: PayFast
-    Payflow_Pro: Payflow
-    PaymentExpress_PxPay: 'Payment Express'
-    PaymentExpress_PxPost: 'Payment Express'
-    PaymentSense: PaymentSense
-    PaymentWall: PaymentWall
-    PayPal_Express: PayPal
-    PayPal_Pro: PayPal
-    PayPal_Rest: PayPal
-    PayPro: PayPro
-    Paysafecard: paysafecard
-    Paytrace_Check: 'PayTrace Check'
-    Paytrace_CreditCard: 'PayTrace Credit Card'
-    PayU: PayU
-    NestPay: NestPay
-    Pin: Pin
-    Realex_Remote: Realex
-    SagePay_Direct: 'Sage Pay'
-    SagePay_Server: 'Sage Pay'
-    SecurePay_DirectPost: SecurePay
-    SecurePay_SecureXML: SecurePay
-    SecureTrading: SecureTrading
-    SecPay: 'SecPay (PayPoint.net)'
-    Sisow: Sisow
-    Skrill: Skrill
-    Stripe: Stripe
-    TargetPay_Directebanking: 'TargetPay Directebanking'
-    TargetPay_Ideal: 'TargetPay iDEAL'
-    TargetPay_Mrcash: 'TargetPay MrCash'
-    UnionPay_Express: UnionPay
-    UnionPay_LegacyMobile: UnionPay
-    UnionPay_LegacyQuickPay: UnionPay
-    WeChat_Express: WeChat
-    WePay: WePay
-    Wirecard: Wirecard
-    WorldPay: WorldPay
-    WorldPayXML: WorldPay
-    Veritrans_VTWeb: 'Veritrans VT-Web'
-    YandexMoney: 'Yandex.Money'
-    YandexMoneyIndividual: 'Yandex.Money Individual'
   PaymentForm:
-    BILLINGADDRESS1: Address
-    BILLINGADDRESS2: 'Address 2'
-    BILLINGCITY: City
-    BILLINGCOUNTRY: Country
-    BILLINGPHONE: Phone
-    BILLINGPOSTCODE: Postcode
-    BILLINGSTATE: State
-    COMPANY: Company
+    BillingAddress1: Address
+    BillingAddress2: 'Address line 2'
+    BillingCity: City
+    BillingCountry: Country
+    BillingPhone: Phone
+    BillingPostcode: Postcode
+    BillingState: State
+    Company: Company
     CVV: 'Security Code'
-    EMAIL: Email
-    EXPIRY: Expiry
-    EXPIRYMONTH: Month
-    EXPIRYYEAR: Year
-    ISSUENUMBER: 'Issue Number'
-    NAME: 'Name on Card'
-    NUMBER: 'Card Number'
-    NUMBERDESCRIPTION: 'no dashes or spaces'
-    SHIPPINGADDRESS1: 'Shipping Address'
-    SHIPPINGADDRESS2: 'Shipping Address 2'
-    SHIPPINGCITY: 'Shipping City'
-    SHIPPINGCOUNTRY: 'Shipping Country'
-    SHIPPINGPHONE: 'Shipping Phone'
-    SHIPPINGPOSTCODE: 'Shipping Postcode'
-    SHIPPINGSTATE: 'Shipping State'
-    START: Start
-    STARTMONTH: Month
-    STARTYEAR: Year
-    TYPE: Type
-    # Credit card brands, supplied from Omnipay\Common\CreditCard::getSupportedBrands
-    VISA: Visa
-    MASTERCARD: Mastercard
-    DISCOVER: Discover
-    AMEX: 'American Express'
-    DINERS_CLUB: 'Diners Club'
-    JCB: JCB
-    SWITCH: Switch
-    SOLO: Solo
-    DANKORT: Dankort
-    MAESTRO: Maestro
-    FORBRUGSFORENINGEN: Forbrugsforeningen
-    LASER: Laser
+    Email: Email
+    Expiry: Expiry
+    ExpiryMonth: Month
+    ExpiryYear: Year
+    IssueNumber: 'Issue Number'
+    Name: 'Name on Card'
+    Number: 'Card Number'
+    NumberDescription: 'no dashes or spaces'
+    ShippingAddress1: 'Shipping Address'
+    ShippingAddress2: 'Shipping Address 2'
+    ShippingCity: 'Shipping City'
+    ShippingCountry: 'Shipping Country'
+    ShippingPhone: 'Shipping Phone'
+    ShippingPostcode: 'Shipping Postcode'
+    ShippingState: 'Shipping State'
+    Start: Start
+    StartMonth: Month
+    StartYear: Year
+    Type: Type
   GridFieldCaptureAction:
     Title: 'Capture Payment'
     Description: 'Capture authorized Payment'
@@ -283,3 +178,113 @@ en:
   NotificationError:
     PLURALNAME: 'Notification Errors'
     SINGULARNAME: 'Notification Error'
+  # Credit card brands, supplied from Omnipay\Common\CreditCard::getSupportedBrands
+  CreditCard:
+    VISA: Visa
+    MASTERCARD: Mastercard
+    DISCOVER: Discover
+    AMEX: 'American Express'
+    DINERS_CLUB: 'Diners Club'
+    JCB: JCB
+    SWITCH: Switch
+    SOLO: Solo
+    DANKORT: Dankort
+    MAESTRO: Maestro
+    FORBRUGSFORENINGEN: Forbrugsforeningen
+    LASER: Laser
+  # Provide nice titles for the officially supported omnipay gateways
+  # Instead of providing the gateway names directly from the gateways, try to remove information that is
+  # unnecessary to the end user. The end-user doesn't care if the gateway is PayPal Express, Pro or REST, all that
+  # matters is "PayPal". Therefore all the PayPal gateways have the same title.
+  Gateway:
+    2Checkout: 2Checkout
+    Agms: AGMS
+    Alipay_Bank: 'Alipay Bank'
+    Alipay_Dual: 'AliPay Dual Func'
+    Alipay_Express: 'Alipay Express'
+    Alipay_MobileExpress: 'Alipay Mobile Express'
+    Alipay_Secured: 'Alipay Secured'
+    Alipay_WapExpress: 'Alipay Wap Express'
+    AuthorizeNet_AIM: 'Authorize.Net AIM'
+    AuthorizeNet_DPM: 'Authorize.Net DPM'
+    AuthorizeNet_SIM: 'Authorize.Net SIM'
+    BarclaysEpdq_Essential: Barclaycard
+    Buckaroo_CreditCard: 'Buckaroo Credit Card'
+    Buckaroo_Ideal: 'Buckaroo iDeal'
+    Buckaroo_PayPal: 'Buckaroo PayPal'
+    Cardgate: Cardgate
+    CardSave: Cardsave
+    CheckoutCom: 'Checkout.com'
+    Coinbase: coinbase
+    Creditcall: creditcall
+    Cybersource: CyberSource
+    Cybersource_Cybersource: CyberSource # This is the SOAP Gateway
+    DataCash: DataCash
+    Dummy: Dummy
+    Ecopayz: ecoPayz
+    Eway_Direct: eWAY
+    Eway_RapidDirect: eWAY
+    Eway_Rapid: eWAY
+    Eway_RapidShared: eWAY
+    Fasapay: FasaPay
+    Fatzebra_Fatzebra: 'Fat Zebra'
+    FirstData_Connect: 'First Data'
+    FirstData_Global: 'First Data'
+    Globalcloudpay: Globalcloudpay
+    GoCardless: GoCardless
+    Helcim_Direct: Helcim
+    Helcim_HostedPages: Helcim
+    Helcim_JS: 'Helcim.JS'
+    Komoju: Komoju
+    Manual: Invoice
+    Migs_ThreeParty: 'MIGS 3-Party'
+    Migs_TwoParty: 'MIGS 2-Party'
+    Mollie: Mollie
+    Multicards: Multicards
+    MultiSafepay: MultiSafepay
+    Netaxept: Netaxept
+    NetBanx: NetBanx
+    Neteller: Neteller
+    NMI_DirectPost: 'NMI Direct Post'
+    Pacnet: Pacnet
+    Pagarme: 'Pagar.me'
+    PayFast: PayFast
+    Payflow_Pro: Payflow
+    PaymentExpress_PxPay: 'Payment Express'
+    PaymentExpress_PxPost: 'Payment Express'
+    PaymentSense: PaymentSense
+    PaymentWall: PaymentWall
+    PayPal_Express: PayPal
+    PayPal_Pro: PayPal
+    PayPal_Rest: PayPal
+    PayPro: PayPro
+    Paysafecard: paysafecard
+    Paytrace_Check: 'PayTrace Check'
+    Paytrace_CreditCard: 'PayTrace Credit Card'
+    PayU: PayU
+    NestPay: NestPay
+    Pin: Pin
+    Realex_Remote: Realex
+    SagePay_Direct: 'Sage Pay'
+    SagePay_Server: 'Sage Pay'
+    SecurePay_DirectPost: SecurePay
+    SecurePay_SecureXML: SecurePay
+    SecureTrading: SecureTrading
+    SecPay: 'SecPay (PayPoint.net)'
+    Sisow: Sisow
+    Skrill: Skrill
+    Stripe: Stripe
+    TargetPay_Directebanking: 'TargetPay Directebanking'
+    TargetPay_Ideal: 'TargetPay iDEAL'
+    TargetPay_Mrcash: 'TargetPay MrCash'
+    UnionPay_Express: UnionPay
+    UnionPay_LegacyMobile: UnionPay
+    UnionPay_LegacyQuickPay: UnionPay
+    WeChat_Express: WeChat
+    WePay: WePay
+    Wirecard: Wirecard
+    WorldPay: WorldPay
+    WorldPayXML: WorldPay
+    Veritrans_VTWeb: 'Veritrans VT-Web'
+    YandexMoney: 'Yandex.Money'
+    YandexMoneyIndividual: 'Yandex.Money Individual'

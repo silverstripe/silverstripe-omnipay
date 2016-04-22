@@ -28,7 +28,7 @@ class PaymentModelTest extends PaymentTest
 
         i18n::set_locale('en_US');
         i18n::get_translator('core')->getAdapter()->addTranslation(array(
-            'Payment.Manual' => 'Manual',
+            'Gateway.Manual' => 'Manual',
             'Payment.TitleTemplate' => '{Gateway} {Money} %d/%m/%Y'
         ), 'en_US');
 
@@ -38,7 +38,7 @@ class PaymentModelTest extends PaymentTest
         );
 
         i18n::get_translator('core')->getAdapter()->addTranslation(array(
-            'Payment.Manual' => 'Invoice',
+            'Gateway.Manual' => 'Invoice',
             'Payment.TitleTemplate' => '{Money} via {Gateway} on %Y-%m-%d'
         ), 'en_US');
 
@@ -48,7 +48,7 @@ class PaymentModelTest extends PaymentTest
         );
 
         i18n::get_translator('core')->getAdapter()->addTranslation(array(
-            'Payment.Manual' => 'Rechnung',
+            'Gateway.Manual' => 'Rechnung',
             'Payment.TitleTemplate' => '{Money} per {Gateway} am %d.%m.%Y'
         ), 'en_US');
 

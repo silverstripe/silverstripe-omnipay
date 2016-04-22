@@ -38,6 +38,7 @@ class PaymentGatewayController extends \Controller
      * @param  string             $returnurl   the application url to re-redirect to
      * @return string                          the resulting redirect url
      * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use getEndpointUrl
+     * @codeCoverageIgnore
      */
     public static function get_endpoint_url($action, $identifier)
     {

@@ -332,6 +332,7 @@ class GatewayInfo
      * @param bool $nice make the array values i18n readable.
      * @return array map of gateway short name to translated long name.
      * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use getSupportedGateways
+     * @codeCoverageIgnore
      */
     public static function get_supported_gateways($nice = true)
     {
@@ -341,6 +342,7 @@ class GatewayInfo
 
     /**
      * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use niceTitle
+     * @codeCoverageIgnore
      */
     public static function nice_title($name)
     {
@@ -353,6 +355,7 @@ class GatewayInfo
      * @param  string $gateway gateway name to check
      * @return boolean
      * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use isSupported
+     * @codeCoverageIgnore
      */
     public static function is_supported($gateway)
     {
@@ -367,6 +370,7 @@ class GatewayInfo
      * @throws \RuntimeException
      * @return boolean the gateway offsite or not
      * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use isOffsite
+     * @codeCoverageIgnore
      */
     public static function is_offsite($gateway)
     {
@@ -379,6 +383,7 @@ class GatewayInfo
      * @param  string $gateway
      * @return boolean
      * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use isManual
+     * @codeCoverageIgnore
      */
     public static function is_manual($gateway)
     {
@@ -391,6 +396,7 @@ class GatewayInfo
      * @param string $gateway gateway name
      * @return array required parameters
      * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use requiredFields
+     * @codeCoverageIgnore
      */
     public static function required_fields($gateway)
     {

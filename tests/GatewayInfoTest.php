@@ -75,6 +75,7 @@ class GatewayInfoTest extends SapphireTest
 
     /**
      * Test the niceTitle method
+     * @expectedException PHPUnit_Framework_Error_Deprecated
      */
     public function testNiceTitle()
     {
@@ -102,6 +103,13 @@ class GatewayInfoTest extends SapphireTest
             $gateway->getName(),
             'niceTitle should return the gateway name if there\'s no localization present'
         );
+
+        i18n::get_translator('core')->getAdapter()->addTranslation(array(
+            'Payment.Dummy' => 'Dummy DE'
+        ), 'de_DE');
+
+        // Should generate a deprecation error
+        GatewayInfo::niceTitle('Dummy');
     }
 
     /**

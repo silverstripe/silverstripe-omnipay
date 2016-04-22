@@ -375,7 +375,7 @@ Payment:
 
 You can change the front-end visible name of a gateway using the translation system. The gateway name must match what you entered in the `allowed_gateways` YAML config.
 
-For example, inside mysite/lang/en.yml:
+For example, inside `mysite/lang/en.yml`:
 
 ```yaml
 en:
@@ -385,6 +385,7 @@ en:
 ```
 
 This approach can also be used to provide different translations.
+For further information about module translations, please read [docs/en/Translating.md](docs/en/Translating.md)
 
 ## Caveats and Troubleshooting
 

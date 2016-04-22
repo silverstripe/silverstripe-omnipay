@@ -27,6 +27,8 @@ class PayableTest extends SapphireTest
     public function setUp()
     {
         parent::setUp();
+        // don't log test payments to file
+        Config::inst()->update('Payment', 'file_logging', 0);
         $this->order = $this->objFromFixture('Test_Order', 'order1');
     }
 

@@ -2,6 +2,8 @@
 
 namespace SilverStripe\Omnipay\Admin;
 
+use SilverStripe\Omnipay\GatewayInfo;
+
 /**
  * Development tools for payments
  *
@@ -32,6 +34,7 @@ class PaymentDevelopmentAdmin extends \Controller
 						<td>Create Card</td>
 						<td>Delete Card</td>
 						<td>Update Card</td>
+						<td>Accept Notification</td>
 					</tr>
 				</thead>
 			<tbody>";
@@ -50,6 +53,7 @@ class PaymentDevelopmentAdmin extends \Controller
                     "<td>".($gateway->supportsCreateCard() ? "yes" : "")."</td>".
                     "<td>".($gateway->supportsDeleteCard() ? "yes" : "")."</td>".
                     "<td>".($gateway->supportsUpdateCard() ? "yes" : "")."</td>".
+                    "<td>".($gateway->supportsAcceptNotification() ? "yes" : "")."</td>".
             "</tr>";
             if ($this->request->getVar('defaults')) {
                 echo "<tr><td colspan=\"11\">";
@@ -66,11 +70,23 @@ class PaymentDevelopmentAdmin extends \Controller
      */
     private function PaymentTypes()
     {
-        $gateways =  \Omnipay\Common\GatewayFactory::find();
-        $gateways = array_map(function ($name) {
-            $factory = new \Omnipay\Common\GatewayFactory;
-            return $factory->create($name);
-        }, $gateways);
-        return $gateways;
+        $factory = new \Omnipay\Common\GatewayFactory;
+        // since the omnipay gateway factory only returns gateways from the composer.json extra data,
+        // we should merge it with user-defined gateways from Payment.allowed_gateways
+        $gateways = array_unique(array_merge(
+            $factory->find(),
+            array_keys(GatewayInfo::getSupportedGateways(false))
+        ));
+
+        $supportedGateways = array();
+
+        array_walk($gateways, function ($name, $index) use (&$supportedGateways, &$factory) {
+            try {
+                $instance = $factory->create($name);
+                $supportedGateways[$name] = $instance;
+            } catch (\Exception $e){}
+        });
+
+        return $supportedGateways;
     }
 }

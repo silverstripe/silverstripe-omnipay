@@ -63,6 +63,9 @@ abstract class PaymentTest extends FunctionalTest
     {
         parent::setUp();
 
+        // don't log test payments to file
+        Config::inst()->update('Payment', 'file_logging', 0);
+        
         $this->factory = ServiceFactory::create();
 
         Payment::config()->allowed_gateways = array(
@@ -124,7 +127,7 @@ abstract class PaymentTest extends FunctionalTest
 
         return $mock;
     }
-    
+
     /**
      * @param GatewayInterface|PHPUnit_Framework_MockObject_MockObject $stubGateway
      * @return PHPUnit_Framework_MockObject_MockObject|GatewayFactory

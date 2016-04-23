@@ -284,12 +284,15 @@ Using function chaining, we can create and configure a new payment object, and s
 The response object has a `redirectOrRespond` function built in that will either redirect the user to the external gateway site, or to the given return url.
 
 ```php
-// create the payment object
-$payment = Payment::create()->init("PxPayGateway", 100, "NZD")->write();
+// Create the payment object. We pass the desired success and failure URLs as parameter to the payment
+$payment = Payment::create()
+    ->init("PxPayGateway", 100, "NZD")
+    ->setSuccessUrl($this->Link('complete')."/".$donation->ID)
+    ->setFailureUrl($this->Link()."?message=payment cancelled")
+    ->write();
 
-$response = ServiceFactory::create()->getService($payment, ServiceFactory::INTENT_PAYMENT)
-    ->setReturnUrl($this->Link('complete')."/".$donation->ID)
-    ->setCancelUrl($this->Link()."?message=payment cancelled")
+$response = ServiceFactory::create()
+    ->getService($payment, ServiceFactory::INTENT_PAYMENT)
     ->initiate($form->getData());
 
 return $response->redirectOrRespond();
@@ -297,7 +300,7 @@ return $response->redirectOrRespond();
 
 Of course you don't need to chain all of these functions, as you may want to redirect somewhere else, or do some further setup.
 
-After payment has been made, the user will be redirected to the given return url (or cancel url, if they cancelled).
+After payment has been made, the user will be redirected to the given success url (or failure url, if they cancelled).
 
 ### Passing correct data to the purchase function
 
@@ -325,7 +328,8 @@ shippingCountry
 shippingPhone
 ```
 
-**Note:** `transactionId` can be a reference that identifies the thing you are paying for, such as an order reference id. It usually shows up on bank statements for reconciliation purposes, but ultimately depends how the gateway uses it.
+**Note:** `transactionId` can be a reference that identifies the thing you are paying for, such as an order reference id.
+It usually shows up on bank statements for reconciliation purposes, but ultimately depends how the gateway uses it.
 
 ### Extension hooks
 

@@ -12,12 +12,15 @@ Payment:
     MoneyCurrency: USD
     Status: PendingPurchase
     Identifier: UNIQUEHASH23q5123tqasdf
+    SuccessUrl: 'shop/complete'
+    FailureUrl: 'shop/incomplete'
   payment3:
     Gateway: PaymentExpress_PxPay
     MoneyAmount: 769.50
     MoneyCurrency: AUD
     Status: Captured
     Identifier: c3b502a48a4740c063e1732de4cc8077
+    TransactionReference: paymentReceipt
   payment4:
     Gateway: UknownGateway
     MoneyAmount: 2.50
@@ -29,12 +32,15 @@ Payment:
     MoneyCurrency: USD
     Status: PendingAuthorization
     Identifier: 62b26e0a8a77f60cce3e9a7994087b0e
+    SuccessUrl: 'shop/complete'
+    FailureUrl: 'shop/incomplete'
   payment6:
     Gateway: PaymentExpress_PxPay
     MoneyAmount: 123.45
     MoneyCurrency: USD
     Status: Authorized
     Identifier: 51efcc0e94718dd80d97b1281762a9bc
+    TransactionReference: authorizedPaymentReceipt
 
 GatewayMessage:
   message1:
@@ -43,8 +49,6 @@ GatewayMessage:
     Message:
     Code:
     PaymentID: =>Payment.payment2
-    SuccessURL: 'shop/complete'
-    FailureURL: 'shop/incomplete'
   message2:
     ClassName: PurchaseRedirectResponse
     PaymentID: =>Payment.payment2
@@ -54,8 +58,6 @@ GatewayMessage:
     Message:
     Code:
     PaymentID: =>Payment.payment5
-    SuccessURL: 'shop/complete'
-    FailureURL: 'shop/incomplete'
   message4:
     ClassName: AuthorizeRedirectResponse
     PaymentID: =>Payment.payment5

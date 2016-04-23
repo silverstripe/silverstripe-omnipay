@@ -17,16 +17,6 @@ class PaymentServiceTest extends PaymentTest
         $this->service = $this->factory->getService($this->payment, ServiceFactory::INTENT_PURCHASE);
     }
 
-    public function testRedirectUrl()
-    {
-        $this->service
-            ->setReturnUrl("abc/123")
-            ->setCancelUrl("xyz/blah/2345235?andstuff=124124#hash");
-
-        $this->assertEquals("abc/123", $this->service->getReturnUrl());
-        $this->assertEquals("xyz/blah/2345235?andstuff=124124#hash", $this->service->getCancelUrl());
-    }
-
     public function testCancel()
     {
         $response = $this->service->cancel();

@@ -92,4 +92,40 @@ class PaymentModelTest extends PaymentTest
         $payment->Identifier = "somethingelse";
         $this->assertEquals("UNIQUEHASH23q5123tqasdf", $payment->Identifier);
     }
+
+    public function testTargetUrls()
+    {
+        $payment = new Payment();
+        $payment->setSuccessUrl("abc/123");
+
+        // setting the success Url should also set the failure url (if not set)
+        $this->assertEquals("abc/123", $payment->SuccessUrl);
+        $this->assertEquals("abc/123", $payment->FailureUrl);
+
+
+        $payment->setFailureUrl("xyz/blah/2345235?andstuff=124124#hash");
+        $this->assertEquals("xyz/blah/2345235?andstuff=124124#hash", $payment->FailureUrl);
+
+        $payment->setSuccessUrl("abc/updated");
+        $this->assertEquals("abc/updated", $payment->SuccessUrl);
+        $this->assertEquals("xyz/blah/2345235?andstuff=124124#hash", $payment->FailureUrl);
+    }
+
+    public function testGatewayMutability()
+    {
+        $payment = Payment::create()->init('Manual', 120, 'EUR');
+
+        $this->assertEquals($payment->Gateway, 'Manual');
+
+        $payment->Gateway = 'Dummy';
+        $this->assertEquals($payment->Gateway, 'Dummy');
+        
+        $payment->Status = 'Authorized';
+        $payment->Gateway = 'Manual';
+        $this->assertEquals(
+            $payment->Gateway,
+            'Dummy',
+            'Payment status should be immutable once it\'s no longer Created'
+        );
+    }
 }

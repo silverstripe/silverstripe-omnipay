@@ -12,12 +12,21 @@ use SilverStripe\Omnipay\GatewayInfo;
  */
 final class Payment extends DataObject
 {
-
     private static $db = array(
-        'Gateway' => 'Varchar(128)', //this is the omnipay 'short name'
-        'Money' => 'Money', //contains Amount and Currency
+        // this is the omnipay 'short name'
+        'Gateway' => 'Varchar(128)',
+        //contains Amount and Currency
+        'Money' => 'Money',
+        // status
         'Status' => "Enum('Created,PendingAuthorization,Authorized,PendingPurchase,PendingCapture,Captured,PendingRefund,Refunded,PendingVoid,Void','Created')",
-        'Identifier' => 'Varchar(64)'
+        // unique identifier for this payment
+        'Identifier' => 'Varchar(64)',
+        // How this payment is being referenced by the payment provider
+        'TransactionReference' => 'Varchar(255)',
+        // Success URL
+        'SuccessUrl' => 'Text',
+        // Failure URL
+        'FailureUrl' => 'Text'
     );
 
     private static $has_many = array(
@@ -105,6 +114,32 @@ final class Payment extends DataObject
         $this->setGateway($gateway);
         $this->setAmount($amount);
         $this->setCurrency($currency);
+        return $this;
+    }
+
+    /**
+     * Set the url to redirect to after payment is made/attempted.
+     * This function also populates the FailureUrl, if it is empty.
+     * @param string $url
+     * @return $this object for chaining
+     */
+    public function setSuccessUrl($url)
+    {
+        $this->setField('SuccessUrl', $url);
+        if (!$this->FailureUrl) {
+            $this->setField('FailureUrl', $url);
+        }
+
+        return $this;
+    }
+
+    /**
+     * Set the url to redirect to after payment is cancelled
+     * @return $this this object for chaining
+     */
+    public function setFailureUrl($url)
+    {
+        $this->setField('FailureUrl', $url);
         return $this;
     }
 

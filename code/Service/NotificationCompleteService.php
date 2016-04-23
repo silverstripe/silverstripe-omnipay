@@ -60,41 +60,21 @@ abstract class NotificationCompleteService extends PaymentService
             return $serviceResponse;
         }
 
-        // Find the matching request message
-        $msg = $this->payment->getLatestMessageOfType($this->requestMessageType);
-
-        // safety check the payment number against the transaction reference we get from the notification
+        // safety check the payment transaction-number against the transaction reference we get from the notification
         if (!(
-            $msg &&
             $serviceResponse->getOmnipayResponse() &&
-            $serviceResponse->getOmnipayResponse()->getTransactionReference() == $msg->Reference
+            $serviceResponse->getOmnipayResponse()->getTransactionReference() == $this->payment->TransactionReference
         )) {
-            // flag as an error if transaction references don't match or aren't available
+            // flag as an error if transaction references don't match
             $serviceResponse->addFlag(ServiceResponse::SERVICE_ERROR);
-            $this->createMessage(
-                $this->errorMessageType,
-                $msg  ? 'No transaction reference found for this Payment!' : 'Transaction references do not match!'
-            );
+            $this->createMessage($this->errorMessageType, 'Transaction references do not match!');
         }
 
         // check if we're done
         if (!$serviceResponse->isError() && !$serviceResponse->isAwaitingNotification()) {
-            $this->markCompleted($serviceResponse, $serviceResponse->getOmnipayResponse());
+            $this->markCompleted($this->endState, $serviceResponse, $serviceResponse->getOmnipayResponse());
         }
 
         return $serviceResponse;
     }
-
-    /**
-     * Mark this payment process as completed.
-     * Here you'll usually do the following:
-     * * Set the proper status on Payment and write the payment.
-     * * Log/Write the GatewayMessage
-     * * Call a "complete" hook
-     *
-     * @param ServiceResponse $serviceResponse the service response
-     * @param mixed $gatewayMessage the message from Omnipay
-     * @return void
-     */
-    abstract protected function markCompleted(ServiceResponse $serviceResponse, $gatewayMessage);
 }

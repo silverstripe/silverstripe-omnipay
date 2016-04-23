@@ -8,34 +8,6 @@ use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 class PurchaseService extends PaymentService
 {
     /**
-     * If the return URL wasn't explicitly set, get it from the last PurchaseRequest message
-     * @return string
-     */
-    public function getReturnUrl()
-    {
-        $value = parent::getReturnUrl();
-        if (!$value && $this->payment->isInDB()) {
-            $msg = $this->payment->getLatestMessageOfType('PurchaseRequest');
-            $value = $msg ? $msg->SuccessURL : \Director::baseURL();
-        }
-        return $value;
-    }
-
-    /**
-     * If the cancel URL wasn't explicitly set, get it from the last PurchaseRequest message
-     * @return string
-     */
-    public function getCancelUrl()
-    {
-        $value = parent::getCancelUrl();
-        if (!$value && $this->payment->isInDB()) {
-            $msg = $this->payment->getLatestMessageOfType('PurchaseRequest');
-            $value = $msg ? $msg->FailureURL : \Director::baseURL();
-        }
-        return $value;
-    }
-
-    /**
      * Attempt to make a payment.
      *
      * @inheritdoc
@@ -69,10 +41,7 @@ class PurchaseService extends PaymentService
         $request = $this->oGateway()->purchase($gatewayData);
         $this->extend('onAfterPurchase', $request);
 
-        $message = $this->createMessage('PurchaseRequest', $request);
-        $message->SuccessURL = $this->returnUrl;
-        $message->FailureURL = $this->cancelUrl;
-        $message->write();
+        $this->createMessage('PurchaseRequest', $request);
 
         try {
             $response = $this->response = $request->send();
@@ -97,10 +66,7 @@ class PurchaseService extends PaymentService
         } elseif ($serviceResponse->isError()) {
             $this->createMessage('PurchaseError', $response);
         } else {
-            $this->createMessage('PurchasedResponse', $response);
-            $this->payment->Status = 'Captured';
-            $this->payment->write();
-            $this->payment->extend('onCaptured', $serviceResponse);
+            $this->markCompleted('Captured', $serviceResponse, $response);
         }
 
         return $serviceResponse;
@@ -154,16 +120,20 @@ class PurchaseService extends PaymentService
 
         // only update payment status if we're not waiting for a notification
         if (!$serviceResponse->isAwaitingNotification()) {
-            $this->createMessage('PurchasedResponse', $response);
-            $this->payment->Status = 'Captured';
-            $this->payment->write();
-            $this->payment->extend('onCaptured', $serviceResponse);
+            $this->markCompleted('Captured', $serviceResponse, $response);
         } else {
             $this->payment->extend('onAwaitingCaptured', $serviceResponse);
         }
 
 
         return $serviceResponse;
+    }
+
+    protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
+    {
+        parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
+        $this->createMessage('PurchasedResponse', $gatewayMessage);
+        $this->payment->extend('onCaptured', $serviceResponse);
     }
 
     /**

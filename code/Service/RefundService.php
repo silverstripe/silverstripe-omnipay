@@ -42,13 +42,10 @@ class RefundService extends NotificationCompleteService
         if (!GatewayInfo::isManual($this->payment->Gateway)) {
             if (!empty($data['transactionReference'])) {
                 $reference = $data['transactionReference'];
+            } elseif (!empty($data['receipt'])) { // legacy code?
+                $reference = $data['receipt'];
             } else {
-                if (!empty($data['receipt'])) { // legacy code?
-                    $reference = $data['receipt'];
-                } else {
-                    $msg = $this->payment->getLatestMessageOfType(array('CapturedResponse', 'PurchasedResponse'));
-                    $reference = $msg ? $msg->Reference : null;
-                }
+                $reference = $this->payment->TransactionReference;
             }
 
             if (empty($reference)) {
@@ -98,18 +95,17 @@ class RefundService extends NotificationCompleteService
             if ($serviceResponse->isError()) {
                 $this->createMessage($this->errorMessageType, $response);
             } else {
-                $this->markCompleted($serviceResponse, $response);
+                $this->markCompleted($this->endState, $serviceResponse, $response);
             }
         }
 
         return $serviceResponse;
     }
 
-    protected function markCompleted(ServiceResponse $serviceResponse, $gatewayMessage)
+    protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
     {
+        parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
         $this->createMessage('RefundedResponse', $gatewayMessage);
-        $this->payment->Status = $this->endState;
-        $this->payment->write();
         $this->payment->extend('onRefunded', $serviceResponse);
     }
 }

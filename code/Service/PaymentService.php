@@ -45,16 +45,6 @@ abstract class PaymentService extends \Object
     protected $payment;
 
     /**
-     * @var String
-     */
-    protected $returnUrl;
-
-    /**
-     * @var String
-     */
-    protected $cancelUrl;
-
-    /**
      * @var AbstractResponse
      */
     protected $response;
@@ -71,50 +61,6 @@ abstract class PaymentService extends \Object
     {
         parent::__construct();
         $this->payment = $payment;
-    }
-
-    /**
-     * Get the url to return to, that has been previously stored.
-     * This is not a database field.
-     * @return string the url
-     */
-    public function getReturnUrl()
-    {
-        return $this->returnUrl;
-    }
-
-    /**
-     * Set the url to redirect to after payment is made/attempted.
-     * This function also populates the cancel url, if it is empty.
-     * @return $this this object for chaining
-     */
-    public function setReturnUrl($url)
-    {
-        $this->returnUrl = $url;
-        if (!$this->cancelUrl) {
-            $this->cancelUrl = $url;
-        }
-
-        return $this;
-    }
-
-    /**
-     * @return string cancel url
-     */
-    public function getCancelUrl()
-    {
-        return $this->cancelUrl;
-    }
-
-    /**
-     * Set the url to redirect to after payment is cancelled
-     * @return $this this object for chaining
-     */
-    public function setCancelUrl($url)
-    {
-        $this->cancelUrl = $url;
-
-        return $this;
     }
 
     /**
@@ -324,6 +270,30 @@ abstract class PaymentService extends \Object
     }
 
     /**
+     * Mark this payment process as completed.
+     * This sets the desired end-status on the payment, sets the transaction reference and writes the payment.
+     *
+     * In subclasses, you'll want to override this and:
+     * * Log/Write the GatewayMessage
+     * * Call a "complete" hook
+     *
+     * Don't forget to call the parent method from your subclass!
+     *
+     * @param string $endStatus the end state to set on the payment
+     * @param ServiceResponse $serviceResponse the service response
+     * @param mixed $gatewayMessage the message from Omnipay
+     * @return void
+     */
+    protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
+    {
+        $this->payment->Status = $endStatus;
+        if ($gatewayMessage && ($reference = $gatewayMessage->getTransactionReference())) {
+            $this->payment->TransactionReference = $reference;
+        }
+        $this->payment->write();
+    }
+
+    /**
      * Generate a service response
      * @param int $flags a combination of service flags
      * @param AbstractResponse|NotificationInterface|null $omnipayData the response or notification from the Omnipay gateway
@@ -343,8 +313,8 @@ abstract class PaymentService extends \Object
         if (!$response->isNotification() && !$response->isRedirect()) {
             $response->setTargetUrl(
                 ($response->isError() || $response->isCancelled())
-                    ? $this->getCancelUrl()
-                    : $this->getReturnUrl()
+                    ? $this->payment->FailureUrl
+                    : $this->payment->SuccessUrl
             );
         }
 
@@ -503,9 +473,56 @@ abstract class PaymentService extends \Object
     }
 
     // -----------------------------------------------------------------------------------------------------------------
-    // Deprecated methods.
+    // Deprecated methods
     // TODO: Remove with 3.0
     // -----------------------------------------------------------------------------------------------------------------
+
+    /**
+     * Get the url to return to, that has been previously stored.
+     * This is not a database field.
+     * @return string the url
+     * @deprecated 3.0 get the SuccessUrl directly from payments
+     */
+    public function getReturnUrl()
+    {
+        return $this->payment->SuccessUrl;
+    }
+
+    /**
+     * Set the url to redirect to after payment is made/attempted.
+     * This function also populates the cancel url, if it is empty.
+     * @return $this this object for chaining
+     * @deprecated 3.0 set the SuccessUrl directly on payments
+     * @codeCoverageIgnore
+     */
+    public function setReturnUrl($url)
+    {
+        $this->payment->SuccessUrl = $url;
+        return $this;
+    }
+
+    /**
+     * @return string cancel url
+     * @deprecated 3.0 get the FailureUrl directly from payments
+     * @codeCoverageIgnore
+     */
+    public function getCancelUrl()
+    {
+        return $this->payment->FailureUrl;
+    }
+
+    /**
+     * Set the url to redirect to after payment is cancelled
+     * @return $this this object for chaining
+     * @deprecated 3.0 set the FailureUrl directly on payments
+     * @codeCoverageIgnore
+     */
+    public function setCancelUrl($url)
+    {
+        $this->payment->FailureUrl = $url;
+        return $this;
+    }
+
 
     /**
      * Set the guzzle client (for testing)

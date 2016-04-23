@@ -181,6 +181,10 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $this->assertTrue($response->getOmnipayResponse()->isSuccessful());
         $this->assertSame($this->completeStatus, $payment->Status);
         $this->assertFalse($response->isError());
+        // payment should get the transaction reference from Omnipay assigned
+        $reference = $response->getOmnipayResponse()->getTransactionReference();
+        $this->assertNotNull($reference);
+        $this->assertEquals($payment->TransactionReference, $reference);
 
         //check messaging
         $this->assertDOSContains($this->offsiteSuccessMessages, $payment->Messages());
@@ -233,8 +237,8 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         //exception when trying to run functions that require a gateway
         $payment = $this->payment;
         $service = $this->getService(
-            $payment->init("FantasyGateway", 100, "NZD")
-        )->setReturnUrl("complete");
+            $payment->init("FantasyGateway", 100, "NZD")->setSuccessUrl("complete")
+        );
 
         // Will throw an exception since the gateway doesn't exist
         $service->initiate();
@@ -401,14 +405,12 @@ abstract class BasePurchaseServiceTest extends PaymentTest
             return $isNotification;
         });
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
+        $payment->setFailureUrl('my/cancel/url')->setSuccessUrl('my/return/url');
 
         $service = $this->getService($payment);
         $service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
 
-        $serviceResponse = $service
-            ->setCancelUrl('my/cancel/url')
-            ->setReturnUrl('my/return/url')
-            ->initiate();
+        $serviceResponse = $service->initiate();
 
         // we should get a redirect
         $this->assertTrue($serviceResponse->isRedirect());
@@ -459,14 +461,12 @@ abstract class BasePurchaseServiceTest extends PaymentTest
             return $isNotification;
         });
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
+        $payment->setFailureUrl('my/cancel/url')->setSuccessUrl('my/return/url');
 
         $service = $this->getService($payment);
         $service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
 
-        $serviceResponse = $service
-            ->setCancelUrl('my/cancel/url')
-            ->setReturnUrl('my/return/url')
-            ->initiate();
+        $serviceResponse = $service->initiate();
 
         // we should get a redirect
         $this->assertTrue($serviceResponse->isRedirect());
@@ -516,16 +516,13 @@ abstract class BasePurchaseServiceTest extends PaymentTest
             return $isNotification;
         });
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
-
+        $payment->setFailureUrl('my/cancel/url')->setSuccessUrl('my/return/url');
         $service = $this->getService($payment);
 
         // register our mock gateway factory as injection
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
 
-        $serviceResponse = $service
-            ->setCancelUrl('my/cancel/url')
-            ->setReturnUrl('my/return/url')
-            ->initiate();
+        $serviceResponse = $service->initiate();
 
         // we should get a redirect
         $this->assertTrue($serviceResponse->isRedirect());

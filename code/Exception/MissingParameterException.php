@@ -3,7 +3,7 @@
 namespace SilverStripe\Omnipay\Exception;
 
 /**
- * Class InvalidStateException
+ * Class MissingParameterException
  *
  * This should be thrown whenever a payment service lacks parameters
  *

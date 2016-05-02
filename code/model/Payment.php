@@ -1,6 +1,7 @@
 <?php
 
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\PaymentMath;
 
 /**
  * Payment DataObject
@@ -27,6 +28,11 @@ final class Payment extends DataObject
         'SuccessUrl' => 'Text',
         // Failure URL
         'FailureUrl' => 'Text'
+    );
+
+    private static $has_one = array(
+        // partial payments will reference the initial payments with this relation
+        'InitialPayment' => 'Payment'
     );
 
     private static $has_many = array(
@@ -264,6 +270,31 @@ final class Payment extends DataObject
     }
 
     /**
+     * Get partial payments that have this payment as initial payment.
+     * The list will be sorted from newest to oldest
+     * @return DataList|null
+     */
+    public function getPartialPayments()
+    {
+        if (!$this->isInDB()) {
+            return null;
+        }
+
+        return Payment::get()
+            ->filter('InitialPaymentID', $this->ID)
+            ->sort(array('Created' => 'DESC', 'ID' => 'DESC'));
+    }
+
+    /**
+     * Whether or not this payment is a partial payment of another payment
+     * @return bool
+     */
+    public function isPartial()
+    {
+        return !empty($this->InitialPaymentID);
+    }
+
+    /**
      * Check the payment is captured.
      * @return boolean completion
      */
@@ -278,12 +309,54 @@ final class Payment extends DataObject
     }
 
     /**
+     * Calculate the max amount that can be captured for this payment.
+     * If the Status of the payment isn't 'Authorized', this will return 0
+     * @return int|string the max amount that can be captured for this payment.
+     */
+    public function getMaxCaptureAmount()
+    {
+        if ($this->Status !== 'Authorized') {
+            return 0;
+        }
+
+        $percent = GatewayInfo::maxExcessCapturePercent($this->Gateway);
+        $fixedAmount = GatewayInfo::maxExcessCaptureAmount($this->Gateway, $this->getCurrency());
+
+        // -1 will only be returned if there's a fixed amount, but no percentage.
+        // We can safely return the fixed amount here
+        if ($percent === -1) {
+            return PaymentMath::add($this->MoneyAmount, $fixedAmount);
+        }
+
+        // calculate what amount the percentage will result in
+        $percentAmount = PaymentMath::multiply(PaymentMath::multiply($percent, '0.01'), $this->MoneyAmount);
+
+        // if there's no fixed amount and only the percentage is set, we can return the percentage amount right away.
+        if ($fixedAmount === -1) {
+            return PaymentMath::add($this->MoneyAmount, $percentAmount);
+        }
+
+        // If the amount from the percentage is smaller, use the percentage
+        if (PaymentMath::compare($fixedAmount, $percentAmount) > 0) {
+            return PaymentMath::add($this->MoneyAmount, $percentAmount);
+        }
+
+        // otherwise use the fixed amount
+        return PaymentMath::add($this->MoneyAmount, $fixedAmount);
+    }
+
+    /**
      * Whether or not this payment can be captured
+     * @param boolean $partial check if payment can be partially captured. Defaults to false
      * @return bool
      */
-    public function canCapture()
+    public function canCapture($partial = false)
     {
-        return ($this->Status == 'Authorized' && GatewayInfo::allowCapture($this->Gateway));
+        return (
+            $this->Status == 'Authorized' && ($partial
+                ? GatewayInfo::allowPartialCapture($this->Gateway)
+                : GatewayInfo::allowCapture($this->Gateway))
+        );
     }
 
     /**
@@ -297,11 +370,16 @@ final class Payment extends DataObject
 
     /**
      * Whether or not this payment can be refunded
+     * @param boolean $partial check if payment can be partially refunded. Defaults to false
      * @return bool
      */
-    public function canRefund()
+    public function canRefund($partial = false)
     {
-        return ($this->Status == 'Captured' && GatewayInfo::allowRefund($this->Gateway));
+        return (
+            $this->Status == 'Captured' && ($partial
+                ? GatewayInfo::allowPartialRefund($this->Gateway)
+                : GatewayInfo::allowRefund($this->Gateway))
+        );
     }
 
     /**

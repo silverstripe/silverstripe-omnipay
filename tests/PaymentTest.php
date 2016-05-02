@@ -24,7 +24,7 @@ abstract class PaymentTest extends FunctionalTest
     public function setUpOnce()
     {
         parent::setUpOnce();
-
+        
         // remove all extensions applied to ServiceFactory
         $this->factoryExtensions = Object::get_extensions('ServiceFactory');
 
@@ -45,6 +45,8 @@ abstract class PaymentTest extends FunctionalTest
             'capture' => '\SilverStripe\Omnipay\Service\CaptureService',
             'void' => '\SilverStripe\Omnipay\Service\VoidService'
         ));
+
+        Payment::add_extension('PaymentTest_PaymentExtensionHooks');
     }
 
     public function tearDownOnce()
@@ -57,15 +59,19 @@ abstract class PaymentTest extends FunctionalTest
                 ServiceFactory::add_extension($extension);
             }
         }
+
+        Payment::remove_extension('PaymentTest_PaymentExtensionHooks');
     }
 
     public function setUp()
     {
         parent::setUp();
 
+        PaymentTest_PaymentExtensionHooks::ResetAll();
+
         // don't log test payments to file
         Config::inst()->update('Payment', 'file_logging', 0);
-        
+
         $this->factory = ServiceFactory::create();
 
         Payment::config()->allowed_gateways = array(

@@ -42,6 +42,45 @@ class PurchaseServiceTest extends BasePurchaseServiceTest
 
     protected $paymentId = 'UNIQUEHASH23q5123tqasdf';
 
+    protected $successPaymentExtensionHooks = array(
+        'onCaptured'
+    );
+
+    protected $notifyPaymentExtensionHooks = array(
+        'onAwaitingCaptured'
+    );
+
+    protected $initiateServiceExtensionHooks = array(
+        'onBeforePurchase',
+        'onAfterPurchase',
+        'onAfterSendPurchase',
+        'updateServiceResponse'
+    );
+
+    protected $initiateFailedServiceExtensionHooks = array(
+        'onBeforePurchase',
+        'onAfterPurchase',
+        'updateServiceResponse'
+    );
+
+    protected $completeServiceExtensionHooks = array(
+        'onBeforeCompletePurchase',
+        'onAfterCompletePurchase',
+        'updateServiceResponse'
+    );
+
+    public function setUp()
+    {
+        parent::setUp();
+        PurchaseService::add_extension('PaymentTest_ServiceExtensionHooks');
+    }
+
+    public function tearDown()
+    {
+        parent::tearDown();
+        PurchaseService::remove_extension('PaymentTest_ServiceExtensionHooks');
+    }
+
     protected function getService(Payment $payment)
     {
         return PurchaseService::create($payment);

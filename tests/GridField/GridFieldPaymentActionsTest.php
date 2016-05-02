@@ -57,9 +57,9 @@ class GridFieldPaymentActionsTest extends SapphireTest
 
         // Disallow actions for Manual Gateway
         Config::inst()->update('GatewayInfo', 'Manual', array(
-           'allow_capture' => false,
-           'allow_refund' => false,
-           'allow_void' => false
+           'can_capture' => false,
+           'can_refund' => false,
+           'can_void' => false
         ));
 
         $content = new CSSContentParser($this->gridField->FieldHolder());

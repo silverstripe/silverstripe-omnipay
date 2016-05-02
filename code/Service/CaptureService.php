@@ -4,8 +4,11 @@ namespace SilverStripe\Omnipay\Service;
 
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Exception\MissingParameterException;
+use SilverStripe\Omnipay\Exception\InvalidParameterException;
 use Omnipay\Common\Exception\OmnipayException;
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\PaymentMath;
+use SilverStripe\Omnipay\Helper;
 
 /**
  * Service used in tandem with AuthorizeService.
@@ -13,8 +16,7 @@ use SilverStripe\Omnipay\GatewayInfo;
  */
 class CaptureService extends NotificationCompleteService
 {
-    //TODO: Ensure that this can also capture partial payments. This would probably have to generate additional Payments
-
+    protected $startState = 'Authorized';
     protected $endState = 'Captured';
     protected $pendingState = 'PendingCapture';
     protected $requestMessageType = 'CaptureRequest';
@@ -29,8 +31,15 @@ class CaptureService extends NotificationCompleteService
      *
      * If there's no transaction-reference to be found, this method will raise an exception.
      *
+     * You can issue partial captures (if the gateway supports it) by passing an `amount` parameter in the $data
+     * array. The amount can also exceed the authorized amount, if the configuration allows it (`max_capture` setting).
+     * An amount that exceeds the authorized amount will always be considered as a full capture!
+     * If the amount given is not a number, or if it exceeds the total possible capture amount, an exception
+     * will be raised.
+     *
      * @inheritdoc
      * @throws MissingParameterException if no transaction reference can be found from messages or parameters
+     * @throws InvalidParameterException if the amount parameter was invalid
      */
     public function initiate($data = array())
     {
@@ -66,10 +75,35 @@ class CaptureService extends NotificationCompleteService
             );
         }
 
+        $authorized = $amount = $this->payment->MoneyAmount;
+        $diff = 0;
+
+        if (!empty($data['amount'])) {
+            $amount = $data['amount'];
+            if (!is_numeric($amount)) {
+                throw new InvalidParameterException('The "amount" parameter has to be numeric.');
+            }
+
+            if (!($amount > 0)) {
+                throw new InvalidParameterException('The "amount" parameter has to be positive.');
+            }
+
+            // check if the amount exceeds the max. amount that can be captured
+            if (PaymentMath::compare($this->payment->getMaxCaptureAmount(), $amount) === -1) {
+                throw new InvalidParameterException('The "amount" given exceeds the amount that can be captured.');
+            }
+
+            $diff = PaymentMath::subtract($amount, $authorized);
+        }
+
+        if ($diff < 0 && !$this->payment->canCapture(true)) {
+            throw new InvalidParameterException('This payment cannot be partially captured (unsupported by gateway).');
+        }
+
         $gatewayData = array_merge(
             $data,
             array(
-                'amount' => (float)$this->payment->MoneyAmount,
+                'amount' => (float)$amount,
                 'currency' => $this->payment->MoneyCurrency,
                 'transactionReference' => $reference,
                 'notifyUrl' => $this->getEndpointUrl('notify')
@@ -90,17 +124,27 @@ class CaptureService extends NotificationCompleteService
             return $this->generateServiceResponse(ServiceResponse::SERVICE_ERROR);
         }
 
-        $this->extend('onAfterSendCapture', $request, $response);
+        Helper::safeExtend($this, 'onAfterSendCapture', $request, $response);
 
         $serviceResponse = $this->wrapOmnipayResponse($response);
 
         if ($serviceResponse->isAwaitingNotification()) {
+            if ($diff < 0) {
+                $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
+            } elseif ($diff > 0) {
+                $this->createPartialPayment($diff, $this->pendingState);
+            }
             $this->payment->Status = $this->pendingState;
             $this->payment->write();
         } else {
             if ($serviceResponse->isError()) {
                 $this->createMessage($this->errorMessageType, $response);
             } else {
+                if ($diff < 0) {
+                    $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
+                } elseif ($diff > 0) {
+                    $this->createPartialPayment($diff, $this->pendingState);
+                }
                 $this->markCompleted($this->endState, $serviceResponse, $response);
             }
         }
@@ -110,8 +154,46 @@ class CaptureService extends NotificationCompleteService
 
     protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
     {
+        // Get partial payments
+        $partials = $this->payment->getPartialPayments()->filter('Status', $this->pendingState);
+
+        if ($partials->count() > 0) {
+            $i = 0;
+            $total = $this->payment->MoneyAmount;
+            foreach ($partials as $payment) {
+                // only the first, eg. most recent payment should be considered valid. All others should be set to void
+                if ($i === 0) {
+                    $total = PaymentMath::add($total, $payment->MoneyAmount);
+
+                    // deal with partial capture
+                    if ($payment->MoneyAmount < 0) {
+                        $payment->Status = 'Created';
+                        $payment->setAmount(PaymentMath::multiply($payment->MoneyAmount, '-1'));
+                    }
+                    $payment->Status = 'Captured';
+                } else {
+                    $payment->Status = 'Void';
+                }
+                $payment->write();
+                $i++;
+            }
+
+            // If not everything was captured (partial), the payment should still have the "Authorized" status
+            if ($total > 0 && $total < $this->payment->MoneyAmount) {
+                // Ugly hack to set the money amount
+                $this->payment->Status = 'Created';
+                $this->payment->setAmount($total);
+                $endStatus = 'Authorized';
+            }
+        }
+
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
-        $this->createMessage('CapturedResponse', $gatewayMessage);
-        $this->payment->extend('onCaptured', $serviceResponse);
+        if ($endStatus === 'Authorized') {
+            $this->createMessage('PartiallyCapturedResponse', $gatewayMessage);
+        } else {
+            $this->createMessage('CapturedResponse', $gatewayMessage);
+        }
+
+        Helper::safeExtend($this->payment, 'onCaptured', $serviceResponse);
     }
 }

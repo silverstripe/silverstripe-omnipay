@@ -8,6 +8,10 @@ class CapturedResponse extends GatewayResponseMessage
 {
 }
 
+class PartiallyCapturedResponse extends GatewayResponseMessage
+{
+}
+
 class CaptureError extends GatewayErrorMessage
 {
 }

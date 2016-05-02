@@ -13,11 +13,11 @@ use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
  * Eg.
  * <code>
  * GatewayInfo:
- *  PayPal_Express:
- *    use_authorize: true
- *    parameters:
- *      username: 'my.user.name'
- *      # more parameters…
+ *   PayPal_Express:
+ *     use_authorize: true
+ *     parameters:
+ *       username: 'my.user.name'
+ *       # more parameters…
  * </code>
  *
  * The following config settings are allowed per gateway:
@@ -28,12 +28,43 @@ use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
  * * `token_key` *string*: Key for the token parameter
  * * `required_fields` *array*: An array of required form-fields
  * * `parameters` *map*: All gateway parameters that will be passed along to the Omnipay Gateway instance
- * * `allow_capture` *boolean*: Whether or not capturing of authorized payments should be allowed. Defaults to true.
- * * `allow_refund` *boolean*: Whether or not refunding of captured payments should be allowed. Defaults to true.
- * * `allow_void` *boolean*: Whether or not voiding of authorized payments should be allowed. Defaults to true.
+ * * `can_capture` *string|boolean*: Set how/if authorized payments can be captured. Defaults to "partial"
+ *      Valid values are "off" or `false` (capturing disabled), "full" (can only capture full amounts), "partial" or `true` (can capture partially)
+ * * `can_refund` *string|boolean*: Set how/if captured payments can be refunded. Defaults to "partial"
+ *      Valid values are "off" or `false` (refunding disabled), "full" (can only refund full amounts), "partial" or `true` (can refund partially)
+ * * `can_void` *boolean*: Whether or not voiding of authorized payments should be allowed. Defaults to true.
+ * * `max_capture` *mixed*: configuration for excess capturing of authorized amounts.
+ *
+ * Config examples for `max_capture`:
+ * <code>
+ * ------
+ * # Allow excess capture with max. 15%
+ * max_capture: '15%'
+ * ------
+ * # Allow excess capture of max 40 units (default currency)
+ * max_capture: 40
+ * ------
+ * # Allow excess capture of max 20%, but no more than 70
+ * # eg. $1000.00 has a max. capture of $1070.00 and $200 has a max. capture of $240.00
+ * max_capture:
+ *   percent: '20%'
+ *   amount: 70
+ * ------
+ * # Allow excess capture of max 20%, but no more than USD 70 or EUR 60.
+ * # The amount field can contain values for all currencies that should be handled by this module
+ * max_capture:
+ *   percent: '20%'
+ *   amount:
+ *     USD: 70
+ *     EUR: 60
+ * </code>
  */
 class GatewayInfo
 {
+    const OFF = 'off';
+    const FULL = 'full';
+    const PARTIAL = 'partial';
+
     /**
      * Config accessor
      * @return \Config_ForClass
@@ -199,9 +230,9 @@ class GatewayInfo
      */
     public static function allowVoid($gateway)
     {
-        $setting = self::getConfigSetting($gateway, 'allow_void');
-        // if the setting isn't present, default to true, otherwise check for truthy value
-        return ($setting === null || $setting == true);
+        $setting = self::getConfigSetting($gateway, 'can_void');
+        // if the setting isn't present, default to true, otherwise check against falsy values
+        return ($setting === null || !($setting == false || $setting === 'off' || $setting === 'false'));
     }
 
     /**
@@ -211,9 +242,108 @@ class GatewayInfo
      */
     public static function allowCapture($gateway)
     {
-        $setting = self::getConfigSetting($gateway, 'allow_capture');
-        // if the setting isn't present, default to true, otherwise check for truthy value
-        return ($setting === null || $setting == true);
+        return self::configToConstant($gateway, 'can_capture') !== self::OFF;
+    }
+
+    /**
+     * Whether or not the given gateway should allow partial capturing of payments
+     * @param string $gateway the gateway name
+     * @return bool
+     */
+    public static function allowPartialCapture($gateway)
+    {
+        return self::configToConstant($gateway, 'can_capture') === self::PARTIAL;
+    }
+
+    /**
+     * Get the max excess capture percentage for the given gateway.
+     *
+     * Some payment providers allow capturing a slightly higher amount than was authorized.
+     * If $200.00 was authorized and maxExcessCapturePercent returns `15`, you're allowed to capture at max $230.00,
+     * unless further restricted by maxExcessCaptureAmount.
+     * To get the correct max-capture amount, both maxExcessCapturePercent and maxExcessCaptureAmount
+     * have to be considered.
+     *
+     * @param string $gateway the gateway name
+     * @return int|string max excess capture percentage as a number (no percentage sign) or `-1` if the
+     *  excess capture percentage is not limited (will only occur if there's a limited fixed amount)
+     *  @see maxExcessCaptureAmount
+     */
+    public static function maxExcessCapturePercent($gateway)
+    {
+        $setting = self::getConfigSetting($gateway, 'max_capture');
+        if (!$setting) {
+            return 0;
+        }
+
+        $pattern = '/^(\d+)%$/';
+
+        if (!is_array($setting)) {
+            if (preg_match($pattern, $setting, $match)) {
+                return $match[1];
+            }
+
+            if (is_numeric($setting) && $setting > 0) {
+                return -1;
+            }
+        } elseif (!empty($setting['percent'])) {
+            if (is_numeric($setting['percent'])) {
+                return max(0, $setting['percent']);
+            }
+
+            if (preg_match($pattern, $setting['percent'], $match)) {
+                return $match[1];
+            }
+        }
+
+        return 0;
+    }
+
+    /**
+     * Get the max excess capture amount for the given gateway and an optional currency.
+     *
+     * Some payment providers allow capturing a slightly higher amount than was authorized.
+     * If $200.00 was authorized and maxExcessCaptureAmount returns `70`, you're allowed to capture at max $270.00,
+     * unless further restricted by maxExcessCapturePercent.
+     * To get the correct max-capture amount, both maxExcessCapturePercent and maxExcessCaptureAmount
+     * have to be considered.
+     *
+     * @param string $gateway the gateway name
+     * @param string $currency the currency to look up. Defaults to `null` and is only needed when the config contains
+     *  amounts for different currencies.
+     * @return int|string the max excess amount or `-1` if the excess amount isn't limited (only limited by percentage)
+     */
+    public static function maxExcessCaptureAmount($gateway, $currency = null)
+    {
+        $setting = self::getConfigSetting($gateway, 'max_capture');
+        if (!$setting) {
+            return 0;
+        }
+
+        if (!is_array($setting)) {
+            if (preg_match('/^\d+%$/', $setting)) {
+                return -1;
+            }
+
+            if (is_numeric($setting)) {
+                return max(0, $setting);
+            }
+        } elseif (!empty($setting['amount'])) {
+            if (is_numeric($setting['amount'])) {
+                return max(0, $setting['amount']);
+            }
+
+            if (
+                is_array($setting['amount'])
+                && $currency
+                && !empty($setting['amount'][$currency])
+                && is_numeric($setting['amount'][$currency])
+            ) {
+                return max(0, $setting['amount'][$currency]);
+            }
+        }
+
+        return 0;
     }
 
     /**
@@ -223,9 +353,17 @@ class GatewayInfo
      */
     public static function allowRefund($gateway)
     {
-        $setting = self::getConfigSetting($gateway, 'allow_refund');
-        // if the setting isn't present, default to true, otherwise check for truthy value
-        return ($setting === null || $setting == true);
+        return self::configToConstant($gateway, 'can_refund') !== self::OFF;
+    }
+
+    /**
+     * Whether or not the given gateway should allow partial refunding of payments
+     * @param string $gateway the gateway name
+     * @return bool
+     */
+    public static function allowPartialRefund($gateway)
+    {
+        return self::configToConstant($gateway, 'can_refund') === self::PARTIAL;
     }
 
     /**
@@ -320,6 +458,31 @@ class GatewayInfo
         }
 
         return isset($config[$key]) ? $config[$key] : null;
+    }
+
+    /**
+     * Helper method to convert a config setting to a predefined constant for values that can have the three states:
+     * OFF, FULL or PARTIAL
+     * @param string $gateway the gateway name
+     * @param string $key the config key
+     * @return string either "off", "full" or "partial"
+     */
+    protected static function configToConstant($gateway, $key)
+    {
+        $value = self::getConfigSetting($gateway, $key);
+        if ($value === null) {
+            return self::PARTIAL;
+        }
+
+        if ($value == false || $value === 'off') {
+            return self::OFF;
+        }
+
+        if ($value === 'full') {
+            return self::FULL;
+        }
+
+        return self::PARTIAL;
     }
 
     // -----------------------------------------------------------------------------------------------------------------

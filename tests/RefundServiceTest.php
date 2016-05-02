@@ -98,6 +98,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
     public function setUp()
     {
         parent::setUp();
+        $this->logInWithPermission('REFUND_PAYMENTS');
         RefundService::add_extension('PaymentTest_ServiceExtensionHooks');
     }
 

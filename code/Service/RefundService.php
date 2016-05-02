@@ -89,7 +89,7 @@ class RefundService extends NotificationCompleteService
             $isPartial = $compare === 1;
         }
 
-        if ($isPartial && !$this->payment->canRefund(true)) {
+        if ($isPartial && !$this->payment->canRefund(null, true)) {
             throw new InvalidParameterException('This payment cannot be partially refunded (unsupported by gateway).');
         }
 

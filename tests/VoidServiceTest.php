@@ -97,6 +97,7 @@ class VoidServiceTest extends BaseNotificationServiceTest
     public function setUp()
     {
         parent::setUp();
+        $this->logInWithPermission('VOID_PAYMENTS');
         VoidService::add_extension('PaymentTest_ServiceExtensionHooks');
     }
 

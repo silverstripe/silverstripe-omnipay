@@ -24,7 +24,7 @@ abstract class PaymentTest extends FunctionalTest
     public function setUpOnce()
     {
         parent::setUpOnce();
-        
+
         // remove all extensions applied to ServiceFactory
         $this->factoryExtensions = Object::get_extensions('ServiceFactory');
 

@@ -96,7 +96,7 @@ class CaptureService extends NotificationCompleteService
             $diff = PaymentMath::subtract($amount, $authorized);
         }
 
-        if ($diff < 0 && !$this->payment->canCapture(true)) {
+        if ($diff < 0 && !$this->payment->canCapture(null, true)) {
             throw new InvalidParameterException('This payment cannot be partially captured (unsupported by gateway).');
         }
 

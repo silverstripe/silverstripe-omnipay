@@ -84,7 +84,8 @@ class PaymentDevelopmentAdmin extends \Controller
             try {
                 $instance = $factory->create($name);
                 $supportedGateways[$name] = $instance;
-            } catch (\Exception $e){}
+            } catch (\Exception $e) {
+            }
         });
 
         return $supportedGateways;

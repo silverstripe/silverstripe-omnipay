@@ -119,7 +119,7 @@ class PaymentModelTest extends PaymentTest
 
         $payment->Gateway = 'Dummy';
         $this->assertEquals($payment->Gateway, 'Dummy');
-        
+
         $payment->Status = 'Authorized';
         $payment->Gateway = 'Manual';
         $this->assertEquals(
@@ -127,5 +127,151 @@ class PaymentModelTest extends PaymentTest
             'Dummy',
             'Payment status should be immutable once it\'s no longer Created'
         );
+    }
+
+    public function testCanCapture()
+    {
+        $payment = Payment::create()->init('Manual', 120, 'EUR');
+
+        // cannot capture new payment
+        $this->assertFalse($payment->canCapture());
+        $this->assertFalse($payment->canCapture(true));
+
+        $payment->Status = 'Authorized';
+
+        $this->assertTrue($payment->canCapture());
+        $this->assertTrue($payment->canCapture(true));
+
+        Config::inst()->update('GatewayInfo', 'Manual', array(
+            'can_capture' => false
+        ));
+
+        $this->assertFalse($payment->canCapture());
+        $this->assertFalse($payment->canCapture(true));
+
+        Config::inst()->update('GatewayInfo', 'Manual', array(
+            'can_capture' => 'full'
+        ));
+
+        $this->assertTrue($payment->canCapture());
+        $this->assertFalse($payment->canCapture(true));
+
+        Config::inst()->update('GatewayInfo', 'Manual', array(
+            'can_capture' => 'partial'
+        ));
+
+        $this->assertTrue($payment->canCapture());
+        $this->assertTrue($payment->canCapture(true));
+    }
+
+    public function testCanRefund()
+    {
+        $payment = Payment::create()->init('Manual', 120, 'EUR');
+
+        // cannot refund new payment
+        $this->assertFalse($payment->canRefund());
+        $this->assertFalse($payment->canRefund(true));
+
+        $payment->Status = 'Captured';
+
+        $this->assertTrue($payment->canRefund());
+        $this->assertTrue($payment->canRefund(true));
+
+        Config::inst()->update('GatewayInfo', 'Manual', array(
+            'can_refund' => false
+        ));
+
+        $this->assertFalse($payment->canRefund());
+        $this->assertFalse($payment->canRefund(true));
+
+        Config::inst()->update('GatewayInfo', 'Manual', array(
+            'can_refund' => 'full'
+        ));
+
+        $this->assertTrue($payment->canRefund());
+        $this->assertFalse($payment->canRefund(true));
+
+        Config::inst()->update('GatewayInfo', 'Manual', array(
+            'can_refund' => 'partial'
+        ));
+
+        $this->assertTrue($payment->canRefund());
+        $this->assertTrue($payment->canRefund(true));
+    }
+
+    public function testCanVoid()
+    {
+        $payment = Payment::create()->init('Manual', 120, 'EUR');
+
+        // cannot void new payment
+        $this->assertFalse($payment->canVoid());
+
+        $payment->Status = 'Authorized';
+
+        $this->assertTrue($payment->canVoid());
+
+        Config::inst()->update('GatewayInfo', 'Manual', array(
+            'can_void' => false
+        ));
+
+        $this->assertFalse($payment->canVoid());
+
+        Config::inst()->update('GatewayInfo', 'Manual', array(
+            'can_void' => true
+        ));
+
+        $this->assertTrue($payment->canVoid());
+    }
+
+    public function testMaxCaptureAmount()
+    {
+        $payment = Payment::create()->init('Dummy', 120, 'EUR');
+        // If payment isn't Authorized, return 0
+        $this->assertEquals(0, $payment->getMaxCaptureAmount());
+
+        $payment->Status = 'Authorized';
+
+        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => '30'));
+        $this->assertEquals('150.00', $payment->getMaxCaptureAmount());
+
+        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => '30%'));
+        $this->assertEquals('156.00', $payment->getMaxCaptureAmount());
+
+        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => '17%'));
+        $this->assertEquals('140.40', $payment->getMaxCaptureAmount());
+
+        Config::inst()->remove('GatewayInfo', 'Dummy');
+        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => array(
+            'amount' => array(
+                'USD' => 80,
+                'EUR' => 70,
+                'TRY' => 224,
+                'GBP' => -10 // invalid value, should result in no increase
+            ),
+            'percent' => '20%'
+        )));
+
+        $this->assertEquals('144.00', $payment->getMaxCaptureAmount());
+        $payment->Status = 'Created';
+        $payment->MoneyAmount = '900.00';
+        $payment->Status = 'Authorized';
+        // should use the fixed increase from EUR and USD, since the percentage increase would exceed the fixed amount
+        $this->assertEquals('970.00', $payment->getMaxCaptureAmount());
+        $payment->MoneyCurrency = 'USD';
+        $this->assertEquals('980.00', $payment->getMaxCaptureAmount());
+
+        // should use the percent increase, since 0.2 of 900 won't exceed the fixed amount
+        $payment->MoneyCurrency = 'TRY';
+        $this->assertEquals('1080.00', $payment->getMaxCaptureAmount());
+
+        // no increase with invalid setting
+        $payment->MoneyCurrency = 'GBP';
+        $this->assertEquals('900.00', $payment->getMaxCaptureAmount());
+
+        // test with a small payment amount
+        $payment->Status = 'Created';
+        $payment->init('Dummy', '1.19', 'EUR');
+        $payment->Status = 'Authorized';
+        $this->assertEquals('1.42', $payment->getMaxCaptureAmount());
     }
 }

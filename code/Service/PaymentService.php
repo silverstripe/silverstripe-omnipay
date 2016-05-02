@@ -4,6 +4,7 @@ namespace SilverStripe\Omnipay\Service;
 
 use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Helper;
 use SilverStripe\Omnipay\PaymentGatewayController;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Exception\InvalidStateException;
@@ -93,7 +94,7 @@ abstract class PaymentService extends \Object
         if (!$this->payment->IsComplete()) {
             $this->payment->Status = 'Void';
             $this->payment->write();
-            $this->payment->extend('onCancelled');
+            Helper::safeExtend($this->payment, 'onCancelled');
         }
 
         return $this->generateServiceResponse(ServiceResponse::SERVICE_CANCELLED);
@@ -294,6 +295,44 @@ abstract class PaymentService extends \Object
     }
 
     /**
+     * Create a partial payment that will be based on the current payment.
+     * This new payment will inherit the Gateway, TransactionReference, SuccessUrl and FailureUrl
+     * of the initial payment.
+     * @param float $amount the amount that the partial payment should have
+     * @param string $status the desired payment status
+     * @param boolean $write whether or not to directly write the new Payment to DB (optional)
+     * @return \Payment the newly created payment (already written to the DB)
+     */
+    protected function createPartialPayment($amount, $status, $write = true)
+    {
+        /** @var \Payment $payment */
+        $payment = \Payment::create(array(
+            'Gateway' => $this->payment->Gateway,
+            'TransactionReference' => $this->payment->TransactionReference,
+            'SuccessUrl' => $this->payment->SuccessUrl,
+            'FailureUrl' => $this->payment->FailureUrl,
+            'InitialPaymentID' => $this->payment->ID
+        ));
+
+        $payment->setCurrency($this->payment->getCurrency());
+        $payment->setAmount($amount);
+
+        // set status later, because otherwise amount and currency become immutable
+        $payment->Status = $status;
+
+        // allow extensions to update/modify the partial payment
+        Helper::safeExtend($this, 'updatePartialPayment', $payment, $this->payment);
+
+        if ($write) {
+            Helper::safeguard(function () use (&$payment) {
+                $payment->write();
+            }, 'Unable to write newly created partial Payment!');
+        }
+
+        return $payment;
+    }
+
+    /**
      * Generate a service response
      * @param int $flags a combination of service flags
      * @param AbstractResponse|NotificationInterface|null $omnipayData the response or notification from the Omnipay gateway
@@ -319,7 +358,7 @@ abstract class PaymentService extends \Object
         }
 
         // Hook to update service response via extensions. This can be used to customize the service response
-        $this->extend('updateServiceResponse', $response);
+        Helper::safeExtend($this, 'updateServiceResponse', $response);
 
         return $response;
     }

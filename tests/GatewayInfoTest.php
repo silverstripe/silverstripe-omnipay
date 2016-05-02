@@ -45,9 +45,13 @@ class GatewayInfoTest extends SapphireTest
                 'name', 'number'
             ),
             'is_offsite' => true,
-            'allow_capture' => true,
-            'allow_refund' => false,
-            'allow_void' => false
+            'can_capture' => true,
+            'can_refund' => 'full',
+            'can_void' => false,
+            'max_capture' => array(
+                'percent' => '20',
+                'amount' => '60'
+            )
         ));
     }
 
@@ -300,27 +304,149 @@ class GatewayInfoTest extends SapphireTest
         );
     }
 
+    public function testMaxCapture()
+    {
+        // Without setting the config, the max Excess amount should always be 0
+        $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy'));
+        $this->assertEquals(0, GatewayInfo::maxExcessCapturePercent('Dummy'));
+
+        // Check existing configuration
+        $this->assertEquals(60, GatewayInfo::maxExcessCaptureAmount('PaymentExpress_PxPay'));
+        $this->assertEquals(20, GatewayInfo::maxExcessCapturePercent('PaymentExpress_PxPay'));
+
+        // set only max amount
+        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => '12'));
+
+        $this->assertEquals(12, GatewayInfo::maxExcessCaptureAmount('Dummy'));
+        $this->assertEquals(-1, GatewayInfo::maxExcessCapturePercent('Dummy'));
+
+        // set only percentage
+        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => '15%'));
+
+        $this->assertEquals(-1, GatewayInfo::maxExcessCaptureAmount('Dummy'));
+        $this->assertEquals(15, GatewayInfo::maxExcessCapturePercent('Dummy'));
+
+        // invalid values
+        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => '-1'));
+        $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy'));
+        $this->assertEquals(0, GatewayInfo::maxExcessCapturePercent('Dummy'));
+
+        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => '-20%'));
+        $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy'));
+        $this->assertEquals(0, GatewayInfo::maxExcessCapturePercent('Dummy'));
+
+        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => 'test'));
+        $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy'));
+        $this->assertEquals(0, GatewayInfo::maxExcessCapturePercent('Dummy'));
+
+        // both values
+        Config::inst()->remove('GatewayInfo', 'Dummy');
+        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => array(
+            'amount' => 80,
+            'percent' => 14
+        )));
+        $this->assertEquals(80, GatewayInfo::maxExcessCaptureAmount('Dummy'));
+        $this->assertEquals(14, GatewayInfo::maxExcessCapturePercent('Dummy'));
+
+        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => array(
+            'amount' => 60,
+            'percent' => '30%'
+        )));
+        $this->assertEquals(60, GatewayInfo::maxExcessCaptureAmount('Dummy'));
+        $this->assertEquals(30, GatewayInfo::maxExcessCapturePercent('Dummy'));
+
+        // invalid values
+        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => array(
+            'amount' => -30,
+            'percent' => '-10%'
+        )));
+        $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy'));
+        $this->assertEquals(0, GatewayInfo::maxExcessCapturePercent('Dummy'));
+
+        // Amount values per currency
+        Config::inst()->remove('GatewayInfo', 'Dummy');
+        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => array(
+            'amount' => array(
+                'USD' => 80,
+                'EUR' => '70%', // invalid value, should result in 0
+                'TRY' => 224,
+                'GBP' => -10 // invalid value, should result in 0
+            ),
+            'percent' => '20%'
+        )));
+        $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy'));
+        $this->assertEquals(80, GatewayInfo::maxExcessCaptureAmount('Dummy', 'USD'));
+        $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy', 'EUR'));
+        $this->assertEquals(224, GatewayInfo::maxExcessCaptureAmount('Dummy', 'TRY'));
+        $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy', 'GBP'));
+        $this->assertEquals(20, GatewayInfo::maxExcessCapturePercent('Dummy'));
+    }
+
     public function testAllowedMethods()
     {
         // a gateway without explicitly disabling void, capture and refund should allow per default
         $this->assertTrue(GatewayInfo::allowCapture('Dummy'));
+        $this->assertTrue(GatewayInfo::allowPartialCapture('Dummy'));
         $this->assertTrue(GatewayInfo::allowRefund('Dummy'));
+        $this->assertTrue(GatewayInfo::allowPartialRefund('Dummy'));
         $this->assertTrue(GatewayInfo::allowVoid('Dummy'));
 
         // check if the config is respected
         $this->assertTrue(GatewayInfo::allowCapture('PaymentExpress_PxPay'));
-        $this->assertFalse(GatewayInfo::allowRefund('PaymentExpress_PxPay'));
+        $this->assertTrue(GatewayInfo::allowPartialCapture('PaymentExpress_PxPay'));
+        $this->assertTrue(GatewayInfo::allowRefund('PaymentExpress_PxPay'));
+        $this->assertFalse(GatewayInfo::allowPartialRefund('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
 
-        // check with "truthy" and "falsy" values
+        // check with explicit values
         Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
-            'allow_capture' => '0',
-            'allow_refund' => '1',
-            'allow_void' => '1'
+            'can_capture' => 'full',
+            'can_refund' => 'off',
+            'can_void' => 'off'
+        ));
+
+        $this->assertTrue(GatewayInfo::allowCapture('PaymentExpress_PxPay'));
+        $this->assertFalse(GatewayInfo::allowPartialCapture('PaymentExpress_PxPay'));
+        $this->assertFalse(GatewayInfo::allowRefund('PaymentExpress_PxPay'));
+        $this->assertFalse(GatewayInfo::allowPartialRefund('PaymentExpress_PxPay'));
+        $this->assertFalse(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
+
+        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+            'can_capture' => 'partial',
+            'can_refund' => 'full',
+            'can_void' => 'false'
+        ));
+
+        $this->assertTrue(GatewayInfo::allowCapture('PaymentExpress_PxPay'));
+        $this->assertTrue(GatewayInfo::allowPartialCapture('PaymentExpress_PxPay'));
+        $this->assertTrue(GatewayInfo::allowRefund('PaymentExpress_PxPay'));
+        $this->assertFalse(GatewayInfo::allowPartialRefund('PaymentExpress_PxPay'));
+        $this->assertFalse(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
+
+        // check with true/false
+        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+            'can_capture' => false,
+            'can_refund' => true,
+            'can_void' => true
         ));
 
         $this->assertFalse(GatewayInfo::allowCapture('PaymentExpress_PxPay'));
+        $this->assertFalse(GatewayInfo::allowPartialCapture('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowRefund('PaymentExpress_PxPay'));
+        $this->assertTrue(GatewayInfo::allowPartialRefund('PaymentExpress_PxPay'));
+        $this->assertTrue(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
+
+        // check with "truthy" and "falsy" values
+        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+            'can_capture' => '0',
+            'can_refund' => '1',
+            'can_void' => '1'
+        ));
+
+        $this->assertFalse(GatewayInfo::allowCapture('PaymentExpress_PxPay'));
+        $this->assertFalse(GatewayInfo::allowPartialCapture('PaymentExpress_PxPay'));
+        $this->assertTrue(GatewayInfo::allowRefund('PaymentExpress_PxPay'));
+        $this->assertTrue(GatewayInfo::allowPartialRefund('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
     }
 }

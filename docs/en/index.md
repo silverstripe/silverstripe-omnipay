@@ -162,12 +162,14 @@ Capture messages
 
  * CaptureRequest
  * CapturedResponse
+ * PartiallyCapturedResponse
  * CaptureError
 
 Refund messages
 
  * RefundRequest
  * RefundedResponse
+ * PartiallyRefundedResponse
  * RefundError
 
 Void messages

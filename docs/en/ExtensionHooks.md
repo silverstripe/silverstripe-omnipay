@@ -18,6 +18,9 @@ Here's a list of all hooks available to extensions.
 ### PaymentService
 
  - `updateServiceResponse` every service response that is being generated from the different services will be passed through this callback. You'll get the `ServiceResponse` as parameter.
+ - `updatePartialPayment` whenever a partial payment is being generated "from" the main payment, this extension will be called. You'll get the new partial `Payment` as the first and the "original/parent" `Payment` as a second parameter.
+
+##### The `updateServiceResponse` hook
 
 Since the service-responses are crucial to a proper application-flow, you should be extremely careful when modifying a response!
 The most common use-case for a modification of the service-response is probably to return a proper response to a notification coming from your payment provider.
@@ -56,6 +59,18 @@ SilverStripe\Omnipay\Service\PaymentService:
   extensions:
     - NotifyResponseExtension
 ```
+
+##### The `updatePartialPayment` hook
+
+Partial payments (eg. partial refunds and partial captures) generate new Payment instances.
+These new payments will inherit the `Gateway`, `TransactionReference`, `SuccessUrl` and `FailureUrl` of the initial payment.
+
+You'll get the newly created Payment instance as parameter in the `updatePartialPayment` hook (right before it will be written to DB).
+The original Payment (eg. the "parent" payment) is passed as the second parameter to the extension hook.
+
+If you added custom properties to your Payment (eg. via Extension) it is your duty as developer to copy these to the newly created Payment, if necessary! 
+
+*Please do not tinker with the default fields of the Payment class, as further processing of the Payments depend on these values to be correct!*
 
 ### AuthorizeService
 

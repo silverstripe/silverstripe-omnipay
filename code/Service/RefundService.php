@@ -3,12 +3,16 @@
 namespace SilverStripe\Omnipay\Service;
 
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
+use SilverStripe\Omnipay\Exception\InvalidParameterException;
 use SilverStripe\Omnipay\Exception\MissingParameterException;
 use Omnipay\Common\Exception\OmnipayException;
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Helper;
+use SilverStripe\Omnipay\PaymentMath;
 
 class RefundService extends NotificationCompleteService
 {
+    protected $startState = 'Captured';
     protected $endState = 'Refunded';
     protected $pendingState = 'PendingRefund';
     protected $requestMessageType = 'RefundRequest';
@@ -18,13 +22,17 @@ class RefundService extends NotificationCompleteService
      * Return money to the previously charged credit card.
      *
      * If the transaction-reference of the payment to refund is known, pass it via $data as
-     * `transactionReference` parameter. Otherwise the service will try to look up the reference
-     * from previous payment messages.
-     *
+     * `transactionReference` parameter. Otherwise the service will look up the previous reference
+     * from the payment itself.
      * If there's no transaction-reference to be found, this method will raise an exception.
+     *
+     * You can issue partial refunds (if the gateway supports it) by passing an `amount` parameter in the $data
+     * array. If the amount given is not a number, or if it exceeds the total amount of the payment, an exception
+     * will be raised.
      *
      * @inheritdoc
      * @throws MissingParameterException if no transaction reference can be found from messages or parameters
+     * @throws InvalidParameterException if the amount parameter was invalid
      */
     public function initiate($data = array())
     {
@@ -60,10 +68,35 @@ class RefundService extends NotificationCompleteService
             );
         }
 
+        $amount = $this->payment->MoneyAmount;
+        $isPartial = false;
+
+        if (!empty($data['amount'])) {
+            $amount = $data['amount'];
+            if (!is_numeric($amount)) {
+                throw new InvalidParameterException('The "amount" parameter has to be numeric.');
+            }
+
+            if (!($amount > 0)) {
+                throw new InvalidParameterException('The "amount" parameter has to be positive.');
+            }
+
+            $compare = PaymentMath::compare($this->payment->MoneyAmount, $amount);
+            if ($compare === -1) {
+                throw new InvalidParameterException('The "amount" to refund cannot exceed the captured amount.');
+            }
+
+            $isPartial = $compare === 1;
+        }
+
+        if ($isPartial && !$this->payment->canRefund(true)) {
+            throw new InvalidParameterException('This payment cannot be partially refunded (unsupported by gateway).');
+        }
+
         $gatewayData = array_merge(
             $data,
             array(
-                'amount' => (float)$this->payment->MoneyAmount,
+                'amount' => (float)$amount,
                 'currency' => $this->payment->MoneyCurrency,
                 'transactionReference' => $reference,
                 'notifyUrl' => $this->getEndpointUrl('notify')
@@ -84,17 +117,23 @@ class RefundService extends NotificationCompleteService
             return $this->generateServiceResponse(ServiceResponse::SERVICE_ERROR);
         }
 
-        $this->extend('onAfterSendRefund', $request, $response);
+        Helper::safeExtend($this, 'onAfterSendRefund', $request, $response);
 
         $serviceResponse = $this->wrapOmnipayResponse($response);
 
         if ($serviceResponse->isAwaitingNotification()) {
+            if ($isPartial) {
+                $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
+            }
             $this->payment->Status = $this->pendingState;
             $this->payment->write();
         } else {
             if ($serviceResponse->isError()) {
                 $this->createMessage($this->errorMessageType, $response);
             } else {
+                if ($isPartial) {
+                    $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
+                }
                 $this->markCompleted($this->endState, $serviceResponse, $response);
             }
         }
@@ -104,8 +143,43 @@ class RefundService extends NotificationCompleteService
 
     protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
     {
+        // Get partial payments
+        $partials = $this->payment->getPartialPayments()->filter('Status', $this->pendingState);
+
+        if ($partials->count() > 0) {
+            $i = 0;
+            $total = $this->payment->MoneyAmount;
+            foreach ($partials as $payment) {
+                // only the first, eg. most recent payment should be considered valid. All others should be set to void
+                if ($i === 0) {
+                    $total = PaymentMath::add($total, $payment->MoneyAmount);
+                    $payment->Status = 'Created';
+                    $payment->setAmount(PaymentMath::multiply($payment->MoneyAmount, '-1'));
+                    $payment->Status = 'Refunded';
+                } else {
+                    $payment->Status = 'Void';
+                }
+                $payment->write();
+                $i++;
+            }
+
+            // Ugly hack to set the money amount
+            $this->payment->Status = 'Created';
+            $this->payment->setAmount($total);
+
+            // If not everything was refunded, the payment should still have the "Captured" status
+            if ($total > 0) {
+                $endStatus = 'Captured';
+            }
+        }
+
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
-        $this->createMessage('RefundedResponse', $gatewayMessage);
-        $this->payment->extend('onRefunded', $serviceResponse);
+        if ($endStatus === 'Captured') {
+            $this->createMessage('PartiallyRefundedResponse', $gatewayMessage);
+        } else {
+            $this->createMessage('RefundedResponse', $gatewayMessage);
+        }
+
+        Helper::safeExtend($this->payment, 'onRefunded', $serviceResponse);
     }
 }

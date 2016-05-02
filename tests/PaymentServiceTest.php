@@ -42,10 +42,20 @@ class PaymentServiceTest extends PaymentTest
 
         $gateway = $this->service->oGateway();
         $this->assertEquals($gateway->getShortName(), 'PaymentExpress_PxPay');
-        $this->assertEquals($gateway->getParameters(), array(
+
+        $expectedParams = array(
             'username' => 'EXAMPLEUSER',
             'password' => '235llgwxle4tol23l'
-        ));
+        );
+
+        $this->assertEquals(
+            // the gateway might return more parameters, but it should at least contain the expected params
+            array_intersect_assoc($gateway->getParameters(), $expectedParams),
+            $expectedParams
+        );
+
+        // The dummy parameter should not be in there
+        $this->assertNotContains('DummyParameter', array_keys($gateway->getParameters()));
     }
 
     // Test a successful notification

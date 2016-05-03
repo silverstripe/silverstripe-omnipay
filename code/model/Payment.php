@@ -361,6 +361,16 @@ final class Payment extends DataObject implements PermissionProvider
             return false;
         }
 
+        if ($this->isInDB()) {
+            // Check if there are partial captures and deny further captures if multiple captures aren't enabled
+            $hasPartials = $this->getPartialPayments()
+                    ->filter('Status', array('Captured', 'PendingCapture'))
+                    ->count() > 0;
+            if ($hasPartials && GatewayInfo::captureMode($this->Gateway) !== GatewayInfo::MULTIPLE) {
+                return false;
+            }
+        }
+
         $extended = $this->extendedCan('canCapture', $member);
         if ($extended !== null) {
             return $extended;
@@ -401,6 +411,16 @@ final class Payment extends DataObject implements PermissionProvider
             ($partial ? GatewayInfo::allowPartialRefund($this->Gateway) : GatewayInfo::allowRefund($this->Gateway))
         )) {
             return false;
+        }
+
+        if ($this->isInDB()) {
+            // Check if there are partial refunds and deny further refunds if multiple refunds aren't enabled
+            $hasPartials = $this->getPartialPayments()
+                    ->filter('Status', array('Refunded', 'PendingRefund'))
+                    ->count() > 0;
+            if ($hasPartials && GatewayInfo::refundMode($this->Gateway) !== GatewayInfo::MULTIPLE) {
+                return false;
+            }
         }
 
         $extended = $this->extendedCan('canRefund', $member);

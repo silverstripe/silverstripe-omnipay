@@ -387,16 +387,20 @@ class GatewayInfoTest extends SapphireTest
         // a gateway without explicitly disabling void, capture and refund should allow per default
         $this->assertTrue(GatewayInfo::allowCapture('Dummy'));
         $this->assertTrue(GatewayInfo::allowPartialCapture('Dummy'));
+        $this->assertEquals(GatewayInfo::PARTIAL, GatewayInfo::captureMode('Dummy'));
         $this->assertTrue(GatewayInfo::allowRefund('Dummy'));
         $this->assertTrue(GatewayInfo::allowPartialRefund('Dummy'));
+        $this->assertEquals(GatewayInfo::PARTIAL, GatewayInfo::refundMode('Dummy'));
         $this->assertTrue(GatewayInfo::allowVoid('Dummy'));
 
         // check if the config is respected
         $this->assertTrue(GatewayInfo::allowCapture('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowPartialCapture('PaymentExpress_PxPay'));
+        $this->assertEquals(GatewayInfo::PARTIAL, GatewayInfo::captureMode('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowRefund('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowPartialRefund('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
+        $this->assertEquals(GatewayInfo::FULL, GatewayInfo::refundMode('PaymentExpress_PxPay'));
 
         // check with explicit values
         Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
@@ -407,20 +411,24 @@ class GatewayInfoTest extends SapphireTest
 
         $this->assertTrue(GatewayInfo::allowCapture('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowPartialCapture('PaymentExpress_PxPay'));
+        $this->assertEquals(GatewayInfo::FULL, GatewayInfo::captureMode('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowRefund('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowPartialRefund('PaymentExpress_PxPay'));
+        $this->assertEquals(GatewayInfo::OFF, GatewayInfo::refundMode('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
 
         Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
-            'can_capture' => 'partial',
+            'can_capture' => 'multiple',
             'can_refund' => 'full',
             'can_void' => 'false'
         ));
 
         $this->assertTrue(GatewayInfo::allowCapture('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowPartialCapture('PaymentExpress_PxPay'));
+        $this->assertEquals(GatewayInfo::MULTIPLE, GatewayInfo::captureMode('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowRefund('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowPartialRefund('PaymentExpress_PxPay'));
+        $this->assertEquals(GatewayInfo::FULL, GatewayInfo::refundMode('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
 
         // check with true/false
@@ -432,8 +440,10 @@ class GatewayInfoTest extends SapphireTest
 
         $this->assertFalse(GatewayInfo::allowCapture('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowPartialCapture('PaymentExpress_PxPay'));
+        $this->assertEquals(GatewayInfo::OFF, GatewayInfo::captureMode('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowRefund('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowPartialRefund('PaymentExpress_PxPay'));
+        $this->assertEquals(GatewayInfo::PARTIAL, GatewayInfo::refundMode('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
 
         // check with "truthy" and "falsy" values
@@ -445,8 +455,10 @@ class GatewayInfoTest extends SapphireTest
 
         $this->assertFalse(GatewayInfo::allowCapture('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowPartialCapture('PaymentExpress_PxPay'));
+        $this->assertEquals(GatewayInfo::OFF, GatewayInfo::captureMode('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowRefund('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowPartialRefund('PaymentExpress_PxPay'));
+        $this->assertEquals(GatewayInfo::PARTIAL, GatewayInfo::refundMode('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
     }
 }

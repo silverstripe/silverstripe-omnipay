@@ -175,6 +175,8 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('Captured', $payment->Status);
         // the original payment should now have less balance
         $this->assertEquals('669.00', $payment->MoneyAmount);
+        // payment can no longer be refunded (as multiple refunds are disabled by default)
+        $this->assertFalse($payment->canRefund(null, true));
 
         // check existance of messages and existence of references
         $this->assertDOSContains(array(
@@ -204,6 +206,57 @@ class RefundServiceTest extends BaseNotificationServiceTest
             array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment')),
             $service->getExtensionInstance('PaymentTest_ServiceExtensionHooks')->getCalledMethods()
         );
+    }
+
+    public function testMultiplePartialRefunds()
+    {
+        // load a captured payment from fixture
+        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+
+        // allow multiple partial captures
+        Config::inst()->update('GatewayInfo', $payment->Gateway, array(
+            'can_refund' => 'multiple'
+        ));
+
+        $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
+        // register our mock gateway factory as injection
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+
+        $service = $this->getService($payment);
+
+        // We do a partial refund
+        $service->initiate(array('amount' => '100.50'));
+
+        // there should be a new partial payment
+        $this->assertEquals(1, $payment->getPartialPayments()->count());
+
+        $partialPayment = $payment->getPartialPayments()->first();
+        $this->assertEquals('Refunded', $partialPayment->Status);
+        $this->assertEquals('100.50', $partialPayment->MoneyAmount);
+
+        // check payment status. It should still be captured, as it's not fully refunded
+        $this->assertEquals('Captured', $payment->Status);
+        // the original payment should now have less balance
+        $this->assertEquals('669.00', $payment->MoneyAmount);
+        // payment can still be refunded (as multiple refunds were enabled)
+        $this->assertTrue($payment->canRefund(null, true));
+
+        // refund some more
+        $service->initiate(array('amount' => '569'));
+
+        $partialPayment = $payment->getPartialPayments()->first();
+        $this->assertEquals('Refunded', $partialPayment->Status);
+        $this->assertEquals('569.00', $partialPayment->MoneyAmount);
+
+        $this->assertEquals('Captured', $payment->Status);
+        $this->assertEquals('100.00', $payment->MoneyAmount);
+        $this->assertTrue($payment->canRefund(null, true));
+
+        // refund the rest
+        $service->initiate(array('amount' => '100.00'));
+        $this->assertEquals('Refunded', $payment->Status);
+        $this->assertEquals('100.00', $payment->MoneyAmount);
+        $this->assertFalse($payment->canRefund(null, true));
     }
 
     public function testPartialRefundViaNotification()

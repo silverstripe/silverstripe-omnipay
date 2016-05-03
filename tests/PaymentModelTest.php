@@ -131,76 +131,90 @@ class PaymentModelTest extends PaymentTest
 
     public function testCanCapture()
     {
+        $this->logInWithPermission('CAPTURE_PAYMENTS');
+
         $payment = Payment::create()->init('Manual', 120, 'EUR');
 
         // cannot capture new payment
         $this->assertFalse($payment->canCapture());
-        $this->assertFalse($payment->canCapture(true));
+        $this->assertFalse($payment->canCapture(null, true));
 
         $payment->Status = 'Authorized';
 
         $this->assertTrue($payment->canCapture());
-        $this->assertTrue($payment->canCapture(true));
+        $this->assertTrue($payment->canCapture(null, true));
 
         Config::inst()->update('GatewayInfo', 'Manual', array(
             'can_capture' => false
         ));
 
         $this->assertFalse($payment->canCapture());
-        $this->assertFalse($payment->canCapture(true));
+        $this->assertFalse($payment->canCapture(null, true));
 
         Config::inst()->update('GatewayInfo', 'Manual', array(
             'can_capture' => 'full'
         ));
 
         $this->assertTrue($payment->canCapture());
-        $this->assertFalse($payment->canCapture(true));
+        $this->assertFalse($payment->canCapture(null, true));
 
         Config::inst()->update('GatewayInfo', 'Manual', array(
             'can_capture' => 'partial'
         ));
 
         $this->assertTrue($payment->canCapture());
-        $this->assertTrue($payment->canCapture(true));
+        $this->assertTrue($payment->canCapture(null, true));
+
+        // Login with some other permission
+        $this->logInWithPermission('SOME_OTHER_PERMISSION');
+        $this->assertFalse($payment->canCapture());
+        $this->assertFalse($payment->canCapture(null, true));
     }
 
     public function testCanRefund()
     {
+        $this->logInWithPermission('REFUND_PAYMENTS');
         $payment = Payment::create()->init('Manual', 120, 'EUR');
 
         // cannot refund new payment
         $this->assertFalse($payment->canRefund());
-        $this->assertFalse($payment->canRefund(true));
+        $this->assertFalse($payment->canRefund(null, true));
 
         $payment->Status = 'Captured';
 
         $this->assertTrue($payment->canRefund());
-        $this->assertTrue($payment->canRefund(true));
+        $this->assertTrue($payment->canRefund(null, true));
 
         Config::inst()->update('GatewayInfo', 'Manual', array(
             'can_refund' => false
         ));
 
         $this->assertFalse($payment->canRefund());
-        $this->assertFalse($payment->canRefund(true));
+        $this->assertFalse($payment->canRefund(null, true));
 
         Config::inst()->update('GatewayInfo', 'Manual', array(
             'can_refund' => 'full'
         ));
 
         $this->assertTrue($payment->canRefund());
-        $this->assertFalse($payment->canRefund(true));
+        $this->assertFalse($payment->canRefund(null, true));
 
         Config::inst()->update('GatewayInfo', 'Manual', array(
             'can_refund' => 'partial'
         ));
 
         $this->assertTrue($payment->canRefund());
-        $this->assertTrue($payment->canRefund(true));
+        $this->assertTrue($payment->canRefund(null, true));
+
+        // Login with some other permission
+        $this->logInWithPermission('SOME_OTHER_PERMISSION');
+        $this->assertFalse($payment->canRefund());
+        $this->assertFalse($payment->canRefund(null, true));
     }
 
     public function testCanVoid()
     {
+        $this->logInWithPermission('VOID_PAYMENTS');
         $payment = Payment::create()->init('Manual', 120, 'EUR');
 
         // cannot void new payment
@@ -221,6 +235,10 @@ class PaymentModelTest extends PaymentTest
         ));
 
         $this->assertTrue($payment->canVoid());
+
+        // Login with some other permission
+        $this->logInWithPermission('SOME_OTHER_PERMISSION');
+        $this->assertFalse($payment->canVoid());
     }
 
     public function testMaxCaptureAmount()

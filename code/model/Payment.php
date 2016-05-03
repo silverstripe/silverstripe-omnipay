@@ -11,7 +11,7 @@ use SilverStripe\Omnipay\PaymentMath;
  *
  * @package payment
  */
-final class Payment extends DataObject
+final class Payment extends DataObject implements PermissionProvider
 {
     private static $db = array(
         // this is the omnipay 'short name'
@@ -347,38 +347,108 @@ final class Payment extends DataObject
 
     /**
      * Whether or not this payment can be captured
+     * @param Member|int $member the member/memberID to check permissions on
      * @param boolean $partial check if payment can be partially captured. Defaults to false
      * @return bool
      */
-    public function canCapture($partial = false)
+    public function canCapture($member = null, $partial = false)
     {
-        return (
-            $this->Status == 'Authorized' && ($partial
-                ? GatewayInfo::allowPartialCapture($this->Gateway)
-                : GatewayInfo::allowCapture($this->Gateway))
-        );
+        // premise
+        if (!(
+            $this->Status === 'Authorized' &&
+            ($partial ? GatewayInfo::allowPartialCapture($this->Gateway) : GatewayInfo::allowCapture($this->Gateway))
+        )) {
+            return false;
+        }
+
+        $extended = $this->extendedCan('canCapture', $member);
+        if ($extended !== null) {
+            return $extended;
+        }
+
+        return Permission::check('CAPTURE_PAYMENTS', 'any', $member);
     }
 
     /**
      * Whether or not this payment can be voided
+     * @param Member|int $member the member/memberID to check permissions on
      * @return bool
      */
-    public function canVoid()
+    public function canVoid($member = null)
     {
-        return ($this->Status == 'Authorized' && GatewayInfo::allowVoid($this->Gateway));
+        if (!($this->Status == 'Authorized' && GatewayInfo::allowVoid($this->Gateway))) {
+            return false;
+        }
+
+        $extended = $this->extendedCan('canVoid', $member);
+        if ($extended !== null) {
+            return $extended;
+        }
+
+        return Permission::check('VOID_PAYMENTS', 'any', $member);
     }
 
     /**
      * Whether or not this payment can be refunded
+     * @param Member|int $member the member/memberID to check permissions on
      * @param boolean $partial check if payment can be partially refunded. Defaults to false
      * @return bool
      */
-    public function canRefund($partial = false)
+    public function canRefund($member = null, $partial = false)
     {
-        return (
-            $this->Status == 'Captured' && ($partial
-                ? GatewayInfo::allowPartialRefund($this->Gateway)
-                : GatewayInfo::allowRefund($this->Gateway))
+        if (!(
+            $this->Status == 'Captured' &&
+            ($partial ? GatewayInfo::allowPartialRefund($this->Gateway) : GatewayInfo::allowRefund($this->Gateway))
+        )) {
+            return false;
+        }
+
+        $extended = $this->extendedCan('canRefund', $member);
+        if ($extended !== null) {
+            return $extended;
+        }
+
+        return Permission::check('REFUND_PAYMENTS', 'any', $member);
+    }
+
+    /**
+     * Provide payment related permissions. The permissions are:
+     * * `REFUND_PAYMENTS` can refund payments
+     * * `CAPTURE_PAYMENTS` can capture payments
+     * * `VOID_PAYMENTS` can void payments
+     * @inheritdoc
+     * @return array
+     */
+    public function providePermissions()
+    {
+        return array(
+            'REFUND_PAYMENTS' => array(
+                'name' => _t('Payment.PERMISSION_REFUND_PAYMENTS', 'Refund payments'),
+                'help' => _t(
+                    'Payment.PERMISSION_REFUND_PAYMENTS_HELP',
+                    'Allow refunding of captured payments'
+                ),
+                'category' => _t('Payment.PAYMENT_PERMISSIONS', 'Payment actions'),
+                'sort' => 200
+            ),
+            'CAPTURE_PAYMENTS' => array(
+                'name' => _t('Payment.PERMISSION_CAPTURE_PAYMENTS', 'Capture payments'),
+                'help' => _t(
+                    'Payment.PERMISSION_CAPTURE_PAYMENTS_HELP',
+                    'Allow capturing of authorized payments'
+                ),
+                'category' => _t('Payment.PAYMENT_PERMISSIONS', 'Payment actions'),
+                'sort' => 200
+            ),
+            'VOID_PAYMENTS' => array(
+                'name' => _t('Payment.PERMISSION_VOID_PAYMENTS', 'Void payments'),
+                'help' => _t(
+                    'Payment.PERMISSION_VOID_PAYMENTS_HELP',
+                    'Allow voiding of authorized payments'
+                ),
+                'category' => _t('Payment.PAYMENT_PERMISSIONS', 'Payment actions'),
+                'sort' => 200
+            )
         );
     }
 

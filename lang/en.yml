@@ -25,6 +25,13 @@ en:
     db_Money: Money
     db_Status: Status
     has_many_Messages: Messages
+    PAYMENT_PERMISSIONS: 'Payment actions'
+    PERMISSION_REFUND_PAYMENTS: 'Refund payments'
+    PERMISSION_REFUND_PAYMENTS_HELP: 'Allow refunding of captured payments'
+    PERMISSION_CAPTURE_PAYMENTS: 'Capture payments'
+    PERMISSION_CAPTURE_PAYMENTS_HELP: 'Allow capturing of authorized payments'
+    PERMISSION_VOID_PAYMENTS: 'Void payments'
+    PERMISSION_VOID_PAYMENTS_HELP: 'Allow voiding of authorized payments'
   PaymentForm:
     BillingAddress1: Address
     BillingAddress2: 'Address line 2'

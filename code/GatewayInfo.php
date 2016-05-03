@@ -29,9 +29,9 @@ use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
  * * `required_fields` *array*: An array of required form-fields
  * * `parameters` *map*: All gateway parameters that will be passed along to the Omnipay Gateway instance
  * * `can_capture` *string|boolean*: Set how/if authorized payments can be captured. Defaults to "partial"
- *      Valid values are "off" or `false` (capturing disabled), "full" (can only capture full amounts), "partial" or `true` (can capture partially)
+ *      Valid values are "off" or `false` (capturing disabled), "full" (can only capture full amounts), "partial" or `true` (can capture partially) and "multiple" which allows multiple partial captures.
  * * `can_refund` *string|boolean*: Set how/if captured payments can be refunded. Defaults to "partial"
- *      Valid values are "off" or `false` (refunding disabled), "full" (can only refund full amounts), "partial" or `true` (can refund partially)
+ *      Valid values are "off" or `false` (refunding disabled), "full" (can only refund full amounts), "partial" or `true` (can refund partially) and "multiple" which allows multiple partial refunds.
  * * `can_void` *boolean*: Whether or not voiding of authorized payments should be allowed. Defaults to true.
  * * `max_capture` *mixed*: configuration for excess capturing of authorized amounts.
  *
@@ -64,6 +64,7 @@ class GatewayInfo
     const OFF = 'off';
     const FULL = 'full';
     const PARTIAL = 'partial';
+    const MULTIPLE = 'multiple';
 
     /**
      * Config accessor
@@ -236,6 +237,17 @@ class GatewayInfo
     }
 
     /**
+     * The can_capture config setting for the given Gateway
+     *
+     * @param string $gateway the gateway name
+     * @return string "off", "full", "partial" or "multiple"
+     */
+    public static function captureMode($gateway)
+    {
+        return self::configToConstant($gateway, 'can_capture');
+    }
+
+    /**
      * Whether or not the given gateway should allow capturing of payments
      * @param string $gateway the gateway name
      * @return bool
@@ -252,7 +264,10 @@ class GatewayInfo
      */
     public static function allowPartialCapture($gateway)
     {
-        return self::configToConstant($gateway, 'can_capture') === self::PARTIAL;
+        return (
+            self::configToConstant($gateway, 'can_capture') === self::PARTIAL
+            || self::configToConstant($gateway, 'can_capture') === self::MULTIPLE
+        );
     }
 
     /**
@@ -347,6 +362,17 @@ class GatewayInfo
     }
 
     /**
+     * The can_refund config setting for the given Gateway
+     *
+     * @param string $gateway the gateway name
+     * @return string "off", "full", "partial" or "multiple"
+     */
+    public static function refundMode($gateway)
+    {
+        return self::configToConstant($gateway, 'can_refund');
+    }
+
+    /**
      * Whether or not the given gateway should allow refunding of payments
      * @param string $gateway the gateway name
      * @return bool
@@ -363,7 +389,10 @@ class GatewayInfo
      */
     public static function allowPartialRefund($gateway)
     {
-        return self::configToConstant($gateway, 'can_refund') === self::PARTIAL;
+        return (
+            self::configToConstant($gateway, 'can_refund') === self::PARTIAL
+            || self::configToConstant($gateway, 'can_refund') === self::MULTIPLE
+        );
     }
 
     /**
@@ -462,10 +491,10 @@ class GatewayInfo
 
     /**
      * Helper method to convert a config setting to a predefined constant for values that can have the three states:
-     * OFF, FULL or PARTIAL
+     * OFF, FULL, PARTIAL or MULTIPLE
      * @param string $gateway the gateway name
      * @param string $key the config key
-     * @return string either "off", "full" or "partial"
+     * @return string either "off", "full", "partial" or "multiple"
      */
     protected static function configToConstant($gateway, $key)
     {
@@ -480,6 +509,10 @@ class GatewayInfo
 
         if ($value === 'full') {
             return self::FULL;
+        }
+
+        if ($value === 'multiple') {
+            return self::MULTIPLE;
         }
 
         return self::PARTIAL;

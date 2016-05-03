@@ -159,7 +159,7 @@ class CaptureService extends NotificationCompleteService
 
         if ($partials->count() > 0) {
             $i = 0;
-            $total = $this->payment->MoneyAmount;
+            $total = $originalTotal = $this->payment->MoneyAmount;
             foreach ($partials as $payment) {
                 // only the first, eg. most recent payment should be considered valid. All others should be set to void
                 if ($i === 0) {
@@ -169,8 +169,11 @@ class CaptureService extends NotificationCompleteService
                     if ($payment->MoneyAmount < 0) {
                         $payment->Status = 'Created';
                         $payment->setAmount(PaymentMath::multiply($payment->MoneyAmount, '-1'));
+                        $payment->Status = 'Captured';
+                    } else {
+                        // void excess amounts
+                        $payment->Status = 'Void';
                     }
-                    $payment->Status = 'Captured';
                 } else {
                     $payment->Status = 'Void';
                 }
@@ -178,20 +181,24 @@ class CaptureService extends NotificationCompleteService
                 $i++;
             }
 
-            // If not everything was captured (partial), the payment should still have the "Authorized" status
-            if ($total > 0 && $total < $this->payment->MoneyAmount) {
-                // Ugly hack to set the money amount
-                $this->payment->Status = 'Created';
-                $this->payment->setAmount($total);
-                $endStatus = 'Authorized';
+            // Ugly hack to set the money amount
+            $this->payment->Status = 'Created';
+            $this->payment->setAmount($total);
+
+            // If not everything was captured (partial),
+            // the payment should be refunded or still Authorized (in case multiple captures are possible)
+            if ($total > 0 && $total < $originalTotal) {
+                $endStatus = GatewayInfo::captureMode($this->payment->Gateway) === GatewayInfo::MULTIPLE
+                    ? 'Authorized'
+                    : 'Refunded';
             }
         }
 
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
-        if ($endStatus === 'Authorized') {
-            $this->createMessage('PartiallyCapturedResponse', $gatewayMessage);
-        } else {
+        if ($endStatus === 'Captured') {
             $this->createMessage('CapturedResponse', $gatewayMessage);
+        } else {
+            $this->createMessage('PartiallyCapturedResponse', $gatewayMessage);
         }
 
         Helper::safeExtend($this->payment, 'onCaptured', $serviceResponse);

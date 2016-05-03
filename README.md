@@ -81,8 +81,8 @@ Each Gateway can have the following settings:
 | `required_fields`        | *array*          | An array of required form-fields
 | `parameters`             | *map*            | All gateway parameters that will be passed along to the Omnipay Gateway instance
 | `is_offsite`             | *boolean*        | You can explicitly mark this gateway as being offsite. Use with caution and only if the system fails to automatically determine this
-| `can_capture`            | *boolean/string* | Set how/if authorized payments can be captured. Defaults to "partial". Valid values are "off" or `false` (capturing disabled), "full" (can only capture full amounts), "partial" or `true` (can capture partially)
-| `can_refund`             | *boolean/string* | Set how/if captured payments can be refunded. Defaults to "partial". Valid values are "off" or `false` (refunding disabled), "full" (can only refund full amounts), "partial" or `true` (can refund partially)
+| `can_capture`            | *boolean/string* | Set how/if authorized payments can be captured. Defaults to "partial". Valid values are "off" or `false` (capturing disabled), "full" (can only capture full amounts), "partial" or `true` (can capture partially) and "multiple" which allows multiple partial captures.
+| `can_refund`             | *boolean/string* | Set how/if captured payments can be refunded. Defaults to "partial". Valid values are "off" or `false` (refunding disabled), "full" (can only refund full amounts), "partial" or `true` (can refund partially) and "multiple" which allows multiple partial refunds.
 | `can_void`               | *boolean*        | Whether or not voiding of authorized payments should be allowed. Defaults to *true*
 | `max_capture`            | *mixed*          | Configuration for excess capturing of authorized amounts. See the **max_capture** section further below.
 
@@ -162,7 +162,7 @@ GatewayInfo:
 GatewayInfo:
   PayPal_Express:
     # configure both percentage and a fixed max. amount
-    max_capture: 
+    max_capture:
       percent: 15
       amount: 75
 ```
@@ -173,7 +173,7 @@ The example above models the PayPal example with 115%, capped at USD $75. The am
 GatewayInfo:
   PayPal_Express:
     # configure both percentage and a fixed max. amount per currency
-    max_capture: 
+    max_capture:
       percent: 15
       amount:
         USD: 75

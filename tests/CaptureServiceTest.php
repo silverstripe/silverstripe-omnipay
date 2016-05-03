@@ -174,12 +174,12 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // the partial payment should be the excess amount
         $partialPayment = $payment->getPartialPayments()->first();
-        $this->assertEquals('Captured', $partialPayment->Status);
+        $this->assertEquals('Void', $partialPayment->Status);
         $this->assertEquals('12.35', $partialPayment->MoneyAmount);
 
         // check payment status
         $this->assertEquals($payment->Status, $this->endStatus, 'Payment status should be set to ' . $this->endStatus);
-        $this->assertEquals('123.45', $payment->MoneyAmount);
+        $this->assertEquals('135.80', $payment->MoneyAmount);
 
         // check existance of messages and existence of references
         $this->assertDOSContains($this->successFromFixtureMessages, $payment->Messages());
@@ -252,11 +252,11 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // Status should be captured
         $this->assertEquals('Captured', $payment->Status);
-        $this->assertEquals('123.45', $payment->MoneyAmount);
+        $this->assertEquals('148.14', $payment->MoneyAmount);
 
-        // the partial payment should no longer be pending
+        // the partial payment should be void
         $partialPayment = $payment->getPartialPayments()->first();
-        $this->assertEquals('Captured', $partialPayment->Status);
+        $this->assertEquals('Void', $partialPayment->Status);
         $this->assertEquals('24.69', $partialPayment->MoneyAmount);
 
         // check existance of messages
@@ -310,10 +310,12 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('Captured', $partialPayment->Status);
         $this->assertEquals('23.45', $partialPayment->MoneyAmount);
 
-        // check payment status. It should still be authorized, as it's not fully captured
-        $this->assertEquals('Authorized', $payment->Status);
+        // check payment status. It should be refunded, as the remaining amount wasn't captured
+        $this->assertEquals('Refunded', $payment->Status);
         // the original payment should now have less balance
         $this->assertEquals('100.00', $payment->MoneyAmount);
+        // Payment can no longer be captured
+        $this->assertFalse($payment->canCapture(null, true));
 
         // check existance of messages and existence of references
         $this->assertDOSContains(array(
@@ -345,6 +347,56 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         );
     }
 
+    public function testMultiplePartialCaptures()
+    {
+        // load an authorized payment from fixture
+        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+
+        // allow multiple captures
+        Config::inst()->update('GatewayInfo', $payment->Gateway, array(
+            'can_capture' => 'multiple'
+        ));
+
+        $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
+        // register our mock gateway factory as injection
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+
+        $service = $this->getService($payment);
+
+        // We do a partial capture
+        $service->initiate(array('amount' => '23.45'));
+
+        // there should be a new partial payment
+        $this->assertEquals(1, $payment->getPartialPayments()->count());
+
+        $partialPayment = $payment->getPartialPayments()->first();
+        $this->assertEquals('Captured', $partialPayment->Status);
+        $this->assertEquals('23.45', $partialPayment->MoneyAmount);
+
+        // check payment status. It should be Authorized, as not everything was captured
+        $this->assertEquals('Authorized', $payment->Status);
+        // the original payment should now have less balance
+        $this->assertEquals('100.00', $payment->MoneyAmount);
+
+
+        // We do another partial capture
+        $service->initiate(array('amount' => '90.00'));
+
+        // there should be a new partial payment
+        $partialPayment = $payment->getPartialPayments()->first();
+        $this->assertEquals('Captured', $partialPayment->Status);
+        $this->assertEquals('90.00', $partialPayment->MoneyAmount);
+
+        $this->assertEquals('Authorized', $payment->Status);
+        $this->assertEquals('10.00', $payment->MoneyAmount);
+
+        // We do another partial capture for the remaining amount. Here, there's no partial payment involved.
+        $service->initiate(array('amount' => '10.00'));
+        $this->assertEquals('Captured', $payment->Status);
+        $this->assertEquals('10.00', $payment->MoneyAmount);
+        $this->assertFalse($payment->canCapture(null, true));
+    }
+
     public function testPartialCaptureViaNotification()
     {
         // load a payment from fixture
@@ -352,7 +404,8 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // use notification on the gateway
         Config::inst()->update('GatewayInfo', $payment->Gateway, array(
-            'use_async_notification' => true
+            'use_async_notification' => true,
+            'can_capture' => 'multiple'
         ));
 
         $stubGateway = $this->buildPaymentGatewayStub(false, $this->fixtureReceipt);
@@ -392,7 +445,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         // we'll have to "reload" the payment from the DB now
         $payment = Payment::get()->byID($payment->ID);
 
-        // Status should still be authorized
+        // Status should still be authorized, as we allow multiple captures
         $this->assertEquals('Authorized', $payment->Status);
         // the payment balance is reduced to 23.00
         $this->assertEquals('23.00', $payment->MoneyAmount);
@@ -401,6 +454,9 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $partialPayment = $payment->getPartialPayments()->first();
         $this->assertEquals('Captured', $partialPayment->Status);
         $this->assertEquals('100.45', $partialPayment->MoneyAmount);
+
+        // multiple payments are enabled, thus capturing should still be possible
+        $this->assertTrue($payment->canCapture(null, true));
 
         // check existance of messages
         $this->assertDOSContains(array(

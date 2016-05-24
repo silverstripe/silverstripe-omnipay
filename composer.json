@@ -17,5 +17,8 @@
     },
 	"extra": {
 		"installer-name": "omnipay"
-	}
+	},
+    "suggest": {
+        "bummzack/silverstripe-omnipay-ui": "Adds UI Components to manage payments in the SilverStripe CMS."
+    }
 }

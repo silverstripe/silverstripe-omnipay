@@ -33,42 +33,6 @@ class PayableTest extends SapphireTest
     }
 
     /**
-     * Test the CMS fields added via extension
-     */
-    public function testCMSFields()
-    {
-        $order = new Test_Order();
-        $fields = $order->getCMSFields();
-
-        $this->assertTrue($fields->hasTabSet());
-
-        /** @var GridField $gridField */
-        $gridField = $fields->fieldByName('Root.Payments.Payments');
-
-        $this->assertInstanceOf('GridField', $gridField);
-
-        // Check the actions/buttons that should be in place
-        $this->assertNotNull($gridField->getConfig()->getComponentByType(
-            'GridFieldEditButton'
-        ));
-        $this->assertNotNull($gridField->getConfig()->getComponentByType(
-            'SilverStripe\Omnipay\Admin\GridField\GridFieldCaptureAction'
-        ));
-        $this->assertNotNull($gridField->getConfig()->getComponentByType(
-            'SilverStripe\Omnipay\Admin\GridField\GridFieldRefundAction'
-        ));
-        $this->assertNotNull($gridField->getConfig()->getComponentByType(
-            'SilverStripe\Omnipay\Admin\GridField\GridFieldVoidAction'
-        ));
-
-        // check the actions buttons that should be removed
-        $this->assertNull($gridField->getConfig()->getComponentByType('GridFieldAddNewButton'));
-        $this->assertNull($gridField->getConfig()->getComponentByType('GridFieldDeleteAction'));
-        $this->assertNull($gridField->getConfig()->getComponentByType('GridFieldFilterHeader'));
-        $this->assertNull($gridField->getConfig()->getComponentByType('GridFieldPageCount'));
-    }
-
-    /**
      * Test if the relation from Order to the Payments is correctly established
      */
     public function testRelation()

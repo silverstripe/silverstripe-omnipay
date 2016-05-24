@@ -61,18 +61,6 @@ en:
     StartMonth: Month
     StartYear: Year
     Type: Type
-  GridFieldCaptureAction:
-    Title: 'Capture Payment'
-    Description: 'Capture authorized Payment'
-    CaptureError: 'Unable to capture payment. An error occurred.'
-  GridFieldRefundAction:
-    Title: 'Refund Payment'
-    Description: 'Refund a captured payment'
-    RefundError: 'Unable to refund payment. An error occurred.'
-  GridFieldVoidAction:
-    Title: 'Void Payment'
-    Description: 'Void an authorized payment'
-    VoidError: 'Unable to void payment. An error occurred.'
   # Payment message classes
   PaymentMessage:
     PLURALNAME: 'Payment Messages'

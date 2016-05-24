@@ -486,7 +486,3 @@ Run the migration task: yoursite.com/dev/tasks/MigratePaymentTask
 ## Further Documentation
 
 https://github.com/silverstripe/silverstripe-omnipay/blob/master/docs/en/index.md
-
-## Attributions
-
- - Icons used in Payment Admin are part of the [Silk Icon set 1.3](http://www.famfamfam.com/lab/icons/silk/). [Creative Commons Attribution 2.5 License](http://creativecommons.org/licenses/by/2.5/)

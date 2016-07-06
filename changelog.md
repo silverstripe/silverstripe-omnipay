@@ -9,3 +9,7 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 The 2.0 release of this module has some breaking API changes when updating from 1.0.
 
 [» Detailed changelog](docs/changelogs/2.0.md)
+
+## 1.3
+
+[» Detailed changelog](docs/changelogs/1.3.md)

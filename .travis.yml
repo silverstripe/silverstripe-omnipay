@@ -14,9 +14,13 @@ matrix:
     - php: 5.6
       env: DB=SQLITE CORE_RELEASE=3.2
     - php: 5.6
-      env: DB=SQLITE CORE_RELEASE=3
+      env: DB=SQLITE CORE_RELEASE=3.4
+    - php: 5.6
+      env: DB=PGSQL CORE_RELEASE=master
     - php: 5.4
       env: DB=SQLITE CORE_RELEASE=3.1 COVERAGE=1
+  allow_failures:
+    - env: DB=PGSQL CORE_RELEASE=master
 
 before_script:
   - composer self-update

@@ -3,11 +3,12 @@
 When using silverstripe-omnipay, any required Omnipay modules must be installed via composer.
 
 ```
-composer require omnipay/manual dev-master
+composer require omnipay/manual
 ```
 
-Then in your mysite/_config/_config.yml file
-```
+Then in your config file (typically `mysite/_config/config.yml`, or `mysite/_config/payment.yml`)
+
+```yaml
 ---
 Name: payment
 ---

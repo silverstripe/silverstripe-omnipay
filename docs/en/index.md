@@ -104,7 +104,7 @@ To see what features are supported, for the installed gateways, visit: `your-sit
 You can define separate properties for different environments. Here's an example of that:
 
 ```yaml
-GatewayConfig:
+GatewayInfo:
   PayPal_Express:
     use_authorize: true
     token_key: 'token'
@@ -119,7 +119,7 @@ Only:
   environment: 'live'
 ---
 # Supply different credentials for "live" environment.
-GatewayConfig:
+GatewayInfo:
   PayPal_Express:
     parameters:
       username: 'live.user.ccom'

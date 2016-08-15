@@ -464,7 +464,7 @@ class GatewayInfo
             \Deprecation::notice(
                 '3.0',
                 'Please refrain from setting Gateway parameters under Payment. ' .
-                'Use GatewayConfig instead (see docs).'
+                'Use GatewayInfo instead (see docs).'
             );
             return $params[$gateway];
         }

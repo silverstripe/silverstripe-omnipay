@@ -349,8 +349,10 @@ The response object has a `redirectOrRespond` function built in that will either
 $payment = Payment::create()
     ->init("PxPayGateway", 100, "NZD")
     ->setSuccessUrl($this->Link('complete')."/".$donation->ID)
-    ->setFailureUrl($this->Link()."?message=payment cancelled")
-    ->write();
+    ->setFailureUrl($this->Link()."?message=payment cancelled");
+    
+// Save it to the database to generate an ID
+$payment->write();
 
 $response = ServiceFactory::create()
     ->getService($payment, ServiceFactory::INTENT_PAYMENT)

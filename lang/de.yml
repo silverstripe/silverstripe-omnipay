@@ -1,0 +1,91 @@
+de:
+  PaymentAdmin:
+    MENUTITLE: Zahlungen
+  Payment:
+    PLURALNAME: Zahlungen
+    SINGULARNAME: Zahlung
+    TitleTemplate: '{Gateway} {Money} %d.%m.%Y'
+    InvalidUrl: 'Ungültige Bezahl-URL'
+    InvalidStatus: 'Ungültiger Zahlungs-Status'
+    NotFound: 'Zahlung konnte nicht gefunden werden.'
+    Date: 'Datum'
+    Amount: 'Betrag'
+    STATUS_PENDINGAUTHORIZATION: 'Autorisierung bevorstehend'
+    STATUS_AUTHORIZED: Autorisiert
+    STATUS_PENDINGCAPTURE: 'Zahlungseingang bevorstehend'
+    STATUS_PENDINGPURCHASE: 'Zahlungseingang bevorstehend'
+    STATUS_CAPTURED: Zahlung eingegangen
+    STATUS_CREATED: Erstellt
+    STATUS_PENDINGREFUND: 'Rückvergütung bevorstehend'
+    STATUS_REFUNDED: Rückvergütet
+    STATUS_PENDINGVOID: 'Ungültigkeit bevorstehend'
+    STATUS_VOID: Ungültig
+    db_Gateway: Bezahlmethode
+    db_Identifier: Identifikation
+    db_Money: Betrag
+    db_Status: Status
+    has_many_Messages: Nachrichten
+    PAYMENT_PERMISSIONS: 'Zahlungs-Aktionen'
+    PERMISSION_REFUND_PAYMENTS: 'Zahlungen rückvergüten'
+    PERMISSION_REFUND_PAYMENTS_HELP: 'Kann Zahlungen rückvergüten'
+    PERMISSION_CAPTURE_PAYMENTS: 'Zahlungen abbuchen'
+    PERMISSION_CAPTURE_PAYMENTS_HELP: 'Kann autorisierte Zahlungen abbuchen'
+    PERMISSION_VOID_PAYMENTS: 'Zahlungen stornieren'
+    PERMISSION_VOID_PAYMENTS_HELP: 'Kann autorisierte Zahlungen stornieren'
+  PaymentForm:
+    BillingAddress1: Adresse
+    BillingAddress2: 'Adresslinie 2'
+    BillingCity: Stadt
+    BillingCountry: Land
+    BillingPhone: Telefon
+    BillingPostcode: Postleitzahl
+    BillingState: Staat
+    Company: Firma
+    CVV: 'Sicherheitscode'
+    Email: E-Mail
+    Expiry: Verfalldatum
+    ExpiryMonth: Monat
+    ExpiryYear: Jahr
+    IssueNumber: 'Ausgabenummer'
+    Name: 'Karteninhaber'
+    Number: 'Kreditkartennummer'
+    NumberDescription: 'ohne Trennstriche oder Leerzeichen'
+    ShippingAddress1: 'Lieferung: Adresse'
+    ShippingAddress2: 'Lieferung: Adresszeile 2'
+    ShippingCity: 'Lieferung: Stadt'
+    ShippingCountry: 'Lieferung: Land'
+    ShippingPhone: 'Lieferung: Telefon'
+    ShippingPostcode: 'Lieferung: Postleitzahl'
+    ShippingState: 'Lieferung: Staat'
+    Start: Start
+    StartMonth: Monat
+    StartYear: Jahr
+    Type: Typ
+  PaymentMessage:
+    PLURALNAME: 'Zahlungsnachrichten'
+    SINGULARNAME: 'Zahlungsnachricht'
+    db_ClientIp: 'Benutzer IP-Adresse'
+    db_Message: Nachricht
+    has_one_Payment: Zahlung
+    has_one_User: Benutzer
+  GatewayMessage:
+    PLURALNAME: 'Zahlungsnachrichten'
+    SINGULARNAME: 'Zahlungsnachricht'
+    db_Code: Code
+    db_Gateway: Zahlungsmethode
+    db_Reference: Referenz
+  CreditCard:
+    VISA: Visa
+    MASTERCARD: Mastercard
+    DISCOVER: Discover
+    AMEX: 'American Express'
+    DINERS_CLUB: 'Diners Club'
+    JCB: JCB
+    SWITCH: Switch
+    SOLO: Solo
+    DANKORT: Dankort
+    MAESTRO: Maestro
+    FORBRUGSFORENINGEN: Forbrugsforeningen
+    LASER: Laser
+  Gateway:
+    Manual: Rechnung

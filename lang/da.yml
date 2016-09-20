@@ -1,0 +1,91 @@
+da:
+  PaymentAdmin:
+    MENUTITLE: Betalinger
+  Payment:
+    PLURALNAME: Betalinger
+    SINGULARNAME: Betaling
+    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+    InvalidUrl: 'Ugyldig betalings url.'
+    InvalidStatus: 'Ugyldig/ikke håndteret betalingsstatus'
+    NotFound: 'Betalingen kunne ikke findes.'
+    Date: 'Dato'
+    Amount: 'Beløb'
+    STATUS_PENDINGAUTHORIZATION: 'Afventer godkendelse'
+    STATUS_AUTHORIZED: Autoriseret
+    STATUS_PENDINGCAPTURE: 'Afventer hævning'
+    STATUS_PENDINGPURCHASE: 'Afventer køb'
+    STATUS_CAPTURED: Hævet
+    STATUS_CREATED: Oprettet
+    STATUS_PENDINGREFUND: 'Afventer refundering'
+    STATUS_REFUNDED: Refunderet
+    STATUS_PENDINGVOID: 'Afventer annullering'
+    STATUS_VOID: Annulleret
+    db_Gateway: Gateway
+    db_Identifier: Identifikation
+    db_Money: Penge
+    db_Status: Status
+    has_many_Messages: Beskeder
+    PAYMENT_PERMISSIONS: 'Betalingshandlinger'
+    PERMISSION_REFUND_PAYMENTS: 'Refunderbetalinger'
+    PERMISSION_REFUND_PAYMENTS_HELP: 'Tillad refundering af hævede betalinger'
+    PERMISSION_CAPTURE_PAYMENTS: 'Hæv betalinger'
+    PERMISSION_CAPTURE_PAYMENTS_HELP: 'Tillad hævning af autoriseredebetalinger'
+    PERMISSION_VOID_PAYMENTS: 'Annullerede betalinger'
+    PERMISSION_VOID_PAYMENTS_HELP: 'Tillad annullering af autoriseredebetalinger'
+  PaymentForm:
+    BillingAddress1: Adresse
+    BillingAddress2: 'Adresselinie 2'
+    BillingCity: By
+    BillingCountry: Land
+    BillingPhone: Telefon
+    BillingPostcode: Postnummer
+    BillingState: Region
+    Company: Virksomhed
+    CVV: 'Sikkerhedskode'
+    Email: Email
+    Expiry: Udløb
+    ExpiryMonth: Måned
+    ExpiryYear: År
+    IssueNumber: 'Versionsnummer'
+    Name: 'Navn på kort'
+    Number: 'Kortnummer'
+    NumberDescription: 'Ingen bindestreger eller mellemrum'
+    ShippingAddress1: 'Forsendelse adresse'
+    ShippingAddress2: 'Forsendelse adresse 2'
+    ShippingCity: 'Forsendelse by'
+    ShippingCountry: 'Forsendelse land'
+    ShippingPhone: 'Forsendelse telefon'
+    ShippingPostcode: 'Forsendelse postnummer'
+    ShippingState: 'Forsendelse region'
+    Start: Start
+    StartMonth: Måned
+    StartYear: År
+    Type: Type
+  PaymentMessage:
+    PLURALNAME: 'Betalingsbeskeder'
+    SINGULARNAME: 'Betalingsbesked'
+    db_ClientIp: 'Kunde IP'
+    db_Message: Besked
+    has_one_Payment: Betaling
+    has_one_User: Bruger
+  GatewayMessage:
+    PLURALNAME: 'Gateway beskeder'
+    SINGULARNAME: 'Gateway besked'
+    db_Code: Kode
+    db_Gateway: Gateway
+    db_Reference: Reference
+  CreditCard:
+    VISA: Visa
+    MASTERCARD: Mastercard
+    DISCOVER: Discover
+    AMEX: 'American Express'
+    DINERS_CLUB: 'Diners Club'
+    JCB: JCB
+    SWITCH: Switch
+    SOLO: Solo
+    DANKORT: Dankort
+    MAESTRO: Maestro
+    FORBRUGSFORENINGEN: Forbrugsforeningen
+    LASER: Laser
+  Gateway:
+    Manual: Faktura

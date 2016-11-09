@@ -7,7 +7,7 @@ Name: omnipay-rename
 
 GatewayFieldsFactory:
   rename:
-    prefix: 'card_'
+    prefix: '' # e.g "card_"
     #name: 'myName'
     #type: 'myType'
     #number: 'myNumber'

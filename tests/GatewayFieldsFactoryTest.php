@@ -250,7 +250,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
         $this->assertEquals($pxDefaults, array_keys($fields->dataFields()));
     }
 
-    function renameWalk(&$array) {
+    public function renameWalk(&$array) {
         return $array = array_map(
             function ($name) {
                 return $this->factory->getFieldName($name);

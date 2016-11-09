@@ -96,21 +96,21 @@ class GatewayFieldsFactory
         $expiryrange = range($year, date('Y', strtotime("+$range years")));
 
         $fields = array(
-            'type' => \DropdownField::create('type', _t('PaymentForm.Type', 'Type'), $this->getCardTypes()),
-            'name' => \TextField::create('name', _t('PaymentForm.Name', 'Name on Card')),
-            'number' => \TextField::create('number', _t('PaymentForm.Number', 'Card Number'))
+            'type' => \DropdownField::create($this->getFieldName('type'), _t('PaymentForm.Type', 'Type'), $this->getCardTypes()),
+            'name' => \TextField::create($this->getFieldName('name'), _t('PaymentForm.Name', 'Name on Card')),
+            'number' => \TextField::create($this->getFieldName('number'), _t('PaymentForm.Number', 'Card Number'))
                             ->setDescription(_t('PaymentForm.NumberDescription', 'no dashes or spaces')),
-            'startMonth' => \DropdownField::create('startMonth', _t('PaymentForm.StartMonth', 'Month'), $months),
-            'startYear' => \DropdownField::create('startYear', _t('PaymentForm.StartYear', 'Year'),
-                                array_combine($startrange, $startrange), $year
+            'startMonth' => \DropdownField::create($this->getFieldName('startMonth'), _t('PaymentForm.StartMonth', 'Month'), $months),
+            'startYear' => \DropdownField::create($this->getFieldName('startYear'), _t('PaymentForm.StartYear', 'Year'),
+                                                  array_combine($startrange, $startrange), $year
                             ),
-            'expiryMonth' => \DropdownField::create('expiryMonth', _t('PaymentForm.ExpiryMonth', 'Month'), $months),
-            'expiryYear' => \DropdownField::create('expiryYear', _t('PaymentForm.ExpiryYear', 'Year'),
-                                array_combine($expiryrange, $expiryrange), $year
+            'expiryMonth' => \DropdownField::create($this->getFieldName('expiryMonth'), _t('PaymentForm.ExpiryMonth', 'Month'), $months),
+            'expiryYear' => \DropdownField::create($this->getFieldName('expiryYear'), _t('PaymentForm.ExpiryYear', 'Year'),
+                                                   array_combine($expiryrange, $expiryrange), $year
                             ),
-            'cvv' => \TextField::create('cvv', _t('PaymentForm.CVV', 'Security Code'))
+            'cvv' => \TextField::create($this->getFieldName('cvv'), _t('PaymentForm.CVV', 'Security Code'))
                             ->setMaxLength(5),
-            'issueNumber' => \TextField::create('issueNumber', _t('PaymentForm.IssueNumber', 'Issue Number'))
+            'issueNumber' => \TextField::create($this->getFieldName('issueNumber'), _t('PaymentForm.IssueNumber', 'Issue Number'))
         );
 
         $this->cullForGateway($fields);
@@ -158,13 +158,13 @@ class GatewayFieldsFactory
     public function getBillingFields()
     {
         $fields = array(
-            'billingAddress1' => \TextField::create('billingAddress1', _t('PaymentForm.BillingAddress1', 'Address')),
-            'billingAddress2' => \TextField::create('billingAddress2', _t('PaymentForm.BillingAddress2', 'Address line 2')),
-            'city' => \TextField::create('billingCity', _t('PaymentForm.BillingCity', 'City')),
-            'postcode' => \TextField::create('billingPostcode', _t('PaymentForm.BillingPostcode', 'Postcode')),
-            'state' => \TextField::create('billingState', _t('PaymentForm.BillingState', 'State')),
-            'country' => \TextField::create('billingCountry', _t('PaymentForm.BillingCountry', 'Country')),
-            'phone' => \PhoneNumberField::create('billingPhone', _t('PaymentForm.BillingPhone', 'Phone'))
+            'billingAddress1' => \TextField::create($this->getFieldName('billingAddress1'), _t('PaymentForm.BillingAddress1', 'Address')),
+            'billingAddress2' => \TextField::create($this->getFieldName('billingAddress2'), _t('PaymentForm.BillingAddress2', 'Address line 2')),
+            'city' => \TextField::create($this->getFieldName('billingCity'), _t('PaymentForm.BillingCity', 'City')),
+            'postcode' => \TextField::create($this->getFieldName('billingPostcode'), _t('PaymentForm.BillingPostcode', 'Postcode')),
+            'state' => \TextField::create($this->getFieldName('billingState'), _t('PaymentForm.BillingState', 'State')),
+            'country' => \TextField::create($this->getFieldName('billingCountry'), _t('PaymentForm.BillingCountry', 'Country')),
+            'phone' => \PhoneNumberField::create($this->getFieldName('billingPhone'), _t('PaymentForm.BillingPhone', 'Phone'))
         );
         $this->cullForGateway($fields);
 
@@ -179,16 +179,16 @@ class GatewayFieldsFactory
     {
         $fields = array(
             'shippingAddress1' => \TextField::create(
-                'shippingAddress1', _t('PaymentForm.ShippingAddress1', 'Shipping Address')
+                $this->getFieldName('shippingAddress1'), _t('PaymentForm.ShippingAddress1', 'Shipping Address')
             ),
             'shippingAddress2' => \TextField::create(
-                'shippingAddress2', _t('PaymentForm.ShippingAddress2', 'Shipping Address 2')
+                $this->getFieldName('shippingAddress2'), _t('PaymentForm.ShippingAddress2', 'Shipping Address 2')
             ),
-            'city' => \TextField::create('shippingCity', _t('PaymentForm.ShippingCity', 'Shipping City')),
-            'postcode' => \TextField::create('shippingPostcode', _t('PaymentForm.ShippingPostcode', 'Shipping Postcode')),
-            'state' => \TextField::create('shippingState', _t('PaymentForm.ShippingState', 'Shipping State')),
-            'country' => \TextField::create('shippingCountry', _t('PaymentForm.ShippingCountry', 'Shipping Country')),
-            'phone' => \PhoneNumberField::create('shippingPhone', _t('PaymentForm.ShippingPhone', 'Shipping Phone'))
+            'city' => \TextField::create($this->getFieldName('shippingCity'), _t('PaymentForm.ShippingCity', 'Shipping City')),
+            'postcode' => \TextField::create($this->getFieldName('shippingPostcode'), _t('PaymentForm.ShippingPostcode', 'Shipping Postcode')),
+            'state' => \TextField::create($this->getFieldName('shippingState'), _t('PaymentForm.ShippingState', 'Shipping State')),
+            'country' => \TextField::create($this->getFieldName('shippingCountry'), _t('PaymentForm.ShippingCountry', 'Shipping Country')),
+            'phone' => \PhoneNumberField::create($this->getFieldName('shippingPhone'), _t('PaymentForm.ShippingPhone', 'Shipping Phone'))
         );
         $this->cullForGateway($fields);
 
@@ -202,7 +202,7 @@ class GatewayFieldsFactory
     public function getEmailFields()
     {
         $fields = array(
-            'email' => \EmailField::create('email', _t('PaymentForm.Email', 'Email'))
+            'email' => \EmailField::create($this->getFieldName('email'), _t('PaymentForm.Email', 'Email'))
         );
         $this->cullForGateway($fields);
 
@@ -216,11 +216,48 @@ class GatewayFieldsFactory
     public function getCompanyFields()
     {
         $fields = array(
-            'company' => \TextField::create('company', _t('PaymentForm.Company', 'Company'))
+            'company' => \TextField::create($this->getFieldName('company'), _t('PaymentForm.Company', 'Company'))
         );
         $this->cullForGateway($fields);
 
         return \FieldList::create($fields);
+    }
+
+    /**
+     * Attempts to find a custom field name and/or prefix defined in customfields.yml, otherwise returns the same input
+     * that it was given
+     *
+     * @param string    $defaultName The default name of the field
+     * @param null|bool $skipGateway Used in recursion
+     *
+     * @return string
+     */
+    public function getFieldName($defaultName, $skipGateway = null) {
+        $renameMap = \Config::inst()->get('GatewayFieldsFactory', 'rename');
+
+        if (!$renameMap || empty($renameMap)) {
+            return $defaultName;
+        }
+
+        // allows support for custom field names that are dependent on the gateway provider
+        // see rename.yml configuration file for an example
+        if (array_key_exists($this->gateway, $renameMap) && !empty($renameMap[$this->gateway]) && !$skipGateway) {
+            $gatewayMap = $renameMap[$this->gateway];
+
+            // if not in gatewayMap, run this function again but skip this gateway check
+            if (!array_key_exists($defaultName, $gatewayMap)) {
+                return $this->getFieldName($defaultName, true);
+            }
+
+            // a name has been found to replace $defaultName with, switch map over to the gateway map
+            $renameMap = $gatewayMap;
+        }
+
+        if (!array_key_exists($defaultName, $renameMap)) {
+            return (array_key_exists('prefix', $renameMap)) ? $renameMap['prefix'] . $defaultName : $defaultName;
+        }
+
+        return (array_key_exists('prefix', $renameMap)) ? $renameMap['prefix'] . $renameMap[$defaultName] : $renameMap[$defaultName];
     }
 
     /**

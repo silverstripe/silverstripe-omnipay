@@ -59,6 +59,20 @@ class GatewayFieldsFactoryTest extends SapphireTest
             'Company',
             'Email'
         ));
+
+        // caters for custom field names so that tests pass even if user has defined custom names
+        $fieldSets = array(
+            &$this->ccFields,
+            &$this->billingFields,
+            &$this->shippingFields,
+            &$this->companyFields,
+            &$this->emailFields,
+        );
+        foreach ($fieldSets as &$fieldSet) {
+            foreach ($fieldSet as &$field) {
+                $field = $this->factory->getFieldName($field);
+            }
+        }
     }
 
     public function testAllFieldGroups()
@@ -188,7 +202,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
 
         $fields = $factory->getFields();
 
-        $this->assertEquals(array(
+        $defaults = array(
             // default required CC fields for gateways that aren't manual and aren't offsite
             'name',
             'number',
@@ -203,7 +217,9 @@ class GatewayFieldsFactoryTest extends SapphireTest
             'shippingCountry',
             'company',
             'email'
-        ), array_keys($fields->dataFields()));
+        );
+
+        $this->assertEquals($this->factory->getFieldName($defaults), array_keys($fields->dataFields()));
 
         // Same procedure with offsite gateway should not return the CC fields
 
@@ -217,7 +233,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
 
         $fields = $factory->getFields();
 
-        $this->assertEquals(array(
+        $pxDefaults = array(
             'billingAddress1',
             'billingCity',
             'billingCountry',
@@ -225,6 +241,46 @@ class GatewayFieldsFactoryTest extends SapphireTest
             'shippingCountry',
             'company',
             'email'
-        ), array_keys($fields->dataFields()));
+        );
+
+        $this->assertEquals($this->factory->getFieldName($pxDefaults), array_keys($fields->dataFields()));
+    }
+
+    public function testNormalizeFormData() {
+        $data = array(
+            'prefix_testName' => 'Reece Alexander',
+            'prefix_testNumber' => '4242424242424242',
+            'prefix_testExpiryMonth' => '11',
+            'prefix_testExpiryYear' => '2016'
+        );
+
+        Config::inst()->update('GatewayFieldsFactory', 'rename', array(
+            'prefix' => 'prefix_',
+            'name' => 'testName',
+            'number' => 'testNumber',
+            'expiryMonth' => 'testExpiryMonth',
+            'expiryYear' => 'testExpiryYear'
+        ));
+
+        $factory = new GatewayFieldsFactory();
+        
+        $this->assertEquals(
+            array_keys($factory->normalizeFormData($data, true)),
+            array(
+                'name',
+                'number',
+                'expiryMonth',
+                'expiryYear'
+            )
+        );
+    }
+
+    public function renameWalk(&$array) {
+        return $array = array_map(
+            function ($name) {
+                return $this->factory->getFieldName($name);
+            },
+            $array
+        );
     }
 }

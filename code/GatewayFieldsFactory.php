@@ -88,7 +88,8 @@ class GatewayFieldsFactory
         $months = array();
         //generate list of months
         for ($x = 1; $x <= 12; $x++) {
-            $months[$x] = date('m - F', mktime(0, 0, 0, $x, 1));
+            // Fixes #145 - Thanks to @digitall-it
+            $months[$x] = str_pad($x, 2, '0', STR_PAD_LEFT) . " - " . strftime('%B', mktime(0, 0, 0, $x));
         }
         $year = date('Y');
         $range = 5;
@@ -96,21 +97,43 @@ class GatewayFieldsFactory
         $expiryrange = range($year, date('Y', strtotime("+$range years")));
 
         $fields = array(
-            'type' => \DropdownField::create($this->getFieldName('type'), _t('PaymentForm.Type', 'Type'), $this->getCardTypes()),
-            'name' => \TextField::create($this->getFieldName('name'), _t('PaymentForm.Name', 'Name on Card')),
-            'number' => \TextField::create($this->getFieldName('number'), _t('PaymentForm.Number', 'Card Number'))
-                            ->setDescription(_t('PaymentForm.NumberDescription', 'no dashes or spaces')),
-            'startMonth' => \DropdownField::create($this->getFieldName('startMonth'), _t('PaymentForm.StartMonth', 'Month'), $months),
-            'startYear' => \DropdownField::create($this->getFieldName('startYear'), _t('PaymentForm.StartYear', 'Year'),
-                                                  array_combine($startrange, $startrange), $year
-                            ),
-            'expiryMonth' => \DropdownField::create($this->getFieldName('expiryMonth'), _t('PaymentForm.ExpiryMonth', 'Month'), $months),
-            'expiryYear' => \DropdownField::create($this->getFieldName('expiryYear'), _t('PaymentForm.ExpiryYear', 'Year'),
-                                                   array_combine($expiryrange, $expiryrange), $year
-                            ),
-            'cvv' => \TextField::create($this->getFieldName('cvv'), _t('PaymentForm.CVV', 'Security Code'))
+            'type'          => \DropdownField::create($this->getFieldName('type'), _t('PaymentForm.Type', 'Type'), $this->getCardTypes()),
+            'name'          => \TextField::create($this->getFieldName('name'), _t('PaymentForm.Name', 'Name on Card')),
+            'number'        => \TextField::create($this->getFieldName('number'), _t('PaymentForm.Number', 'Card Number'))
+                                ->setDescription(_t('PaymentForm.NumberDescription', 'no dashes or spaces')),
+            'startMonth' => \DropdownField::create(
+                                    $this->getFieldName('startMonth'),
+                                    _t('PaymentForm.StartMonth', 'Month'),
+                                    $months
+                                )
+                                ->setHasEmptyDefault(true)
+                                ->setEmptyString(_t('PaymentForm.StartMonthDefaultText', 'Please Select ...')),
+            'startYear'     => \DropdownField::create(
+                                    $this->getFieldName('startYear'),
+                                    _t('PaymentForm.StartYear', 'Year'),
+                                    array_combine($startrange, $startrange),
+                                    $year
+                                )
+                                ->setHasEmptyDefault(true)
+                                ->setEmptyString(_t('PaymentForm.StartYearDefaultText', 'Please Select ...')),
+            'expiryMonth'   => \DropdownField::create(
+                                    $this->getFieldName('expiryMonth'),
+                                    _t('PaymentForm.ExpiryMonth', 'Month'),
+                                    $months
+                                )
+                                ->setHasEmptyDefault(true)
+                                ->setEmptyString(_t('PaymentForm.ExpiryMonthDefaultText', 'Please Select ...')),
+            'expiryYear'    => \DropdownField::create(
+                                    $this->getFieldName('expiryYear'),
+                                    _t('PaymentForm.ExpiryYear', 'Year'),
+                                    array_combine($expiryrange, $expiryrange),
+                                    $year
+                                )
+                                ->setHasEmptyDefault(true)
+                                ->setEmptyString(_t('PaymentForm.ExpiryYearDefaultText', 'Please Select ...')),
+            'cvv'           => \TextField::create($this->getFieldName('cvv'), _t('PaymentForm.CVV', 'Security Code'))
                             ->setMaxLength(5),
-            'issueNumber' => \TextField::create($this->getFieldName('issueNumber'), _t('PaymentForm.IssueNumber', 'Issue Number'))
+            'issueNumber'   => \TextField::create($this->getFieldName('issueNumber'), _t('PaymentForm.IssueNumber', 'Issue Number'))
         );
 
         $this->cullForGateway($fields);
@@ -160,11 +183,11 @@ class GatewayFieldsFactory
         $fields = array(
             'billingAddress1' => \TextField::create($this->getFieldName('billingAddress1'), _t('PaymentForm.BillingAddress1', 'Address')),
             'billingAddress2' => \TextField::create($this->getFieldName('billingAddress2'), _t('PaymentForm.BillingAddress2', 'Address line 2')),
-            'city' => \TextField::create($this->getFieldName('billingCity'), _t('PaymentForm.BillingCity', 'City')),
-            'postcode' => \TextField::create($this->getFieldName('billingPostcode'), _t('PaymentForm.BillingPostcode', 'Postcode')),
-            'state' => \TextField::create($this->getFieldName('billingState'), _t('PaymentForm.BillingState', 'State')),
-            'country' => \TextField::create($this->getFieldName('billingCountry'), _t('PaymentForm.BillingCountry', 'Country')),
-            'phone' => \PhoneNumberField::create($this->getFieldName('billingPhone'), _t('PaymentForm.BillingPhone', 'Phone'))
+            'city'            => \TextField::create($this->getFieldName('billingCity'), _t('PaymentForm.BillingCity', 'City')),
+            'postcode'        => \TextField::create($this->getFieldName('billingPostcode'), _t('PaymentForm.BillingPostcode', 'Postcode')),
+            'state'           => \TextField::create($this->getFieldName('billingState'), _t('PaymentForm.BillingState', 'State')),
+            'country'         => \TextField::create($this->getFieldName('billingCountry'), _t('PaymentForm.BillingCountry', 'Country')),
+            'phone'           => \PhoneNumberField::create($this->getFieldName('billingPhone'), _t('PaymentForm.BillingPhone', 'Phone'))
         );
         $this->cullForGateway($fields);
 
@@ -184,11 +207,11 @@ class GatewayFieldsFactory
             'shippingAddress2' => \TextField::create(
                 $this->getFieldName('shippingAddress2'), _t('PaymentForm.ShippingAddress2', 'Shipping Address 2')
             ),
-            'city' => \TextField::create($this->getFieldName('shippingCity'), _t('PaymentForm.ShippingCity', 'Shipping City')),
+            'city'     => \TextField::create($this->getFieldName('shippingCity'), _t('PaymentForm.ShippingCity', 'Shipping City')),
             'postcode' => \TextField::create($this->getFieldName('shippingPostcode'), _t('PaymentForm.ShippingPostcode', 'Shipping Postcode')),
-            'state' => \TextField::create($this->getFieldName('shippingState'), _t('PaymentForm.ShippingState', 'Shipping State')),
-            'country' => \TextField::create($this->getFieldName('shippingCountry'), _t('PaymentForm.ShippingCountry', 'Shipping Country')),
-            'phone' => \PhoneNumberField::create($this->getFieldName('shippingPhone'), _t('PaymentForm.ShippingPhone', 'Shipping Phone'))
+            'state'    => \TextField::create($this->getFieldName('shippingState'), _t('PaymentForm.ShippingState', 'Shipping State')),
+            'country'  => \TextField::create($this->getFieldName('shippingCountry'), _t('PaymentForm.ShippingCountry', 'Shipping Country')),
+            'phone'    => \PhoneNumberField::create($this->getFieldName('shippingPhone'), _t('PaymentForm.ShippingPhone', 'Shipping Phone'))
         );
         $this->cullForGateway($fields);
 

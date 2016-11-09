@@ -219,9 +219,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
             'email'
         );
 
-        $this->renameWalk($defaults);
-
-        $this->assertEquals($defaults, array_keys($fields->dataFields()));
+        $this->assertEquals($this->factory->getFieldName($defaults), array_keys($fields->dataFields()));
 
         // Same procedure with offsite gateway should not return the CC fields
 
@@ -245,9 +243,28 @@ class GatewayFieldsFactoryTest extends SapphireTest
             'email'
         );
 
-        $this->renameWalk($pxDefaults);
+        $this->assertEquals($this->factory->getFieldName($pxDefaults), array_keys($fields->dataFields()));
+    }
 
-        $this->assertEquals($pxDefaults, array_keys($fields->dataFields()));
+    public function testNormalizeFormData() {
+        $data = array(
+            'prefix_testName' => 'Reece Alexander',
+            'prefix_testNumber' => '4242424242424242',
+            'prefix_testExpiryMonth' => '11',
+            'prefix_testExpiryYear' => '2016'
+        );
+
+        $factory = new GatewayFieldsFactory();
+
+        $this->assertEquals(
+            array_keys($factory->normalizeFormData($data, true)),
+            array(
+                'name',
+                'number',
+                'expiryMonth',
+                'expiryYear'
+            )
+        );
     }
 
     public function renameWalk(&$array) {

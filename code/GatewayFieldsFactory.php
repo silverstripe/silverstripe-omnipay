@@ -224,15 +224,25 @@ class GatewayFieldsFactory
     }
 
     /**
-     * Attempts to find a custom field name and/or prefix defined in customfields.yml, otherwise returns the same input
+     * Attempts to find a custom field name and/or prefix defined in rename.yml, otherwise returns the same input
      * that it was given
      *
-     * @param string    $defaultName The default name of the field
-     * @param null|bool $skipGateway Used in recursion
+     * @param string|array  $defaultName The default name of the field
+     * @param null|bool     $skipGateway Used in recursion
      *
-     * @return string
+     * @return string|array
      */
     public function getFieldName($defaultName, $skipGateway = null) {
+        // batch support
+        if (is_array($defaultName)) {
+            $stack = array();
+            foreach ($defaultName as $name) {
+                $stack[] = $this->getFieldName($name, $skipGateway);
+            }
+
+            return $stack;
+        }
+
         $renameMap = \Config::inst()->get('GatewayFieldsFactory', 'rename');
 
         if (!$renameMap || empty($renameMap)) {
@@ -277,5 +287,63 @@ class GatewayFieldsFactory
                 unset($fields[$name]);
             }
         }
+    }
+
+    /**
+     * Normalizes form data keys to map to their respective Omnipay parameters (in other words: reverses the effects
+     * from the custom field name support)
+     *
+     * @param array $data The form data consisting of key value pairs
+     * @param bool  $mock For php-unit testing
+     *
+     * @return array
+     */
+    public function normalizeFormData(array $data, $mock = false) {
+
+        if ($mock) {
+            $renameMap = array(
+                'prefix' => 'prefix_',
+                'name' => 'testName',
+                'number' => 'testNumber',
+                'expiryMonth' => 'testExpiryMonth',
+                'expiryYear' => 'testExpiryYear'
+            );
+        }
+
+        if (!isset($renameMap)) {
+            $renameMap = \Config::inst()->get('GatewayFieldsFactory', 'rename');
+        }
+
+        if (!$renameMap || empty($renameMap)) {
+            return $data;
+        }
+
+        $hasPrefix = false;
+
+        if (array_key_exists('prefix', $renameMap)) {
+            $hasPrefix = true;
+        }
+
+        $stack = array(array_flip($renameMap));
+
+
+        if (array_key_exists($this->gateway, $renameMap) && !empty($renameMap[$this->gateway])) {
+            $stack[] = $gatewayMap = array_flip($renameMap[$this->gateway]);
+        }
+
+        foreach($stack as $map) {
+            foreach ($map as $otherName => $defaultName) {
+                if ($hasPrefix) {
+                    $otherName = $renameMap['prefix'] . $otherName;
+                }
+                if (array_key_exists($otherName, $data)) {
+                    $value = $data[$otherName];
+                    unset($data[$otherName]);
+                    $data[$defaultName] = $value;
+                }
+            }
+        }
+
+        return $data;
     }
 }

@@ -1,19 +1,17 @@
+# You can define custom names globally, or on a per gateway basis, if you define your gateway here, it will take priority
+# and then will fall back to any of the global renames defined below (if set). The example below shows how you would rename
+# the default fields for the Stripe payment gateway, and how to rename field names globally
+#
 ---
 Name: omnipay-rename
 ---
 
 GatewayFieldsFactory:
   rename:
-    # global renaming
-    #type: 'cardType'
-    #name: 'cardName'
-    #number: 'cardNumber'
-    #prefix: 'card'
-    #--------------------------------------------
-    # You can define custom names on a per gateway basis, if you define your gateway here, it will take priority
-    # and then will fall back to any of the global renames above (if set). The example below shows how you would rename
-    # the default fields for the Stripe payment gateway
-    # -------------------------------------------
-    #Stripe:
-      #name: 'stripeCardName'
-      #number: 'stripeCardNumber'
+    prefix: 'card_'
+    #name: 'myName'
+    #type: 'myType'
+    #number: 'myNumber'
+    Stripe:
+      #name: 'myStripeName'
+      #number: 'myStripeNumber'

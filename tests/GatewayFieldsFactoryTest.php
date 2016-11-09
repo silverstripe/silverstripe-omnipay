@@ -254,8 +254,16 @@ class GatewayFieldsFactoryTest extends SapphireTest
             'prefix_testExpiryYear' => '2016'
         );
 
-        $factory = new GatewayFieldsFactory();
+        Config::inst()->update('GatewayFieldsFactory', 'rename', array(
+            'prefix' => 'prefix_',
+            'name' => 'testName',
+            'number' => 'testNumber',
+            'expiryMonth' => 'testExpiryMonth',
+            'expiryYear' => 'testExpiryYear'
+        ));
 
+        $factory = new GatewayFieldsFactory();
+        
         $this->assertEquals(
             array_keys($factory->normalizeFormData($data, true)),
             array(

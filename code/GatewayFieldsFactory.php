@@ -294,26 +294,13 @@ class GatewayFieldsFactory
      * from the custom field name support)
      *
      * @param array $data The form data consisting of key value pairs
-     * @param bool  $mock For php-unit testing
      *
      * @return array
      */
-    public function normalizeFormData(array $data, $mock = false) {
+    public function normalizeFormData(array $data) {
 
-        if ($mock) {
-            $renameMap = array(
-                'prefix' => 'prefix_',
-                'name' => 'testName',
-                'number' => 'testNumber',
-                'expiryMonth' => 'testExpiryMonth',
-                'expiryYear' => 'testExpiryYear'
-            );
-        }
-
-        if (!isset($renameMap)) {
-            $renameMap = \Config::inst()->get('GatewayFieldsFactory', 'rename');
-        }
-
+        $renameMap = \Config::inst()->get('GatewayFieldsFactory', 'rename');
+        
         if (!$renameMap || empty($renameMap)) {
             return $data;
         }
@@ -324,9 +311,16 @@ class GatewayFieldsFactory
             $hasPrefix = true;
         }
 
-        $stack = array(array_flip($renameMap));
+        // Fix for: array_flip(): Can only flip STRING and INTEGER values!
+        // This would occur if you have defined Gateways in rename.yml
+        foreach($globalMap = $renameMap as $key => $value) {
+            if (is_array($value)) {
+                unset($globalMap[$key]);
+            }
+        }
 
-
+        $stack = array(array_flip($globalMap));
+        
         if (array_key_exists($this->gateway, $renameMap) && !empty($renameMap[$this->gateway])) {
             $stack[] = $gatewayMap = array_flip($renameMap[$this->gateway]);
         }

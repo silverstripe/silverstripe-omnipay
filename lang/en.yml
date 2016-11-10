@@ -61,6 +61,10 @@ en:
     StartMonth: Month
     StartYear: Year
     Type: Type
+    StartMonthDefaultText: 'Please Select ...'
+    StartYearDefaultText: 'Please Select ...'
+    ExpiryMonthDefaultText: 'Please Select ...'
+    ExpiryYearDefaultText: 'Please Select ...'
   # Payment message classes
   PaymentMessage:
     PLURALNAME: 'Payment Messages'

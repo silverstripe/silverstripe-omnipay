@@ -61,6 +61,10 @@ de:
     StartMonth: Monat
     StartYear: Jahr
     Type: Typ
+    StartMonthDefaultText: 'Bitte wählen…'
+    StartYearDefaultText: 'Bitte wählen…'
+    ExpiryMonthDefaultText: 'Bitte wählen…'
+    ExpiryYearDefaultText: 'Bitte wählen…'
   PaymentMessage:
     PLURALNAME: 'Zahlungsnachrichten'
     SINGULARNAME: 'Zahlungsnachricht'

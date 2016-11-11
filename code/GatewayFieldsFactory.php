@@ -110,7 +110,7 @@ class GatewayFieldsFactory
 
         $this->cullForGateway($fields);
         //optionally group date fields
-        if ($this->groupDateFields) {
+        if ($this->groupdatefields) {
             if (isset($fields[ 'startMonth' ]) && isset($fields[ 'startYear' ])) {
                 $fields[ 'startMonth' ] = \FieldGroup::create(_t('PaymentForm.Start', 'Start'), $fields[ 'startMonth' ], $fields[ 'startYear' ])->addExtraClass('card_startyear');
                 unset($fields[ 'startYear' ]);

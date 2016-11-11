@@ -12,7 +12,7 @@ use Omnipay\Common\CreditCard;
 class GatewayFieldsFactory
 {
 
-    protected $fieldGroups = array(
+    protected $fieldgroups = array(
         'Card',
         'Billing',
         'Shipping',
@@ -20,16 +20,15 @@ class GatewayFieldsFactory
         'Email'
     );
 
-    protected $gateway,
-        $groupDateFields = TRUE;
+    protected $gateway;
+    protected $groupdatefields = true;
 
     /**
      * GatewayFieldsFactory constructor.
-     *
-     * @param string|null $gateway     the gateway to create fields for. @see setGateway
-     * @param array       $fieldgroups the field-groups to create
+     * @param string|null $gateway the gateway to create fields for. @see setGateway
+     * @param array $fieldgroups the field-groups to create
      */
-    public function __construct($gateway = NULL, $fieldgroups = NULL)
+    public function __construct($gateway = null, $fieldgroups = null)
     {
         $this->gateway = $gateway;
         $this->setFieldGroups($fieldgroups);
@@ -38,15 +37,13 @@ class GatewayFieldsFactory
     /**
      * The field groups to create.
      * An array with field-groups to create. Valid entries are: `'Card', 'Billing', 'Shipping', 'Company', 'Email'`.
-     *
      * @param array $groups the groups to create
-     *
      * @return $this
      */
     public function setFieldGroups($groups)
     {
         if (is_array($groups)) {
-            $this->fieldGroups = $groups;
+            $this->fieldgroups = $groups;
         }
 
         return $this;
@@ -56,9 +53,7 @@ class GatewayFieldsFactory
      * Set the gateway to create fields for.
      * If a gateway is given, only the required fields of that gateway will be returned! If the gateway isn't set, all
      * fields will be returned.
-     *
      * @param string|null $gateway the gateway to create fields for.
-     *
      * @return $this
      */
     public function setGateway($gateway)
@@ -75,9 +70,9 @@ class GatewayFieldsFactory
     public function getFields()
     {
         $fields = \FieldList::create();
-        foreach ($this->fieldGroups as $group) {
-            if (method_exists($this, 'get' . $group . 'Fields')) {
-                $fields->merge($this->{'get' . $group . 'Fields'}());
+        foreach ($this->fieldgroups as $group) {
+            if (method_exists($this, 'get'.$group.'Fields')) {
+                $fields->merge($this->{'get'.$group.'Fields'}());
             }
         }
 
@@ -94,11 +89,11 @@ class GatewayFieldsFactory
         //generate list of months
         for ($x = 1; $x <= 12; $x++) {
             // Fixes #145 - Thanks to @digitall-it
-            $months[ $x ] = str_pad($x, 2, '0', STR_PAD_LEFT) . " - " . strftime('%B', mktime(0, 0, 0, $x));
+            $months[$x] = str_pad($x, 2, '0', STR_PAD_LEFT) . " - " . strftime('%B', mktime(0, 0, 0, $x));
         }
-        $year        = date('Y');
-        $range       = 5;
-        $startrange  = range(date('Y', strtotime("-$range years")), $year);
+        $year = date('Y');
+        $range = 5;
+        $startrange = range(date('Y', strtotime("-$range years")), $year);
         $expiryrange = range($year, date('Y', strtotime("+$range years")));
 
         $fields = array(
@@ -136,10 +131,10 @@ class GatewayFieldsFactory
      */
     public function getCardTypes()
     {
-        $card   = new CreditCard();
+        $card = new CreditCard();
         $brands = $card->getSupportedBrands();
         foreach ($brands as $brand => $x) {
-            $brands[ $brand ] = _t('CreditCard.' . strtoupper($brand), $brand);
+            $brands[$brand] = _t('CreditCard.'.strtoupper($brand), $brand);
         }
 
         return $brands;
@@ -172,13 +167,17 @@ class GatewayFieldsFactory
     public function getShippingFields()
     {
         $fields = array(
-            'shippingAddress1' => \TextField::create($this->getFieldName('shippingAddress1'), _t('PaymentForm.ShippingAddress1', 'Shipping Address')),
-            'shippingAddress2' => \TextField::create($this->getFieldName('shippingAddress2'), _t('PaymentForm.ShippingAddress2', 'Shipping Address 2')),
-            'city'             => \TextField::create($this->getFieldName('shippingCity'), _t('PaymentForm.ShippingCity', 'Shipping City')),
-            'postcode'         => \TextField::create($this->getFieldName('shippingPostcode'), _t('PaymentForm.ShippingPostcode', 'Shipping Postcode')),
-            'state'            => \TextField::create($this->getFieldName('shippingState'), _t('PaymentForm.ShippingState', 'Shipping State')),
-            'country'          => \TextField::create($this->getFieldName('shippingCountry'), _t('PaymentForm.ShippingCountry', 'Shipping Country')),
-            'phone'            => \PhoneNumberField::create($this->getFieldName('shippingPhone'), _t('PaymentForm.ShippingPhone', 'Shipping Phone'))
+            'shippingAddress1' => \TextField::create(
+                $this->getFieldName('shippingAddress1'), _t('PaymentForm.ShippingAddress1', 'Shipping Address')
+            ),
+            'shippingAddress2' => \TextField::create(
+                $this->getFieldName('shippingAddress2'), _t('PaymentForm.ShippingAddress2', 'Shipping Address 2')
+            ),
+            'city'     => \TextField::create($this->getFieldName('shippingCity'), _t('PaymentForm.ShippingCity', 'Shipping City')),
+            'postcode' => \TextField::create($this->getFieldName('shippingPostcode'), _t('PaymentForm.ShippingPostcode', 'Shipping Postcode')),
+            'state'    => \TextField::create($this->getFieldName('shippingState'), _t('PaymentForm.ShippingState', 'Shipping State')),
+            'country'  => \TextField::create($this->getFieldName('shippingCountry'), _t('PaymentForm.ShippingCountry', 'Shipping Country')),
+            'phone'    => \PhoneNumberField::create($this->getFieldName('shippingPhone'), _t('PaymentForm.ShippingPhone', 'Shipping Phone'))
         );
         $this->cullForGateway($fields);
 
@@ -215,20 +214,19 @@ class GatewayFieldsFactory
 
     /**
      * Clear all fields that are not required by the gateway. Does nothing if gateway is null
-     *
-     * @param       $fields
+     * @param $fields
      * @param array $defaults
      */
     protected function cullForGateway(&$fields, $defaults = array())
     {
-        if (!$this->gateway) {
+        if (!$this->gateway){
             return;
         }
 
         $selected = array_merge($defaults, GatewayInfo::requiredFields($this->gateway));
         foreach ($fields as $name => $field) {
             if (!in_array($name, $selected)) {
-                unset($fields[ $name ]);
+                unset($fields[$name]);
             }
         }
     }

@@ -23,6 +23,36 @@ class GatewayFieldsFactory
     protected $gateway;
     protected $groupdatefields = true;
 
+    protected static $renamemap = array();
+    protected static $renameconfig;
+    protected static $whitelist = array(
+        'type',
+        'name',
+        'number',
+        'startMonth',
+        'startYear',
+        'expiryMonth',
+        'expiryYear',
+        'cvv',
+        'issueNumber',
+        'billingAddress1',
+        'billingAddress2',
+        'billingCity',
+        'billingPostcode',
+        'billingState',
+        'billingCountry',
+        'billingPhone',
+        'shippingAddress1',
+        'shippingAddress2',
+        'shippingCity',
+        'shippingPostcode',
+        'shippingState',
+        'shippingCountry',
+        'shippingPhone',
+        'email',
+        'company'
+    );
+
     /**
      * GatewayFieldsFactory constructor.
      * @param string|null $gateway the gateway to create fields for. @see setGateway
@@ -30,7 +60,7 @@ class GatewayFieldsFactory
      */
     public function __construct($gateway = null, $fieldgroups = null)
     {
-        $this->gateway = $gateway;
+        $this->setGateway($gateway);
         $this->setFieldGroups($fieldgroups);
     }
 
@@ -59,7 +89,7 @@ class GatewayFieldsFactory
     public function setGateway($gateway)
     {
         $this->gateway = $gateway;
-
+        $this->buildRenameMap();
         return $this;
     }
 
@@ -100,10 +130,10 @@ class GatewayFieldsFactory
             'type'        => \DropdownField::create($this->getFieldName('type'), _t('PaymentForm.Type', 'Type'), $this->getCardTypes()),
             'name'        => \TextField::create($this->getFieldName('name'), _t('PaymentForm.Name', 'Name on Card')),
             'number'      => \TextField::create($this->getFieldName('number'), _t('PaymentForm.Number', 'Card Number'))->setDescription(_t('PaymentForm.NumberDescription', 'no dashes or spaces')),
-            'startMonth'  => \DropdownField::create($this->getFieldName('startMonth'), _t('PaymentForm.StartMonth', 'Month'), $months)->setHasEmptyDefault(TRUE)->setEmptyString(_t('PaymentForm.StartMonthDefaultText', 'Please Select ...')),
-            'startYear'   => \DropdownField::create($this->getFieldName('startYear'), _t('PaymentForm.StartYear', 'Year'), array_combine($startrange, $startrange), $year)->setHasEmptyDefault(TRUE)->setEmptyString(_t('PaymentForm.StartYearDefaultText', 'Please Select ...')),
-            'expiryMonth' => \DropdownField::create($this->getFieldName('expiryMonth'), _t('PaymentForm.ExpiryMonth', 'Month'), $months)->setHasEmptyDefault(TRUE)->setEmptyString(_t('PaymentForm.ExpiryMonthDefaultText', 'Please Select ...')),
-            'expiryYear'  => \DropdownField::create($this->getFieldName('expiryYear'), _t('PaymentForm.ExpiryYear', 'Year'), array_combine($expiryrange, $expiryrange), $year)->setHasEmptyDefault(TRUE)->setEmptyString(_t('PaymentForm.ExpiryYearDefaultText', 'Please Select ...')),
+            'startMonth'  => \DropdownField::create($this->getFieldName('startMonth'), _t('PaymentForm.StartMonth', 'Month'), $months)->setHasEmptyDefault(true)->setEmptyString(_t('PaymentForm.StartMonthDefaultText', 'Please Select ...')),
+            'startYear'   => \DropdownField::create($this->getFieldName('startYear'), _t('PaymentForm.StartYear', 'Year'), array_combine($startrange, $startrange), $year)->setHasEmptyDefault(true)->setEmptyString(_t('PaymentForm.StartYearDefaultText', 'Please Select ...')),
+            'expiryMonth' => \DropdownField::create($this->getFieldName('expiryMonth'), _t('PaymentForm.ExpiryMonth', 'Month'), $months)->setHasEmptyDefault(true)->setEmptyString(_t('PaymentForm.ExpiryMonthDefaultText', 'Please Select ...')),
+            'expiryYear'  => \DropdownField::create($this->getFieldName('expiryYear'), _t('PaymentForm.ExpiryYear', 'Year'), array_combine($expiryrange, $expiryrange), $year)->setHasEmptyDefault(true)->setEmptyString(_t('PaymentForm.ExpiryYearDefaultText', 'Please Select ...')),
             'cvv'         => \TextField::create($this->getFieldName('cvv'), _t('PaymentForm.CVV', 'Security Code'))->setMaxLength(5),
             'issueNumber' => \TextField::create($this->getFieldName('issueNumber'), _t('PaymentForm.IssueNumber', 'Issue Number'))
         );
@@ -240,16 +270,16 @@ class GatewayFieldsFactory
      *
      * @return string|array
      */
-    public function getFieldName($defaultName, $skipGateway = NULL)
+    public function getFieldName($defaultName, $skipGateway = null)
     {
         if (is_array($defaultName)) {
             return $this->getFieldNames($defaultName);
         }
 
-        $renameMap = $this->getRenameMap();
+        $renameMap = $this->getRenameConfig();
 
         if (!$renameMap) {
-            return FALSE;
+            return false;
         }
 
         $prefix = $this->getGatewayPrefix();
@@ -312,42 +342,17 @@ class GatewayFieldsFactory
      */
     public function normalizeFormData(array $data)
     {
-        $renameMap = $this->getRenameMap();
-
-        $prefix = $this->getGatewayPrefix();
-        // if a prefix has already been defined in the gateway namespace, continue using it
-        // if not, and we have a global prefix, use that.
-        // if not, $prefix becomes an empty string
-        $prefix = ($prefix) ? $prefix : ($this->getGlobalPrefix() ?: '');
-
-        // strip prefix first
-        foreach ($data as $key => $value) {
-            if (strstr($key, $prefix)) {
-                $newKey = str_replace($prefix, '', $key);
-                unset($data[ $key ]);
-                $data[ $newKey ] = $value;
-            }
+        if (empty($data)) {
+            return $data;
         }
 
-        foreach ($renameMap as $defaultName => $customName) {
-            if (is_array($customName)) {
-                // we've entered into the realm of custom Gateway Field Names
-                foreach ($customName as $defaultName => $customName) {
-                    if (array_key_exists($customName, $data)) {
-                        $value = $data[ $customName ];
-                        unset($data[ $customName ]);
+        $renameMap = array_flip(static::$renamemap);
 
-                        $data[ $defaultName ] = $value;
-                    }
-                }
-                continue;
-            }
-
+        foreach ($renameMap as $customName => $defaultName) {
             if (array_key_exists($customName, $data)) {
-                $value = $data[ $customName ];
-                unset($data[ $customName ]);
-
-                $data[ $defaultName ] = $value;
+                $value = $data[$customName];
+                unset($data[$customName]);
+                $data[$defaultName] = $value;
             }
         }
 
@@ -372,13 +377,13 @@ class GatewayFieldsFactory
      */
     public function getGlobalFieldName($defaultName)
     {
-        $renameMap = $this->getRenameMap();
+        $renameMap = $this->getRenameConfig();
 
         if (is_array($renameMap) && array_key_exists($defaultName, $renameMap)) {
             return $renameMap[ $defaultName ];
         }
 
-        return FALSE;
+        return false;
     }
 
     /**
@@ -388,7 +393,7 @@ class GatewayFieldsFactory
      *
      * @return bool|string Returns false if no gateway prefix found, otherwise returns the prefix
      */
-    public function getGatewayPrefix($gateway = NULL)
+    public function getGatewayPrefix($gateway = null)
     {
         return $this->getGatewayFieldName('prefix', $gateway);
     }
@@ -402,17 +407,17 @@ class GatewayFieldsFactory
      * @return bool|string Returns false if no custom gateway field name has been defined, otherwise returns the custom
      *                     name
      */
-    public function getGatewayFieldName($defaultName, $gateway = NULL)
+    public function getGatewayFieldName($defaultName, $gateway = null)
     {
         if (!$gateway) {
             if (!$this->gateway) {
-                return FALSE;
+                return false;
             }
 
             return $this->getGatewayFieldName($defaultName, $this->gateway);
         }
 
-        $renameMap = $this->getRenameMap();
+        $renameMap = $this->getRenameConfig();
 
         if (is_array($renameMap) && array_key_exists($gateway, $renameMap)) {
             $gatewayMap = $renameMap[ $gateway ];
@@ -421,22 +426,32 @@ class GatewayFieldsFactory
             }
         }
 
-        return FALSE;
+        return false;
     }
 
     /**
      * DRY helper to fetch the rename configuration
      * @return array|bool|\scalar
      */
-    public function getRenameMap()
+    public function getRenameConfig()
     {
         $renameMap = \Config::inst()->get('GatewayFieldsFactory', 'rename');
 
         if (!$renameMap || empty($renameMap)) {
-            return FALSE;
+            return false;
         }
 
         return $renameMap;
 
+    }
+
+    /**
+     * Builds the rename map which is used as a lookup table for normalizeFieldData()
+     * @return void
+     */
+    public function buildRenameMap() {
+        foreach (static::$whitelist as $defaultName) {
+            static::$renamemap[$defaultName] = $this->getFieldName($defaultName);
+        }
     }
 }

@@ -248,6 +248,10 @@ class GatewayFieldsFactoryTest extends SapphireTest
 
     public function testNormalizeFormData()
     {
+        // tests can potentially fail if we just update due to settings already defined persisting, so we'll remove
+        // it first
+        Config::inst()->remove('GatewayFieldsFactory', 'rename');
+        
         Config::inst()->update('GatewayFieldsFactory', 'rename', array(
             'prefix' => 'prefix_',
             'name' => 'testName',
@@ -284,10 +288,10 @@ class GatewayFieldsFactoryTest extends SapphireTest
         $this->assertEquals(
             $factory->normalizeFormData(
                 array(
-                    'stripe_name' => 'Reece Alexander',
+                    'stripe_testName' => 'Reece Alexander',
                     'stripe_stripeCCnumber' => '4242424242424242',
-                    'stripe_expiryMonth' => '11',
-                    'stripe_expiryYear' => '2016'
+                    'stripe_testExpiryMonth' => '11',
+                    'stripe_testExpiryYear' => '2016'
                 )
             ),
             array(

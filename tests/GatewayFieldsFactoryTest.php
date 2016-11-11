@@ -246,41 +246,56 @@ class GatewayFieldsFactoryTest extends SapphireTest
         $this->assertEquals($this->factory->getFieldName($pxDefaults), array_keys($fields->dataFields()));
     }
 
-    public function testNormalizeFormData() {
-        $data = array(
-            'prefix_testName' => 'Reece Alexander',
-            'prefix_testNumber' => '4242424242424242',
-            'prefix_testExpiryMonth' => '11',
-            'prefix_testExpiryYear' => '2016'
-        );
-
+    public function testNormalizeFormData()
+    {
         Config::inst()->update('GatewayFieldsFactory', 'rename', array(
             'prefix' => 'prefix_',
             'name' => 'testName',
             'number' => 'testNumber',
             'expiryMonth' => 'testExpiryMonth',
-            'expiryYear' => 'testExpiryYear'
+            'expiryYear' => 'testExpiryYear',
+            'Stripe' => array(
+                'prefix' => 'stripe_',
+                'number' => 'stripeCCnumber'
+            )
         ));
 
+        // Test global rename
         $factory = new GatewayFieldsFactory();
-        
         $this->assertEquals(
-            array_keys($factory->normalizeFormData($data, true)),
+            $factory->normalizeFormData(
+                array(
+                    'prefix_testName' => 'Reece Alexander',
+                    'prefix_testNumber' => '4242424242424242',
+                    'prefix_testExpiryMonth' => '11',
+                    'prefix_testExpiryYear' => '2016'
+                )
+            ),
             array(
-                'name',
-                'number',
-                'expiryMonth',
-                'expiryYear'
+                'name' => 'Reece Alexander',
+                'number' => '4242424242424242',
+                'expiryMonth' => '11',
+                'expiryYear' => '2016'
             )
         );
-    }
+        // Test gateway specific rename
+        $factory = new GatewayFieldsFactory('Stripe');
 
-    public function renameWalk(&$array) {
-        return $array = array_map(
-            function ($name) {
-                return $this->factory->getFieldName($name);
-            },
-            $array
+        $this->assertEquals(
+            $factory->normalizeFormData(
+                array(
+                    'stripe_name' => 'Reece Alexander',
+                    'stripe_stripeCCnumber' => '4242424242424242',
+                    'stripe_expiryMonth' => '11',
+                    'stripe_expiryYear' => '2016'
+                )
+            ),
+            array(
+                'name' => 'Reece Alexander',
+                'number' => '4242424242424242',
+                'expiryMonth' => '11',
+                'expiryYear' => '2016'
+            )
         );
     }
 }

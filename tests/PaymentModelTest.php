@@ -4,6 +4,16 @@ use SilverStripe\Omnipay\GatewayInfo;
 class PaymentModelTest extends PaymentTest
 {
 
+    public function setUp()
+    {
+        parent::setUp();
+        Config::inst()->update('GatewayInfo', 'Manual', array(
+            'can_capture' => true,
+            'can_refund' => true,
+            'can_void' => true
+        ));
+    }
+
     public function testParameterSetup()
     {
         $payment = Payment::create()

@@ -382,7 +382,7 @@ class GatewayFieldsFactory
      */
     public static function config()
     {
-        return \Config::inst()->forClass('GatewayFieldsFactory');
+        return \Config::inst()->forClass('SilverStripe\Omnipay\GatewayFieldsFactory');
     }
 
     /**

@@ -250,9 +250,9 @@ class GatewayFieldsFactoryTest extends SapphireTest
     {
         // tests can potentially fail if we just update due to settings already defined persisting, so we'll remove
         // it first
-        Config::inst()->remove('GatewayFieldsFactory', 'rename');
+        Config::inst()->remove('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename');
         
-        Config::inst()->update('GatewayFieldsFactory', 'rename', array(
+        Config::inst()->update('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename', array(
             'prefix' => 'prefix_',
             'name' => 'testName',
             'number' => 'testNumber',

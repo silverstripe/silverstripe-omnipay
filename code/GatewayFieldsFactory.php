@@ -23,8 +23,7 @@ class GatewayFieldsFactory
     protected $gateway;
     protected $groupdatefields = true;
 
-    protected static $renamemap = array();
-    protected static $renameconfig;
+    protected $renamemap = array();
     protected static $whitelist = array(
         'type',
         'name',
@@ -266,47 +265,16 @@ class GatewayFieldsFactory
      * that it was given
      *
      * @param string|array $defaultName The default name of the field
-     * @param null|bool    $skipGateway Used in recursion
      *
      * @return string|array
      */
-    public function getFieldName($defaultName, $skipGateway = null)
+    public function getFieldName($defaultName)
     {
         if (is_array($defaultName)) {
             return $this->getFieldNames($defaultName);
         }
 
-        $renameMap = $this->getRenameConfig();
-
-        if (!$renameMap) {
-            return false;
-        }
-
-        $prefix = $this->getGatewayPrefix();
-        // if a prefix has already been defined in the gateway namespace, continue using it
-        // if not, and we have a global prefix, use that.
-        // if not, $prefix becomes an empty string
-        $prefix = ($prefix) ? $prefix : ($this->getGlobalPrefix() ?: '');
-
-        // Gateway Rename Support
-        if (array_key_exists($this->gateway, $renameMap)) {
-            if ($this->getGlobalFieldName($this->gateway) && $customName = $this->getGatewayFieldName($defaultName)) {
-                // we have a gateway defined custom field name for $defaultName
-                return $prefix . $customName;
-            }
-
-            // no gateway defined custom field name was found for $defaultName, continuing will fallback to the global map
-        }
-
-        //Global Rename
-        if ($customName = $this->getGlobalFieldName($defaultName)) {
-            return $prefix . $customName;
-        }
-
-        // at this point, no defined custom field names were found in either the global or gateway namespace of the
-        // rename.yml configuration file, return the input as is with our prefix prepended if it has been defined
-        return $prefix . $defaultName;
-
+        return $this->renamemap[$defaultName];
     }
 
     /**
@@ -346,7 +314,7 @@ class GatewayFieldsFactory
             return $data;
         }
 
-        $renameMap = array_flip(static::$renamemap);
+        $renameMap = array_flip($this->renamemap);
 
         foreach ($renameMap as $customName => $defaultName) {
             if (array_key_exists($customName, $data)) {
@@ -360,42 +328,21 @@ class GatewayFieldsFactory
     }
 
     /**
-     * Fetches the prefix (if defined) from the global section of the rename map
-     * @return mixed
-     */
-    public function getGlobalPrefix()
-    {
-        return $this->getGlobalFieldName('prefix');
-    }
-
-    /**
      * Fetches custom name from the rename map, or returns false
      *
      * @param string $defaultName The original name of the field
      *
      * @return bool|string Returns false if no custom name has been defined, otherwise returns the custom name
      */
-    public function getGlobalFieldName($defaultName)
+    private function getGlobalFieldName($defaultName)
     {
-        $renameMap = $this->getRenameConfig();
+        $renameMap = $this->config()->rename;
 
         if (is_array($renameMap) && array_key_exists($defaultName, $renameMap)) {
             return $renameMap[ $defaultName ];
         }
 
         return false;
-    }
-
-    /**
-     * Fetches the prefix for a gateway, or returns false
-     *
-     * @param null $gateway
-     *
-     * @return bool|string Returns false if no gateway prefix found, otherwise returns the prefix
-     */
-    public function getGatewayPrefix($gateway = null)
-    {
-        return $this->getGatewayFieldName('prefix', $gateway);
     }
 
     /**
@@ -407,7 +354,7 @@ class GatewayFieldsFactory
      * @return bool|string Returns false if no custom gateway field name has been defined, otherwise returns the custom
      *                     name
      */
-    public function getGatewayFieldName($defaultName, $gateway = null)
+    private function getGatewayFieldName($defaultName, $gateway = null)
     {
         if (!$gateway) {
             if (!$this->gateway) {
@@ -417,7 +364,7 @@ class GatewayFieldsFactory
             return $this->getGatewayFieldName($defaultName, $this->gateway);
         }
 
-        $renameMap = $this->getRenameConfig();
+        $renameMap = $this->config()->rename;
 
         if (is_array($renameMap) && array_key_exists($gateway, $renameMap)) {
             $gatewayMap = $renameMap[ $gateway ];
@@ -430,28 +377,55 @@ class GatewayFieldsFactory
     }
 
     /**
-     * DRY helper to fetch the rename configuration
-     * @return array|bool|\scalar
+     * Fetch the GatewayFieldsFactory configuration
+     * @return \Config_ForClass
      */
-    public function getRenameConfig()
+    public static function config()
     {
-        $renameMap = \Config::inst()->get('GatewayFieldsFactory', 'rename');
-
-        if (!$renameMap || empty($renameMap)) {
-            return false;
-        }
-
-        return $renameMap;
-
+        return \Config::inst()->forClass('GatewayFieldsFactory');
     }
 
     /**
      * Builds the rename map which is used as a lookup table for normalizeFieldData()
      * @return void
      */
-    public function buildRenameMap() {
+    private function buildRenameMap() {
+
+        $renameMap = $this->config()->rename;
+
+        if (!$renameMap) {
+            return;
+        }
+
+        $prefix = $this->getGatewayFieldName('prefix');
+        // if a prefix has already been defined in the gateway namespace, continue using it
+        // if not, and we have a global prefix, use that.
+        // if not, $prefix becomes an empty string
+        $prefix = ($prefix) ? $prefix : ($this->getGlobalFieldName('prefix') ?: '');
+
+
         foreach (static::$whitelist as $defaultName) {
-            static::$renamemap[$defaultName] = $this->getFieldName($defaultName);
+
+            // Gateway Rename Support
+            if (array_key_exists($this->gateway, $renameMap)) {
+                if ($this->getGlobalFieldName($this->gateway) && $customName = $this->getGatewayFieldName($defaultName)) {
+                    // we have a gateway defined custom field name for $defaultName
+                    $this->renamemap[$defaultName] =  $prefix . $customName;
+                    continue;
+                }
+
+                // no gateway defined custom field name was found for $defaultName, continuing will fallback to the global map
+            }
+
+            //Global Rename
+            if ($customName = $this->getGlobalFieldName($defaultName)) {
+                $this->renamemap[$defaultName] =  $prefix . $customName;
+                continue;
+            }
+
+            // at this point, no defined custom field names were found in either the global or gateway namespace of the
+            // rename.yml configuration file, return the input as is with our prefix prepended if it has been defined
+            $this->renamemap[$defaultName] = $prefix . $defaultName;
         }
     }
 }

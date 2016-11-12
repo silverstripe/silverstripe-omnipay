@@ -24,7 +24,7 @@ class GatewayFieldsFactory
     protected $groupdatefields = true;
 
     protected $renamemap = array();
-    protected static $whitelist = array(
+    private static $whitelist = array(
         'type',
         'name',
         'number',
@@ -403,8 +403,7 @@ class GatewayFieldsFactory
         // if not, $prefix becomes an empty string
         $prefix = ($prefix) ? $prefix : ($this->getGlobalFieldName('prefix') ?: '');
 
-
-        foreach (static::$whitelist as $defaultName) {
+        foreach ($this->config()->whitelist as $defaultName) {
 
             // Gateway Rename Support
             if (array_key_exists($this->gateway, $renameMap)) {

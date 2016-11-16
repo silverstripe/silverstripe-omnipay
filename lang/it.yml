@@ -31,7 +31,7 @@ it:
     PERMISSION_CAPTURE_PAYMENTS: 'Cattura pagamenti'
     PERMISSION_CAPTURE_PAYMENTS_HELP: 'Permette la cattura dei pagamenti autorizzati'
     PERMISSION_VOID_PAYMENTS: 'Annulla pagamenti'
-    PERMISSION_VOID_PAYMENTS_HELP: 'Permette l\'annullamento dei pagamenti autorizzati'
+    PERMISSION_VOID_PAYMENTS_HELP: 'Permette l''annullamento dei pagamenti autorizzati'
   PaymentForm:
     BillingAddress1: Indirizzo
     BillingAddress2: 'Indirizzo linea 2'

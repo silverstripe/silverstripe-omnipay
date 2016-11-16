@@ -1,0 +1,97 @@
+it:
+  PaymentAdmin:
+    MENUTITLE: Pagamenti
+  Payment:
+    PLURALNAME: Pagamenti
+    SINGULARNAME: Pagamento
+    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+    InvalidUrl: 'Url di pagamento non valida.'
+    InvalidStatus: 'Status di pagamento non valido/non gestito'
+    NotFound: 'Pagamento non trovato.'
+    Date: 'Data'
+    Amount: 'Ammontare'
+    STATUS_PENDINGAUTHORIZATION: 'In attesa di autorizzazione'
+    STATUS_AUTHORIZED: Autorizzato
+    STATUS_PENDINGCAPTURE: 'In attesa di cattura'
+    STATUS_PENDINGPURCHASE: 'In attesa di acquisto'
+    STATUS_CAPTURED: Catturato
+    STATUS_CREATED: Creato
+    STATUS_PENDINGREFUND: 'In attesa di rimborso'
+    STATUS_REFUNDED: Rimborsato
+    STATUS_PENDINGVOID: 'In attesa di annullamento'
+    STATUS_VOID: Annullato
+    db_Gateway: Gateway
+    db_Identifier: Identificatore
+    db_Money: Denaro
+    db_Status: Status
+    has_many_Messages: Messaggi
+    PAYMENT_PERMISSIONS: 'Azioni di pagamento'
+    PERMISSION_REFUND_PAYMENTS: 'Rimborsa pagamenti'
+    PERMISSION_REFUND_PAYMENTS_HELP: 'Permette il rimborso dei pagamenti catturati'
+    PERMISSION_CAPTURE_PAYMENTS: 'Cattura pagamenti'
+    PERMISSION_CAPTURE_PAYMENTS_HELP: 'Permette la cattura dei pagamenti autorizzati'
+    PERMISSION_VOID_PAYMENTS: 'Annulla pagamenti'
+    PERMISSION_VOID_PAYMENTS_HELP: 'Permette l\'annullamento dei pagamenti autorizzati'
+  PaymentForm:
+    BillingAddress1: Indirizzo
+    BillingAddress2: 'Indirizzo linea 2'
+    BillingCity: Città
+    BillingCountry: Nazione
+    BillingPhone: Telefono
+    BillingPostcode: 'Codice postale'
+    BillingState: Stato
+    Company: Azienda
+    CVV: 'Codice di sicurezza'
+    Email: 'E-mail'
+    Expiry: Scadenza
+    ExpiryMonth: Mese
+    ExpiryYear: Anno
+    IssueNumber: 'Numero di serie britannico'
+    Name: 'Nome sulla carta'
+    Number: 'Numero di carta'
+    NumberDescription: 'niente trattini o spazi'
+    ShippingAddress1: 'Indirizzo di spedizione'
+    ShippingAddress2: 'Indirizzo di spedizione 2'
+    ShippingCity: 'Città di spedizione'
+    ShippingCountry: 'Nazione di spedizione'
+    ShippingPhone: 'Telefono di spedizione'
+    ShippingPostcode: 'Codice postale di spedizione'
+    ShippingState: 'Stato di spedizione'
+    Start: Inizio
+    StartMonth: Mese
+    StartYear: Anno
+    Type: Tipo
+    StartMonthDefaultText: 'Prego selezionare ...'
+    StartYearDefaultText: 'Prego selezionare ...'
+    ExpiryMonthDefaultText: 'Prego selezionare ...'
+    ExpiryYearDefaultText: 'Prego selezionare ...'
+  # Payment message classes
+  PaymentMessage:
+    PLURALNAME: 'Messaggi di pagamento'
+    SINGULARNAME: 'Messaggio di pagamento'
+    db_ClientIp: 'IP Client'
+    db_Message: Messaggio
+    has_one_Payment: Pagamento
+    has_one_User: Utente
+  GatewayMessage:
+    PLURALNAME: 'Messaggi del Gateway'
+    SINGULARNAME: 'Messaggio del Gateway'
+    db_Code: Codice
+    db_Gateway: Gateway
+    db_Reference: Riferimento
+  # Credit card brands, supplied from Omnipay\Common\CreditCard::getSupportedBrands
+  CreditCard:
+    VISA: Visa
+    MASTERCARD: Mastercard
+    DISCOVER: Discover
+    AMEX: 'American Express'
+    DINERS_CLUB: 'Diners Club'
+    JCB: JCB
+    SWITCH: Switch
+    SOLO: Solo
+    DANKORT: Dankort
+    MAESTRO: Maestro
+    FORBRUGSFORENINGEN: Forbrugsforeningen
+    LASER: Laser
+  Gateway:
+    Manual: 'Bonifico bancario'

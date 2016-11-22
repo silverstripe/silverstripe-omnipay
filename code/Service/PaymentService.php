@@ -101,6 +101,15 @@ abstract class PaymentService extends \Object
     }
 
     /**
+     * Get the payment associated with this service
+     * @return \Payment
+     */
+    public function getPayment()
+    {
+        return $this->payment;
+    }
+
+    /**
      * Get the omnipay gateway associated with this payment,
      * with configuration applied.
      *

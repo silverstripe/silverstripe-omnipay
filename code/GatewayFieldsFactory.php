@@ -354,7 +354,11 @@ class GatewayFieldsFactory
             return $this->getFieldNames($defaultName);
         }
 
-        return $this->renamemap[$defaultName];
+        if (isset($this->renamemap[$defaultName])) {
+            return $this->renamemap[$defaultName];
+        }
+
+        return $defaultName;
     }
 
     /**

@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. If you're u
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.1
+
+[» Detailed changelog](docs/changelogs/2.1.md)
+
 ## 2.0
 
 The 2.0 release of this module has some breaking API changes when updating from 1.0.

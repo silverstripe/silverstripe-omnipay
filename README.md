@@ -18,7 +18,7 @@ This module is a complete rewrite of the past Payment module. It is not backward
 
 ## Version
 
-2.0
+2.1
 
 ## Requirements
 

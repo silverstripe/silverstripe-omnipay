@@ -33,7 +33,7 @@ class AuthorizeService extends PaymentService
         $gatewayData = $this->gatherGatewayData($data);
 
         $this->extend('onBeforeAuthorize', $gatewayData);
-        $request = $this->oGateway()->authorize($gatewayData);
+        $request = $this->oGateway()->authorize($gatewayData->toMap());
         $this->extend('onAfterAuthorize', $request);
 
         $this->createMessage('AuthorizeRequest', $request);
@@ -96,7 +96,7 @@ class AuthorizeService extends PaymentService
         $gatewayData = $this->gatherGatewayData($data);
 
         $this->extend('onBeforeCompleteAuthorize', $gatewayData);
-        $request = $gateway->completeAuthorize($gatewayData);
+        $request = $gateway->completeAuthorize($gatewayData->toMap());
         $this->extend('onAfterCompleteAuthorize', $request);
 
         $this->createMessage('CompleteAuthorizeRequest', $request);

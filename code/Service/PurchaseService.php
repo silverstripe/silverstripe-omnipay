@@ -39,7 +39,7 @@ class PurchaseService extends PaymentService
         $gatewayData = $this->gatherGatewayData($data);
 
         $this->extend('onBeforePurchase', $gatewayData);
-        $request = $this->oGateway()->purchase($gatewayData);
+        $request = $this->oGateway()->purchase($gatewayData->toMap());
         $this->extend('onAfterPurchase', $request);
 
         $this->createMessage('PurchaseRequest', $request);
@@ -101,7 +101,7 @@ class PurchaseService extends PaymentService
         $gatewayData = $this->gatherGatewayData($data);
 
         $this->extend('onBeforeCompletePurchase', $gatewayData);
-        $request = $gateway->completePurchase($gatewayData);
+        $request = $gateway->completePurchase($gatewayData->toMap());
         $this->extend('onAfterCompletePurchase', $request);
 
         $this->createMessage('CompletePurchaseRequest', $request);

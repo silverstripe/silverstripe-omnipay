@@ -19,7 +19,7 @@ final class Payment extends DataObject implements PermissionProvider
         //contains Amount and Currency
         'Money' => 'Money',
         // status
-        'Status' => "Enum('Created,PendingAuthorization,Authorized,PendingPurchase,PendingCapture,Captured,PendingRefund,Refunded,PendingVoid,Void','Created')",
+        'Status' => "Enum('Created,PendingAuthorization,Authorized,PendingCreateCard,CardCreated,PendingPurchase,PendingCapture,Captured,PendingRefund,Refunded,PendingVoid,Void','Created')",
         // unique identifier for this payment
         'Identifier' => 'Varchar(64)',
         // How this payment is being referenced by the payment provider
@@ -249,6 +249,7 @@ final class Payment extends DataObject implements PermissionProvider
     public function isComplete()
     {
         return
+            $this->Status == 'CardCreated' ||
             $this->Status == 'Captured' ||
             $this->Status == 'Refunded' ||
             $this->Status == 'Void';

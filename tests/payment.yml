@@ -41,6 +41,14 @@ Payment:
     Status: Authorized
     Identifier: 51efcc0e94718dd80d97b1281762a9bc
     TransactionReference: authorizedPaymentReceipt
+  payment7:
+    Gateway: PaymentExpress_PxPay
+    MoneyAmount: 1234.56
+    MoneyCurrency: USD
+    Status: PendingCreateCard
+    Identifier: 18f2fcac2b8f7549fd0295b251d9e9db
+    SuccessUrl: 'shop/complete'
+    FailureUrl: 'shop/incomplete'
 
 GatewayMessage:
   message1:
@@ -69,3 +77,7 @@ GatewayMessage:
     ClassName: AuthorizedResponse
     Reference: authorizedPaymentReceipt
     PaymentID: =>Payment.payment6
+  message7:
+    ClassName: CreateCardResponse
+    Reference: createCardPaymentReceipt
+    PaymentID: =>Payment.payment7

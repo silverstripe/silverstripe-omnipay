@@ -40,6 +40,7 @@ abstract class PaymentTest extends FunctionalTest
         // Create the default service map
         Config::inst()->update('ServiceFactory', 'services', array(
             'authorize' => '\SilverStripe\Omnipay\Service\AuthorizeService',
+            'createcard' => '\SilverStripe\Omnipay\Service\CreateCardService',
             'purchase' => '\SilverStripe\Omnipay\Service\PurchaseService',
             'refund' => '\SilverStripe\Omnipay\Service\RefundService',
             'capture' => '\SilverStripe\Omnipay\Service\CaptureService',

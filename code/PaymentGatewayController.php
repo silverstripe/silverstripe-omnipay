@@ -69,6 +69,10 @@ class PaymentGatewayController extends \Controller
             case 'Authorized':
                 $intent = ServiceFactory::INTENT_AUTHORIZE;
                 break;
+            case 'PendingCreateCard':
+            case 'CardCreated':
+                $intent = ServiceFactory::INTENT_CREATECARD;
+                break;
             case 'PendingCapture':
                 $intent = ServiceFactory::INTENT_CAPTURE;
                 break;

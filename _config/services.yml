@@ -4,6 +4,7 @@ Name: omnipay-services
 ServiceFactory:
   services:
     authorize: '\SilverStripe\Omnipay\Service\AuthorizeService'
+    createcard: '\SilverStripe\Omnipay\Service\CreateCardService'
     purchase: '\SilverStripe\Omnipay\Service\PurchaseService'
     refund: '\SilverStripe\Omnipay\Service\RefundService'
     capture: '\SilverStripe\Omnipay\Service\CaptureService'

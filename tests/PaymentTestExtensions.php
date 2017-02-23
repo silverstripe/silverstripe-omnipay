@@ -125,6 +125,21 @@ class PaymentTest_PaymentExtensionHooks extends DataExtension implements TestOnl
             'args' => array()
         );
     }
+    public function onCardCreated($serviceResponse)
+    {
+        $this->callStack[] = array(
+            'method' => 'onCardCreated',
+            'args' => array($serviceResponse)
+        );
+    }
+
+    public function onAwaitingCreateCard($serviceResponse)
+    {
+        $this->callStack[] = array(
+            'method' => 'onAwaitingCreateCard',
+            'args' => array($serviceResponse)
+        );
+    }
 }
 
 /**
@@ -328,4 +343,46 @@ class PaymentTest_ServiceExtensionHooks extends Extension implements TestOnly
             'args' => array($omnipayRequest, $omnipayResponse)
         );
     }
+
+    public function onBeforeCreateCard($data)
+    {
+        $this->callStack[] = array(
+            'method' => 'onBeforeCreateCard',
+            'args' => array($data)
+        );
+    }
+
+    public function onAfterCreateCard($omnipayRequest)
+    {
+        $this->callStack[] = array(
+            'method' => 'onAfterCreateCard',
+            'args' => array($omnipayRequest)
+        );
+    }
+
+    public function onAfterSendCreateCard($omnipayRequest, $omnipayResponse)
+    {
+        $this->callStack[] = array(
+            'method' => 'onAfterSendCreateCard',
+            'args' => array($omnipayRequest, $omnipayResponse)
+        );
+    }
+
+    public function onBeforeCompleteCreateCard($data)
+    {
+        $this->callStack[] = array(
+            'method' => 'onBeforeCompleteCreateCard',
+            'args' => array($data)
+        );
+    }
+
+    public function onAfterCompleteCreateCard($omnipayRequest)
+    {
+        $this->callStack[] = array(
+            'method' => 'onAfterCompleteCreateCard',
+            'args' => array($omnipayRequest)
+        );
+    }
+
+
 }

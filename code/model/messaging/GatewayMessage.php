@@ -5,7 +5,7 @@ class GatewayMessage extends PaymentMessage
 
     private static $db = array(
         "Gateway" => "Varchar",
-        "Reference" => "Text", //remote id
+        "Reference" => "Varchar(255)", //remote id
         "Code" => "Varchar"
     );
 

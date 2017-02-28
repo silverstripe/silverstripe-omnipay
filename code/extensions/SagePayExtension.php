@@ -68,7 +68,7 @@ class SagePayExtension extends Extension
     private function getTransactionReference()
     {
         /** @var \Payment $payment */
-        $payment = $$this->owner->purchaseService->getPayment();
+        $payment = $this->owner->getPayment();
 
         /** @var PurchaseRedirectResponse $message */
         $message = $payment->getLatestMessageOfType('PurchaseRedirectResponse');
@@ -81,10 +81,12 @@ class SagePayExtension extends Extension
      */
     private function addDescription(array &$gatewayData)
     {
-        $gatewayData['description'] = sprintf(
-          'Payment made on %s',
-          date('D j M Y')
-        );
+        if ($payment->Gateway == 'SagePay_Direct' || $payment->Gateway == 'SagePay_Server') {
+            $gatewayData['description'] = sprintf(
+                'Payment made on %s',
+                date('D j M Y')
+            );
+        }
     }
 
     /**
@@ -95,7 +97,8 @@ class SagePayExtension extends Extension
     private function respondToNotification(ServiceResponse $response, Payment $payment)
     {
         $omnipayResponse = $response->getOmnipayResponse();
-        if ($omnipayResponse->isSuccessful()
+        if ($omnipayResponse !== null
+            && $omnipayResponse->isSuccessful()
             && $response->isNotification()
             && !$response->isError()
         ) {

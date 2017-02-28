@@ -13,8 +13,8 @@ use SilverStripe\Omnipay\Service\ServiceResponse;
  *    - SagePayExtension
  *
  * The extension adds following:
- *  - A Description into the initial request (reequired by SagePau)
- *  - The transactionReference which is recieved back from SagePaty
+ *  - A Description into the initial request (reequired by SagePay)
+ *  - The proper transactionReference which is recieved back from SagePay
  *  - A response to the notification (See use_async_notification)
  * @see https://github.com/silverstripe/silverstripe-omnipay/issues/153
  * @see https://github.com/silverstripe/silverstripe-omnipay/issues/159

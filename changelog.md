@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file. If you're u
 
 This project adheres to [Semantic Versioning](http://semver.org/).
 
+## 2.2
+
+[» Detailed changelog](docs/changelogs/2.2.md)
+
 ## 2.1
 
 [» Detailed changelog](docs/changelogs/2.1.md)

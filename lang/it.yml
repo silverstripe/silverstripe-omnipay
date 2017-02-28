@@ -38,11 +38,11 @@ it:
     BillingCity: Città
     BillingCountry: Nazione
     BillingPhone: Telefono
-    BillingPostcode: 'Codice postale'
+    BillingPostcode: Codice postale
     BillingState: Stato
     Company: Azienda
     CVV: 'Codice di sicurezza'
-    Email: 'E-mail'
+    Email: E-mail
     Expiry: Scadenza
     ExpiryMonth: Mese
     ExpiryYear: Anno
@@ -65,7 +65,6 @@ it:
     StartYearDefaultText: 'Prego selezionare ...'
     ExpiryMonthDefaultText: 'Prego selezionare ...'
     ExpiryYearDefaultText: 'Prego selezionare ...'
-  # Payment message classes
   PaymentMessage:
     PLURALNAME: 'Messaggi di pagamento'
     SINGULARNAME: 'Messaggio di pagamento'
@@ -79,7 +78,6 @@ it:
     db_Code: Codice
     db_Gateway: Gateway
     db_Reference: Riferimento
-  # Credit card brands, supplied from Omnipay\Common\CreditCard::getSupportedBrands
   CreditCard:
     VISA: Visa
     MASTERCARD: Mastercard

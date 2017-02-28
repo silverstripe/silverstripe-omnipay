@@ -11,6 +11,7 @@ class ServiceFactory extends \Object
      * Different constants for commonly used intents.
      */
     const INTENT_AUTHORIZE  = "authorize";
+    const INTENT_CREATECARD = "createcard";
     const INTENT_PURCHASE   = "purchase";
     const INTENT_REFUND     = "refund";
     const INTENT_VOID       = "void";

@@ -81,6 +81,7 @@ class SagePayExtension extends Extension
      */
     private function addDescription(array &$gatewayData)
     {
+        $payment = $this->owner->getPayment();
         if ($payment->Gateway == 'SagePay_Direct' || $payment->Gateway == 'SagePay_Server') {
             $gatewayData['description'] = sprintf(
                 'Payment made on %s',

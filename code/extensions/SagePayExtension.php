@@ -22,7 +22,7 @@ use SilverStripe\Omnipay\Service\ServiceResponse;
 class SagePayExtension extends Extension
 {
     /**
-     * @param  array  $gatewayData
+     * @param array $gatewayData
      */
     public function onBeforePurchase(array &$gatewayData)
     {
@@ -30,7 +30,7 @@ class SagePayExtension extends Extension
     }
 
     /**
-     * @param  array  $gatewayData
+     * @param array $gatewayData
      */
     public function onBeforeAuthorize(array &$gatewayData)
     {

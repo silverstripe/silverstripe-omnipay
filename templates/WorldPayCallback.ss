@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html lang="en">
     <head>
-        <meta http-equiv="refresh" content="2;url={$RedirectURL}" />
+        <meta http-equiv="refresh" content="2;url={$ReturnURL}" />
         <title><%t WorldPayExtension.Processing "Processing" %></title>
     </head>
 
@@ -14,10 +14,10 @@
             </p>
 
             <p>
-                <a href="{$RedirectURL}"><%t WorldPayExtension.ReturnToStore "Return To Merchant's Store" %></a>
+                <a href="{$ReturnURL}"><%t WorldPayExtension.ReturnToStore "Return To Merchant's Store" %></a>
             </p>
-        </div>
 
-        <WPDISPLAY ITEM="banner">
+            <WPDISPLAY ITEM="banner">
+        </div>
     </body>
 </html>

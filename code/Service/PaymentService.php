@@ -202,7 +202,7 @@ abstract class PaymentService extends \Object
      *
      * @param array $data incoming data for the gateway
      * @param boolean $includeCardOrToken whether or not to include card or token data
-     * @return array
+     * @return \ArrayData
      */
     protected function gatherGatewayData($data = array(), $includeCardOrToken = true)
     {
@@ -240,7 +240,7 @@ abstract class PaymentService extends \Object
             }
         }
 
-        return $gatewaydata;
+        return new \ArrayData($gatewaydata);
     }
 
     /**

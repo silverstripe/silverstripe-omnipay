@@ -93,7 +93,7 @@ class RefundService extends NotificationCompleteService
             throw new InvalidParameterException('This payment cannot be partially refunded (unsupported by gateway).');
         }
 
-        $gatewayData = array_merge(
+        $gatewayData = new \ArrayData(array_merge(
             $data,
             array(
                 'amount' => (float)$amount,
@@ -101,10 +101,10 @@ class RefundService extends NotificationCompleteService
                 'transactionReference' => $reference,
                 'notifyUrl' => $this->getEndpointUrl('notify')
             )
-        );
+        ));
 
         $this->extend('onBeforeRefund', $gatewayData);
-        $request = $this->oGateway()->refund($gatewayData);
+        $request = $this->oGateway()->refund($gatewayData->toMap());
         $this->extend('onAfterRefund', $request);
 
         $message = $this->createMessage($this->requestMessageType, $request);

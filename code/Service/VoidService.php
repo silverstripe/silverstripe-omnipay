@@ -62,16 +62,16 @@ class VoidService extends NotificationCompleteService
             );
         }
 
-        $gatewayData = array_merge(
+        $gatewayData = new \ArrayData(array_merge(
             $data,
             array(
                 'transactionReference' => $reference,
                 'notifyUrl' => $this->getEndpointUrl('notify')
             )
-        );
+        ));
 
         $this->extend('onBeforeVoid', $gatewayData);
-        $request = $this->oGateway()->void($gatewayData);
+        $request = $this->oGateway()->void($gatewayData->toMap());
         $this->extend('onAfterVoid', $request);
 
         $message = $this->createMessage($this->requestMessageType, $request);

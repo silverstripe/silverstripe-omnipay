@@ -100,7 +100,7 @@ class CaptureService extends NotificationCompleteService
             throw new InvalidParameterException('This payment cannot be partially captured (unsupported by gateway).');
         }
 
-        $gatewayData = array_merge(
+        $gatewayData = new \ArrayData(array_merge(
             $data,
             array(
                 'amount' => (float)$amount,
@@ -108,10 +108,10 @@ class CaptureService extends NotificationCompleteService
                 'transactionReference' => $reference,
                 'notifyUrl' => $this->getEndpointUrl('notify')
             )
-        );
+        ));
 
         $this->extend('onBeforeCapture', $gatewayData);
-        $request = $this->oGateway()->capture($gatewayData);
+        $request = $this->oGateway()->capture($gatewayData->toMap());
         $this->extend('onAfterCapture', $request);
 
         $message = $this->createMessage($this->requestMessageType, $request);

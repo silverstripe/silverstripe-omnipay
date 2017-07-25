@@ -4,7 +4,7 @@ use Omnipay\PayPal\Message\RestAuthorizeResponse;
 use SilverStripe\Omnipay\Service\ServiceResponse;
 
 /**
- * PayPal Rest can woerk without taking a credit card, this extension deals with
+ * PayPal Rest can work without taking a credit card, this extension deals with
  * that and the response that comes back from PayPal
  *
  * # payment.yml
@@ -28,6 +28,12 @@ class PayPalRestExtension extends Extension
 
     public function onBeforeCompletePurchase(array &$gatewayData)
     {
+        /**
+         * As described in Omnipay\PayPal\Message\RestPurchaseRequest PayPal
+         * responds from the payment withthe transaction reference and a
+         * PayerID as GET vars. We gather tham and throw them back to PayPal
+         * for confirmation
+         */
         $gatewayData['transactionReference'] = $_GET['paymentId'];
         $gatewayData['payerId'] = $_GET['PayerID'];
     }
@@ -40,7 +46,7 @@ class PayPalRestExtension extends Extension
         /** @var Payment $payment */
         $payment = $response->getPayment();
 
-        // We only want to process the response if we are using Paypal_Rest
+        // We only want to process the response if we are using PayPal_Rest
         if ($payment->Gateway !== 'PayPal_Rest') {
             return;
         }

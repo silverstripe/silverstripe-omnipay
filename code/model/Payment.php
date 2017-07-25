@@ -10,6 +10,13 @@ use SilverStripe\Omnipay\PaymentMath;
  * paid or not, and the gateway used to make payment.
  *
  * @package payment
+ * @property string Gateway
+ * @property Money Money
+ * @property string Status
+ * @property string Identifier
+ * @property string TransactionReference
+ * @property string SuccessUrl
+ * @property string FailureUrl
  */
 final class Payment extends DataObject implements PermissionProvider
 {

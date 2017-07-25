@@ -3,6 +3,15 @@
 use Omnipay\PayPal\Message\RestAuthorizeResponse;
 use SilverStripe\Omnipay\Service\ServiceResponse;
 
+/**
+ * PayPal Rest can woerk without taking a credit card, this extension deals with
+ * that and the response that comes back from PayPal
+ *
+ * # payment.yml
+ * SilverStripe\Omnipay\Service\PaymentService:
+ *  extensions:
+ *    - PayPalRestExtension
+ */
 class PayPalRestExtension extends Extension
 {
     /**
@@ -31,7 +40,7 @@ class PayPalRestExtension extends Extension
         /** @var Payment $payment */
         $payment = $response->getPayment();
 
-        // We only want to respond to the notification if we are using SagePay
+        // We only want to process the response if we are using Paypal_Rest
         if ($payment->Gateway !== 'PayPal_Rest') {
             return;
         }

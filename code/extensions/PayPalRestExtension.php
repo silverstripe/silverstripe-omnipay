@@ -1,8 +1,5 @@
 <?php
 
-use Omnipay\PayPal\Message\RestAuthorizeResponse;
-use SilverStripe\Omnipay\Service\ServiceResponse;
-
 /**
  * PayPal Rest can work without taking a credit card, this extension deals with
  * that and the response that comes back from PayPal

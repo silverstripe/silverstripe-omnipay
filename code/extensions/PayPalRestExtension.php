@@ -37,29 +37,4 @@ class PayPalRestExtension extends Extension
         $gatewayData['transactionReference'] = $_GET['paymentId'];
         $gatewayData['payerId'] = $_GET['PayerID'];
     }
-
-    /**
-     * @param ServiceResponse $response
-     */
-    public function updateServiceResponse($response)
-    {
-        /** @var Payment $payment */
-        $payment = $response->getPayment();
-
-        // We only want to process the response if we are using PayPal_Rest
-        if ($payment->Gateway !== 'PayPal_Rest') {
-            return;
-        }
-
-        $omniPayResponse = $response->getOmnipayResponse();
-        if ($omnipayResponse !== null
-            && $omnipayResponse->isSuccessful()
-            && !$response->isError()) {
-
-            if ($omniPayResponse instanceof RestAuthorizeResponse) {
-                $payment->TransactionReference = $omniPayResponse->getTransactionId();
-                $payment->write();
-            }
-        }
-    }
 }

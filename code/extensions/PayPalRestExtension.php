@@ -26,11 +26,14 @@ class PayPalRestExtension extends Extension
         unset($gatewayData['card']);
     }
 
+    /**
+     * @param array $gatewayData
+     */
     public function onBeforeCompletePurchase(array &$gatewayData)
     {
         /**
          * As described in Omnipay\PayPal\Message\RestPurchaseRequest PayPal
-         * responds from the payment withthe transaction reference and a
+         * responds from the payment with the transaction reference and a
          * PayerID as GET vars. We gather tham and throw them back to PayPal
          * for confirmation
          */

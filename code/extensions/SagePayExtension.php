@@ -57,26 +57,39 @@ class SagePayExtension extends Extension
      */
     public function onBeforeCompletePurchase(array &$gatewayData)
     {
-        $gatewayData['transactionReference'] = $this->getTransactionReference($gatewayData);
+        $this->addTransactionReference($gatewayData);
     }
 
     /**
-     * Grabs the transactionReference from the previous received message so
-     * that it can be sent back to SagePay as clarification
-     * @return string
+     * @param array $gatewayData
      */
-    private function getTransactionReference()
+    public function onBeforeCompleteAuthorize(array &$gatewayData)
+    {
+        $this->addTransactionReference($gatewayData, true);
+    }
+
+    /**
+     * Grabs the transactionReference from the previous received message and adds it to the
+     * gateway data, so that it can be sent back to SagePay as clarification
+     * @param array $gatewayData incoming gateway data
+     * @param bool $isAuthorize whether or not we're dealing with a complete authorize request
+     */
+    private function addTransactionReference(array &$gatewayData, $isAuthorize = false)
     {
         /** @var \Payment $payment */
         $payment = $this->owner->getPayment();
 
-        /** @var PurchaseRedirectResponse $message */
-        $message = $payment->getLatestMessageOfType('PurchaseRedirectResponse');
-        return $message->Reference;
+        // Only apply the changes if the gateway is SagePay Server
+        if ($payment->Gateway == 'SagePay_Server') {
+            /** @var PurchaseRedirectResponse $message */
+            $message = $payment->getLatestMessageOfType(
+                $isAuthorize ? 'AuthorizeRedirectResponse' : 'PurchaseRedirectResponse');
+            $gatewayData['transactionReference'] = $message->Reference;
+        }
     }
 
     /**
-     * Description for Sagepay must be < 100 characters
+     * Description for SagePay must be < 100 characters
      * @param $gatewayData
      */
     private function addDescription(array &$gatewayData)
@@ -91,7 +104,7 @@ class SagePayExtension extends Extension
     }
 
     /**
-     * Used to respond to the SagepPay notication
+     * Used to respond to the SagePay notification
      * @param ServiceResponse $response
      * @param Payment $payment
      */

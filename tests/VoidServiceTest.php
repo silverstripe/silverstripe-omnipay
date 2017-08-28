@@ -1,5 +1,7 @@
 <?php
 
+namespace SilverStripe\Omnipay\Tests;
+
 use SilverStripe\Omnipay\Service\VoidService;
 
 /**

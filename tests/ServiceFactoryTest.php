@@ -1,4 +1,7 @@
 <?php
+
+namespace SilverStripe\Omnipay\Tests;
+
 use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Omnipay\Service\CaptureService;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;

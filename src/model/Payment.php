@@ -1,5 +1,7 @@
 <?php
 
+namespace SilverStripe\Omnipay\Model\Payment;
+
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\PaymentMath;
 

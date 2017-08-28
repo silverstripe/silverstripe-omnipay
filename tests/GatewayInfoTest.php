@@ -1,4 +1,7 @@
 <?php
+
+namespace SilverStripe\Omnipay\Tests;
+
 use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\GatewayFactory;
 use SilverStripe\Omnipay\GatewayInfo;

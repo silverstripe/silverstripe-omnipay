@@ -1,5 +1,7 @@
 <?php
 
+namespace SilverStripe\Omnipay\Tests;
+
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**

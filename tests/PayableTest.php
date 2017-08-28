@@ -1,5 +1,8 @@
 <?php
 
+namespace SilverStripe\Omnipay\Tests;
+
+use SilverStripe\Dev\SapphireTest;
 /**
  * Test the Payable extension
  */

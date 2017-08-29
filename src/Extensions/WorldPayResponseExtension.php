@@ -4,6 +4,10 @@ namespace SilverStripe\Omnipay\Extensions;
 
 use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\Core\Extension;
+use SilverStripe\Control\Director;
+use SilverStripe\View\ArrayData;
+use SilverStripe\View\SSViewer;
+use SilverStripe\Control\HTTPResponse;
 
 /**
  * Add specific response overwrites for WorldPay gateway responses.
@@ -23,11 +27,6 @@ use SilverStripe\Core\Extension;
  * to use your own styling, WPDISPLAY tags, etc) then add a
  * "WorldPayCallback.ss" file to the tempaltes directory in your
  * theme.
- *
- * @package silverstripe-omnipay
- * @subpackage extensions
- * @author Bummzack
- * @author Mo <morven@ilateral.co.uk>
  */
 class WorldPayResponseExtension extends Extension
 {
@@ -35,15 +34,15 @@ class WorldPayResponseExtension extends Extension
     {
         $payment = $response->getPayment();
 
-    // We only want to respond to the notification if we are using WorldPay
-    if ($payment->Gateway !== 'WorldPay') {
-        return;
-    }
+        // We only want to respond to the notification if we are using WorldPay
+        if ($payment->Gateway !== 'WorldPay') {
+            return;
+        }
 
-    // Ignore payments that aren't in the PendingPurchase state
-    if ($payment->Status !== 'PendingPurchase') {
-        return;
-    }
+        // Ignore payments that aren't in the PendingPurchase state
+        if ($payment->Status !== 'PendingPurchase') {
+            return;
+        }
 
         $omnipayResponse = $response->getOmnipayResponse();
 
@@ -55,11 +54,12 @@ class WorldPayResponseExtension extends Extension
             }
 
             $viewer = new SSViewer("WorldPayCallback");
-            $html = $viewer->process(ArrayData::create(array(
-            "ReturnURL" => $return_url
-        )));
 
-            $response->setHttpResponse(new SS_HTTPResponse($html, 200));
+            $html = $viewer->process(ArrayData::create(array(
+                "ReturnURL" => $return_url
+            )));
+
+            $response->setHttpResponse(new HTTPResponse($html, 200));
         }
     }
 }

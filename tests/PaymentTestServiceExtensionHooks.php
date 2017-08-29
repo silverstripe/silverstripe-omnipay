@@ -246,6 +246,4 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
             'args' => array($omnipayRequest)
         );
     }
-
-
 }

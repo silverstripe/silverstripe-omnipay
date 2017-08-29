@@ -21,7 +21,8 @@ abstract class PaymentTest extends FunctionalTest
     /** @var \SilverStripe\Omnipay\Service\ServiceFactory */
     protected $factory;
 
-    protected $httpClient, $httpRequest;
+    protected $httpClient;
+    protected $httpRequest;
 
     private $factoryExtensions;
 

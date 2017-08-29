@@ -9,7 +9,6 @@ use SilverStripe\Omnipay\GatewayInfo;
  */
 class Payable extends DataExtension
 {
-
     private static $has_many = array(
         'Payments' => 'Payment'
     );

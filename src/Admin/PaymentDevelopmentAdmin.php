@@ -11,7 +11,6 @@ use SilverStripe\Omnipay\GatewayInfo;
  */
 class PaymentDevelopmentAdmin extends \Controller
 {
-
     public function index()
     {
         $renderer = \DebugView::create();

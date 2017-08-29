@@ -2,7 +2,6 @@
 
 class MigratePaymentTask extends BuildTask
 {
-
     protected $title = "Migrate Payments";
     protected $description = "Update payment records from old SilverStripe payment modul. See ominpay README!";
     

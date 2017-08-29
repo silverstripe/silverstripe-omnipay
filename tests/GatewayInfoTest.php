@@ -485,7 +485,6 @@ class GatewayInfoTest_OnsiteGateway extends AbstractGateway implements TestOnly
 
 class GatewayInfoTest_OffsiteGateway extends AbstractGateway implements TestOnly
 {
-
     public function getName()
     {
         return 'GatewayInfoTest_OffsiteGateway';

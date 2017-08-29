@@ -11,7 +11,6 @@ use Omnipay\Common\CreditCard;
  */
 class GatewayFieldsFactory
 {
-
     protected $fieldgroups = array(
         'Card',
         'Billing',
@@ -328,7 +327,7 @@ class GatewayFieldsFactory
      */
     protected function cullForGateway(&$fields, $defaults = array())
     {
-        if (!$this->gateway){
+        if (!$this->gateway) {
             return;
         }
 
@@ -473,8 +472,8 @@ class GatewayFieldsFactory
      * Builds the rename map which is used as a lookup table for normalizeFieldData()
      * @return void
      */
-    private function buildRenameMap() {
-
+    private function buildRenameMap()
+    {
         $renameMap = $this->config()->rename;
 
         if (!$renameMap) {

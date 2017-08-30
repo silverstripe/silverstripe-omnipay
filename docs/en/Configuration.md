@@ -118,7 +118,9 @@ GatewayInfo:
         EUR: 70
 ```
 
-The `Payment` class comes with a helper method `getMaxCaptureAmount` that will calculate the max. amount of money you can capture. With the PayPal example above, we'll get the following:
+The `Payment` class comes with a helper method `getMaxCaptureAmount` that will calculate the max. amount of money you can capture. With the 
+
+example above, we'll get the following:
 
 ```php
 $payment = Payment::create()->init('PayPal_Express', 121, 'USD');

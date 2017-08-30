@@ -1,6 +1,9 @@
 <?php
 
+namespace SilverStripe\Omnipay\Extensions;
+
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\ORM\DataExtension;
 
 /**
  * An extension for providing payments on a particular data object.
@@ -9,7 +12,6 @@ use SilverStripe\Omnipay\GatewayInfo;
  */
 class Payable extends DataExtension
 {
-
     private static $has_many = array(
         'Payments' => 'Payment'
     );

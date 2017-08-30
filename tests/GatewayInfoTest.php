@@ -1,4 +1,7 @@
 <?php
+
+namespace SilverStripe\Omnipay\Tests;
+
 use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\GatewayFactory;
 use SilverStripe\Omnipay\GatewayInfo;
@@ -482,7 +485,6 @@ class GatewayInfoTest_OnsiteGateway extends AbstractGateway implements TestOnly
 
 class GatewayInfoTest_OffsiteGateway extends AbstractGateway implements TestOnly
 {
-
     public function getName()
     {
         return 'GatewayInfoTest_OffsiteGateway';

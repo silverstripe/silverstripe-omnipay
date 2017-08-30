@@ -1,5 +1,7 @@
 <?php
 
+namespace SilverStripe\Omnipay\Tests;
+
 use SilverStripe\Omnipay\Service\CaptureService;
 use Omnipay\Common\Message\NotificationInterface;
 

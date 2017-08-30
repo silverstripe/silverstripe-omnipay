@@ -1,5 +1,7 @@
 <?php
 
+namespace SilverStripe\Omnipay\Tests;
+
 use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\Omnipay\Service\PaymentService;

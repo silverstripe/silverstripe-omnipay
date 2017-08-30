@@ -1,23 +1,33 @@
 {
-	"name": "silverstripe/silverstripe-omnipay",
-	"description": "SilverStripe Omnipay Payment Module",
-	"type": "silverstripe-module",
-	"license": "BSD-3-Clause",
-	"keywords": ["silverstripe","payment","omnipay"],
-	"require": {
-		"silverstripe/framework": "~3.1",
-		"omnipay/common": "~2.4"
-	},
-	"require-dev": {
-		"guzzle/guzzle": "^3.9",
-		"omnipay/paypal": "~2.5",
-		"omnipay/dummy": "~2.1",
-		"omnipay/paymentexpress": "~2.1",
+    "name": "silverstripe/silverstripe-omnipay",
+    "description": "SilverStripe Omnipay Payment Module",
+    "type": "silverstripe-module",
+    "license": "BSD-3-Clause",
+    "keywords": ["silverstripe","payment","omnipay"],
+    "require": {
+        "silverstripe/framework": "~4.0",
+        "omnipay/common": "~2.4"
+    },
+    "require-dev": {
+        "guzzle/guzzle": "^3.9",
+        "omnipay/paypal": "~2.5",
+        "omnipay/dummy": "~2.1",
+        "omnipay/paymentexpress": "~2.1",
         "omnipay/tests": "^2.0"
     },
-	"extra": {
-		"installer-name": "omnipay"
-	},
+    "extra": {
+        "installer-name": "omnipay"
+    },
+    "autoload": {
+        "psr-4": {
+            "SilverStripe\\Omnipay\\": "src/"
+        }
+      },
+    "autoload-dev": {
+        "psr-4": {
+            "SilverStripe\\Omnipay\\Tests\\": "tests/"
+        }
+    },
     "suggest": {
         "bummzack/silverstripe-omnipay-ui": "Adds UI Components to manage payments in the SilverStripe CMS."
     }

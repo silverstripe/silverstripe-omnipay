@@ -1,10 +1,14 @@
 <?php
+
+namespace SilverStripe\Omnipay\Tests;
+
 use SilverStripe\Omnipay\Service\PaymentService;
 use SilverStripe\Omnipay\Service\ServiceFactory;
+use SilverStripe\Dev\FunctionalTest;
 
 abstract class PaymentTest extends FunctionalTest
 {
-    public static $fixture_file = array(
+    protected static $fixture_file = array(
         'payment.yml'
     );
 
@@ -17,7 +21,8 @@ abstract class PaymentTest extends FunctionalTest
     /** @var \SilverStripe\Omnipay\Service\ServiceFactory */
     protected $factory;
 
-    protected $httpClient, $httpRequest;
+    protected $httpClient;
+    protected $httpRequest;
 
     private $factoryExtensions;
 

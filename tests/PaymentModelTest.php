@@ -1,9 +1,11 @@
 <?php
+
+namespace SilverStripe\Omnipay\Tests;
+
 use SilverStripe\Omnipay\GatewayInfo;
 
 class PaymentModelTest extends PaymentTest
 {
-
     public function setUp()
     {
         parent::setUp();

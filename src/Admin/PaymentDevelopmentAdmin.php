@@ -3,20 +3,22 @@
 namespace SilverStripe\Omnipay\Admin;
 
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Control\Controller;
+use SilverStripe\Control\Director;
+use SilverStripe\Dev\DebugView;
 
 /**
  * Development tools for payments
  *
  * @package payment
  */
-class PaymentDevelopmentAdmin extends \Controller
+class PaymentDevelopmentAdmin extends Controller
 {
-
     public function index()
     {
-        $renderer = \DebugView::create();
+        $renderer = DebugView::create();
         $renderer->writeHeader();
-        $renderer->writeInfo("Installed Omnipay Payment Gateways", \Director::absoluteBaseURL());
+        $renderer->writeInfo("Installed Omnipay Payment Gateways", Director::absoluteBaseURL());
         $types = $this->PaymentTypes();
 
         echo "<table style=\"font-size:12px;\" border=1 cellspacing=0>

@@ -1,7 +1,10 @@
 <?php
 
+namespace SilverStripe\Omnipay\Extensions;
+
 use Omnipay\SagePay\Message\ServerNotifyResponse;
 use SilverStripe\Omnipay\Service\ServiceResponse;
+use SilverStripe\Core\Extension;
 
 /**
  * Sagepay has some very indiviual needs so to help we have created this

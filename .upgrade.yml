@@ -1,0 +1,25 @@
+mappings:
+  AuthorizeServiceTest: SilverStripe\Omnipay\Tests
+  BaseNotificationServiceTest: SilverStripe\Omnipay\Tests\BaseNotificationServiceTest
+  BasePurchaseServiceTest: SilverStripe\Omnipay\TestsBasePurchaseServiceTest
+  CaptureServiceTest: SilverStripe\Omnipay\Tests\CaptureServiceTest
+  CreateCardServiceTest: SilverStripe\Omnipay\Tests\CreateCardServiceTest
+  GatewayFieldsFactoryTest: SilverStripe\Omnipay\Tests\GatewayFieldsFactoryTest
+  GatewayInfoTest: SilverStripe\Omnipay\Tests\GatewayInfoTest
+  PayableTest: SilverStripe\Omnipay\Tests\PayableTest
+  PaymentGatewayControllerTest: SilverStripe\Omnipay\Tests\PaymentGatewayControllerTest
+  PaymentMathTest: SilverStripe\Omnipay\Tests\PaymentMathTest
+  PaymentModelTest: SilverStripe\Omnipay\Tests\PaymentModelTest
+  PaymentServiceTest: SilverStripe\Omnipay\Tests\PaymentServiceTest
+  PaymentTest: SilverStripe\Omnipay\Tests\PaymentTest
+  PaymentTest_PaymentExtensionHooks: SilverStripe\Omnipay\Tests\PaymentTestPaymentExtensionHooks
+  PaymentTest_ServiceExtensionHooks: SilverStripe\Omnipay\Tests\PaymentTestServiceExtensionHooks
+  PurchaseServiceTest: SilverStripe\Omnipay\Tests\PurchaseServiceTest
+  RefundServiceTest: SilverStripe\Omnipay\Tests\RefundServiceTest
+  SagePayExtension: SilverStripe\Omnipay\Extensions\SagePayExtension
+  ServiceFactoryTest: SilverStripe\Omnipay\Tests\ServiceFactoryTest
+  ServiceResponseTest: SilverStripe\Omnipay\Tests\ServiceResponseTest
+  VoidServiceTest: SilverStripe\Omnipay\Tests\VoidResponseTest
+  Payable: SilverStripe\Omnipay\Extensions\Payable
+  Payment: SilverStripe\Omnipay\Model\Payment
+  WorldPayResponseExtension: SilverStripe\Omnipay\Extensions\WorldPayResponseExtension

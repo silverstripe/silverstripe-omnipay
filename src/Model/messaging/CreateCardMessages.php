@@ -1,5 +1,7 @@
 <?php
 
+namespace SilverStripe\Omnipay\Model\Messaging;
+
 class CreateCardRequest extends GatewayRequestMessage
 {
 }

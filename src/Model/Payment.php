@@ -62,6 +62,8 @@ final class Payment extends DataObject implements PermissionProvider
         'Identifier' => true,
     );
 
+    private static $table_name = 'Omnipay_Payment';
+
     private static $default_sort = '"Created" DESC, "ID" DESC';
 
     public function getCMSFields()

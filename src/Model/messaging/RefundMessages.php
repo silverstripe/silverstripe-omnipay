@@ -1,5 +1,7 @@
 <?php
 
+namespace SilverStripe\Omnipay\Model\Messaging;
+
 class RefundRequest extends GatewayRequestMessage
 {
 }

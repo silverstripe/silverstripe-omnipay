@@ -6,9 +6,11 @@ mappings:
   CreateCardServiceTest: SilverStripe\Omnipay\Tests\CreateCardServiceTest
   GatewayFieldsFactoryTest: SilverStripe\Omnipay\Tests\GatewayFieldsFactoryTest
   GatewayInfoTest: SilverStripe\Omnipay\Tests\GatewayInfoTest
+  GatewayRequestMessage: SilverStripe\Omnipay\Model\Messaging\GatewayRequestMessage
   PayableTest: SilverStripe\Omnipay\Tests\PayableTest
   PaymentGatewayControllerTest: SilverStripe\Omnipay\Tests\PaymentGatewayControllerTest
   PaymentMathTest: SilverStripe\Omnipay\Tests\PaymentMathTest
+  PaymentMessage: SilverStripe\Omnipay\Model\Messaging\PaymentMessage
   PaymentModelTest: SilverStripe\Omnipay\Tests\PaymentModelTest
   PaymentServiceTest: SilverStripe\Omnipay\Tests\PaymentServiceTest
   PaymentTest: SilverStripe\Omnipay\Tests\PaymentTest

@@ -54,7 +54,7 @@ Payment:
     - 'Dummy'
 
 GatewayInfo:
-  Paypal_Express:
+  PayPal_Express:
     parameters:
       testMode: true
 ---

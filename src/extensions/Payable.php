@@ -1,6 +1,9 @@
 <?php
 
+namespace SilverStripe\Omnipay\Extensions;
+
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\ORM\DataExtension;
 
 /**
  * An extension for providing payments on a particular data object.

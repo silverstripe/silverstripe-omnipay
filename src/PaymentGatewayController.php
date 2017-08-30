@@ -3,6 +3,8 @@
 namespace SilverStripe\Omnipay;
 
 use SilverStripe\Omnipay\Service\ServiceFactory;
+use SilverStripe\Control\Controller;
+use SilverStripe\Control\Director;
 
 /**
  * Payment Gateway Controller
@@ -12,7 +14,7 @@ use SilverStripe\Omnipay\Service\ServiceFactory;
  *
  * @package payment
  */
-class PaymentGatewayController extends \Controller
+class PaymentGatewayController extends Controller
 {
     private static $allowed_actions = array(
         'endpoint'
@@ -26,8 +28,8 @@ class PaymentGatewayController extends \Controller
      */
     public static function getEndpointUrl($action, $identifier)
     {
-        return \Director::absoluteURL(
-            \Controller::join_links('paymentendpoint', $identifier, $action)
+        return Director::absoluteURL(
+            Controller::join_links('paymentendpoint', $identifier, $action)
         );
     }
 

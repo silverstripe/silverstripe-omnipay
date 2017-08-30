@@ -1,6 +1,9 @@
 <?php
 
+namespace SilverStripe\Omnipay\Extensions;
+
 use SilverStripe\Omnipay\Service\ServiceResponse;
+use SilverStripe\Core\Extension;
 
 /**
  * Add specific response overwrites for WorldPay gateway responses.

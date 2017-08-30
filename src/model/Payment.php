@@ -1,9 +1,11 @@
 <?php
 
-namespace SilverStripe\Omnipay\Model\Payment;
+namespace SilverStripe\Omnipay\Model;
 
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\PaymentMath;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\Security\PermissionProvider;
 
 /**
  * Payment DataObject

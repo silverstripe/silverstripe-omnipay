@@ -28,7 +28,7 @@ use Symfony\Component\HttpFoundation\Request;
  *
  * @package payment
  */
-abstract class PaymentService extends \Object
+abstract class PaymentService
 {
     /**
      * @var \Guzzle\Http\ClientInterface

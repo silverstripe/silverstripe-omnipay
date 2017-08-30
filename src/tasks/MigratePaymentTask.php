@@ -1,10 +1,14 @@
 <?php
 
+namespace SilverStripe\Omnipay\Tasks;
+
+use SilverStripe\Dev\BuildTask;
+
 class MigratePaymentTask extends BuildTask
 {
     protected $title = "Migrate Payments";
     protected $description = "Update payment records from old SilverStripe payment modul. See ominpay README!";
-    
+
     protected $count = 0;
 
     public function run($request)
@@ -34,7 +38,7 @@ class MigratePaymentTask extends BuildTask
         $payment->ClassName = "Payment";
         $payment->MoneyAmount = $record['AmountAmount'];
         $payment->MoneyCurrency = $record['AmountCurrency'];
-        
+
         $payment->Gateway = $this->classToGateway($record['ClassName']);
         $statusmap = array(
             'Incomplete' => 'Created',

@@ -19,6 +19,7 @@ use SilverStripe\Core\Extension;
  *  - A Description into the initial request (reequired by SagePay)
  *  - The proper transactionReference which is recieved back from SagePay
  *  - A response to the notification (See use_async_notification)
+ *
  * @see https://github.com/silverstripe/silverstripe-omnipay/issues/153
  * @see https://github.com/silverstripe/silverstripe-omnipay/issues/159
  */
@@ -84,9 +85,10 @@ class SagePayExtension extends Extension
 
         // Only apply the changes if the gateway is SagePay Server
         if ($payment->Gateway == 'SagePay_Server') {
+            $type = ($isAuthorize) ? 'AuthorizeRedirectResponse' : 'PurchaseRedirectResponse';
+
             /** @var PurchaseRedirectResponse $message */
-            $message = $payment->getLatestMessageOfType(
-                $isAuthorize ? 'AuthorizeRedirectResponse' : 'PurchaseRedirectResponse');
+            $message = $payment->getLatestMessageOfType($type);
             $gatewayData['transactionReference'] = $message->Reference;
         }
     }

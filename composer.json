@@ -22,7 +22,10 @@
         "psr-4": {
             "SilverStripe\\Omnipay\\": "src/"
         }
-      },
+    },
+    "scripts": {
+        "lint": "phpcs -s src/ tests/"
+    },
     "autoload-dev": {
         "psr-4": {
             "SilverStripe\\Omnipay\\Tests\\": "tests/"

@@ -3,6 +3,7 @@
 namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Omnipay\Service\AuthorizeService;
+use SilverStripe\Omnipay\Tests\BasePurchaseServiceTest;
 
 class AuthorizeServiceTest extends BasePurchaseServiceTest
 {

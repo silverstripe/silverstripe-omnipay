@@ -8,7 +8,6 @@ use SilverStripe\ORM\DataExtension;
 /**
  * An extension for providing payments on a particular data object.
  *
- * @package payment
  */
 class Payable extends DataExtension
 {
@@ -40,13 +39,15 @@ class Payable extends DataExtension
     public function TotalPaidOrAuthorized()
     {
         $paid = 0;
+
         if ($payments = $this->owner->Payments()) {
             foreach ($payments as $payment) {
-                // Captured and authorized payments (which aren't manual) should count towards the total
-                if (
-                    $payment->Status == 'Captured' ||
-                    ($payment->Status == 'Authorized' && !GatewayInfo::isManual($payment->Gateway))
-                ) {
+                // Captured and authorized payments
+                // (which aren't manual) should count towards the total
+                $captured = $payment->Status == 'Captured';
+                $authorized = $payment->Status == 'Authorized' && !GatewayInfo::isManual($payment->Gateway);
+
+                if ($captured || $authorized) {
                     $paid += $payment->Amount;
                 }
             }

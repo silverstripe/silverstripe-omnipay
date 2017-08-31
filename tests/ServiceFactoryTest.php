@@ -106,31 +106,3 @@ class ServiceFactoryTest_TestService extends \SilverStripe\Omnipay\Service\Purch
 {
 }
 
-class ServiceFactoryTest_TestExtension extends Extension implements TestOnly
-{
-    // return some different service for testing
-    public function createPurchaseService(Payment $payment)
-    {
-        return CaptureService::create($payment);
-    }
-
-    public function createTestService($payment)
-    {
-        return ServiceFactoryTest_TestService::create($payment);
-    }
-
-    // return some different service for testing
-    public function createAuthorizeService(Payment $payment)
-    {
-        return CaptureService::create($payment);
-    }
-}
-
-class ServiceFactoryTest_TestExtension2 extends Extension implements TestOnly
-{
-    // return some different service for testing
-    public function createAuthorizeService(Payment $payment)
-    {
-        return CaptureService::create($payment);
-    }
-}

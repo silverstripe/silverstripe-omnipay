@@ -2,6 +2,8 @@
 
 namespace SilverStripe\Omnipay;
 
+use SilverStripe\Core\Config\Config;
+
 /**
  * Helper class to deal with payment arithmetic.
  *
@@ -36,8 +38,8 @@ class PaymentMath
      */
     public static function subtract($amountA, $amountB)
     {
-        $precision = (int)\Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'precision');
-        if (function_exists('bcsub') && \Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'useBcMath')) {
+        $precision = (int) Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'precision');
+        if (function_exists('bcsub') && Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'useBcMath')) {
             return bcsub($amountA, $amountB, $precision);
         }
 
@@ -53,8 +55,8 @@ class PaymentMath
      */
     public static function add($amountA, $amountB)
     {
-        $precision = (int)\Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'precision');
-        if (function_exists('bcadd') && \Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'useBcMath')) {
+        $precision = (int) Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'precision');
+        if (function_exists('bcadd') && Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'useBcMath')) {
             return bcadd($amountA, $amountB, $precision);
         }
 
@@ -70,8 +72,8 @@ class PaymentMath
      */
     public static function multiply($amountA, $amountB)
     {
-        $precision = (int)\Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'precision');
-        if (function_exists('bcmul') && \Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'useBcMath')) {
+        $precision = (int) Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'precision');
+        if (function_exists('bcmul') && Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'useBcMath')) {
             return bcmul($amountA, $amountB, $precision);
         }
 
@@ -86,8 +88,8 @@ class PaymentMath
      */
     public static function compare($amountA, $amountB)
     {
-        $precision = (int)\Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'precision');
-        if (function_exists('bccomp') && \Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'useBcMath')) {
+        $precision = (int) Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'precision');
+        if (function_exists('bccomp') && Config::inst()->get('SilverStripe\Omnipay\PaymentMath', 'useBcMath')) {
             return bccomp($amountA, $amountB, $precision);
         }
 

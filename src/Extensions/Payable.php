@@ -4,6 +4,7 @@ namespace SilverStripe\Omnipay\Extensions;
 
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\ORM\DataExtension;
+use SilverStripe\Omnipay\Model\Payment;
 
 /**
  * An extension for providing payments on a particular data object.
@@ -11,17 +12,19 @@ use SilverStripe\ORM\DataExtension;
  */
 class Payable extends DataExtension
 {
-    private static $has_many = array(
-        'Payments' => 'Payment'
-    );
+    private static $has_many = [
+        'Payments' => Payment::class
+    ];
 
     /**
      * Get the total captured amount
+     *
      * @return float
      */
     public function TotalPaid()
     {
         $paid = 0;
+
         if ($payments = $this->owner->Payments()) {
             foreach ($payments as $payment) {
                 if ($payment->Status == 'Captured') {
@@ -29,11 +32,13 @@ class Payable extends DataExtension
                 }
             }
         }
+
         return $paid;
     }
 
     /**
      * Get the total captured or authorized amount, excluding Manual payments.
+     *
      * @return float
      */
     public function TotalPaidOrAuthorized()
@@ -52,12 +57,15 @@ class Payable extends DataExtension
                 }
             }
         }
+
         return $paid;
     }
 
     /**
      * Whether or not the model has payments that are in a pending state.
+     *
      * Can be used to show a waiting screen to the user or similar.
+     *
      * @return bool
      */
     public function HasPendingPayments()

@@ -247,20 +247,3 @@ class PaymentServiceTest extends PaymentTest
         return $service;
     }
 }
-
-class PaymentServiceTest_NotifyResponseExtension extends Extension implements TestOnly
-{
-    public function updateServiceResponse(ServiceResponse $serviceResponse)
-    {
-        if ($serviceResponse->isNotification()) {
-            if ($serviceResponse->getPayment()->Gateway == 'FantasyGateway') {
-                $httpResponse = new SS_HTTPResponse('OK', 200);
-                $httpResponse->addHeader('X-FantasyGateway-Api', 'apikey12345');
-            } else {
-                $httpResponse = new SS_HTTPResponse('SUCCESS', 200);
-            }
-
-            $serviceResponse->setHttpResponse($httpResponse);
-        }
-    }
-}

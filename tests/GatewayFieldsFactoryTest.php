@@ -3,6 +3,8 @@
 namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Omnipay\GatewayFieldsFactory;
+use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Core\Config\Config;
 
 class GatewayFieldsFactoryTest extends SapphireTest
 {

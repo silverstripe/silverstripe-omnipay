@@ -4,6 +4,7 @@ namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Omnipay\Service\ServiceResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use SilverStripe\Dev\SapphireTest;
 
 class ServiceResponseTest extends SapphireTest
 {

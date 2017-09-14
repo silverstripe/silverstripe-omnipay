@@ -3,10 +3,9 @@
 namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Core\Config\Config;
 
-/**
- * Test the Payable extension
- */
 class PayableTest extends SapphireTest
 {
     /** @var Test_Order */
@@ -81,18 +80,4 @@ class PayableTest extends SapphireTest
 
         $this->assertFalse($this->order->HasPendingPayments());
     }
-}
-
-class Test_Order extends DataObject implements TestOnly
-{
-    private static $extensions = array(
-        'Payable'
-    );
-}
-
-class Test_PaymentExtension extends DataExtension implements TestOnly
-{
-    private static $has_one = array(
-        'Test_Order' => 'Test_Order'
-    );
 }

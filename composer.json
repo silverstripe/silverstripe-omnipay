@@ -20,16 +20,12 @@
     },
     "autoload": {
         "psr-4": {
-            "SilverStripe\\Omnipay\\": "src/"
+            "SilverStripe\\Omnipay\\": "src/",
+            "SilverStripe\\Omnipay\\Tests\\": "tests/"
         }
     },
     "scripts": {
         "lint": "phpcs -s src/ tests/"
-    },
-    "autoload-dev": {
-        "psr-4": {
-            "SilverStripe\\Omnipay\\Tests\\": "tests/"
-        }
     },
     "suggest": {
         "bummzack/silverstripe-omnipay-ui": "Adds UI Components to manage payments in the SilverStripe CMS."

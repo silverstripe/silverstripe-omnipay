@@ -487,7 +487,6 @@ class GatewayFieldsFactory
         $prefix = ($prefix) ? $prefix : ($this->getGlobalFieldName('prefix') ?: '');
 
         foreach ($this->config()->whitelist as $defaultName) {
-
             // Gateway Rename Support
             if (array_key_exists($this->gateway, $renameMap)) {
                 if ($this->getGlobalFieldName($this->gateway) && $customName = $this->getGatewayFieldName($defaultName)) {

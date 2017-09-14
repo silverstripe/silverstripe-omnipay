@@ -3,6 +3,8 @@
 namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Omnipay\Service\CreateCardService;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Core\Injector\Injector;
 
 class CreateCardServiceTest extends BasePurchaseServiceTest
 {

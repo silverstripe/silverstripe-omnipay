@@ -5,6 +5,9 @@ namespace SilverStripe\Omnipay\Tests;
 use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\GatewayFactory;
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\i18n\i18n;
 
 class GatewayInfoTest extends SapphireTest
 {
@@ -463,43 +466,5 @@ class GatewayInfoTest extends SapphireTest
         $this->assertTrue(GatewayInfo::allowPartialRefund('PaymentExpress_PxPay'));
         $this->assertEquals(GatewayInfo::PARTIAL, GatewayInfo::refundMode('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
-    }
-}
-
-class GatewayInfoTest_OnsiteGateway extends AbstractGateway implements TestOnly
-{
-    public function getName()
-    {
-        return 'GatewayInfoTest_OnsiteGateway';
-    }
-
-    public function getDefaultParameters()
-    {
-        return array();
-    }
-
-    public function purchase(array $parameters = array())
-    {
-    }
-}
-
-class GatewayInfoTest_OffsiteGateway extends AbstractGateway implements TestOnly
-{
-    public function getName()
-    {
-        return 'GatewayInfoTest_OffsiteGateway';
-    }
-
-    public function getDefaultParameters()
-    {
-        return array();
-    }
-
-    public function purchase(array $parameters = array())
-    {
-    }
-
-    public function completePurchase(array $options = array())
-    {
     }
 }

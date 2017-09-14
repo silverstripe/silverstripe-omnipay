@@ -4,6 +4,7 @@ namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Omnipay\PaymentMath;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Core\Config\Config;
 
 /**
  * Test payment math operations

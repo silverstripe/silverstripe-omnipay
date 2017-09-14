@@ -3,6 +3,9 @@
 namespace SilverStripe\Omnipay\Tests;
 
 use Symfony\Component\HttpFoundation\RedirectResponse;
+use SilverStripe\Omnipay\Tests\PaymentTest;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Core\Injector\Injector;
 
 /**
  * Abstract base-class that implements common tests for "authorize" and "purchase".

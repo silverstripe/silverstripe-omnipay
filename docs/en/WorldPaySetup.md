@@ -52,6 +52,16 @@ The `callbackPassword` can be set in the WorldPay admin > Installations > Instal
 
 Additional supported settings can be found at the [omnipay-worldpay github page](https://github.com/thephpleague/omnipay-worldpay/blob/master/src/Gateway.php#L21).
 
+## Setup WorldPay merchant account
+
+In order for WorldPay to pass information about the payment back to your website, you must configure the WorldPay 'Payment Response' settings for this installation as per [WorldPay's documentation](http://support.worldpay.com/support/kb/bg/paymentresponse/pr0000.html).
+
+![WorldPay Installation - Payment Response Settings Example](./_images/worldpay-installation-payment-response-settings-example.png)
+
+As you can see from the highlighted area 'A', 'Payment Response' must be enabled and the callback URL must use the WorldPay 'WPDISPLAY ITEM tag' as detailed in the 'Dynamic payment response' section of the documentation referenced above.
+
+Note that you can also see a tally of failed callback attempts in this interface and are able to specify an e-mail address for notifications of failed attempts, as can be seen in highlighted area 'B'.
+
 ## Using a custom callback response
 
 If you want a custom callback response (so the user sees a styled page at

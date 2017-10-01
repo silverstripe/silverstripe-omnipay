@@ -7,6 +7,8 @@ use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Core\Config\Config;
 
 /**
  * Test the refund service
@@ -121,7 +123,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
     public function testFullRefund()
     {
         // load a captured payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
@@ -158,7 +160,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
     public function testPartialRefund()
     {
         // load a captured payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
@@ -216,7 +218,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
     public function testMultiplePartialRefunds()
     {
         // load a captured payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // allow multiple partial captures
         Config::inst()->update('GatewayInfo', $payment->Gateway, array(
@@ -267,7 +269,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
     public function testPartialRefundViaNotification()
     {
         // load a payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
         Config::inst()->update('GatewayInfo', $payment->Gateway, array(
@@ -299,7 +301,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         // ensure payment hooks were called
         $this->assertEquals(
             $this->successPaymentExtensionHooks,
-            PaymentTest_PaymentExtensionHooks::findExtensionForID($payment->ID)->getCalledMethods()
+            PaymentTestPaymentExtensionHooks::findExtensionForID($payment->ID)->getCalledMethods()
         );
 
         // ensure the correct service hooks were called
@@ -354,7 +356,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
     public function testMultipleInitiateCallsBeforeNotificationArrives()
     {
         // load a payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
         Config::inst()->update('GatewayInfo', $payment->Gateway, array(
@@ -411,7 +413,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
 
         // load a captured payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
         $service = $this->getService($payment);
 
         // We supply the amount, but specify an amount that is way over what was captured
@@ -429,7 +431,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
 
         // load a captured payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
         $service = $this->getService($payment);
 
         // We supply the amount, but specify an amount that is not a number
@@ -447,7 +449,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
 
         // load a captured payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
         $service = $this->getService($payment);
 
         // We supply the amount, but specify an amount that is not a positive number
@@ -465,7 +467,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
 
         // load a captured payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
         $service = $this->getService($payment);
 
         // only allow full refunds, thus disabling partial refunds
@@ -485,7 +487,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
 
         // load a captured payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
         $service = $this->getService($payment);
 
         $service->initiate(array('amount' => '100.00'));
@@ -501,7 +503,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
     public function testPartialRefundViaNotificationFailed()
     {
         // load a payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
         Config::inst()->update('GatewayInfo', $payment->Gateway, array(

@@ -6,6 +6,7 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use SilverStripe\Omnipay\Tests\PaymentTest;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 
@@ -74,8 +75,8 @@ abstract class BasePurchaseServiceTest extends PaymentTest
     public function testDummyOnSitePayment()
     {
         $payment = $this->payment;
-
         $service = $this->getService($payment);
+
         $response = $service->initiate(array(
             'firstName' => 'joe',
             'lastName' => 'bloggs',

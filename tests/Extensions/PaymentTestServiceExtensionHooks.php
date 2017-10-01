@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\Omnipay\Tests;
+namespace SilverStripe\Omnipay\Tests\Extensions;
 
 use SilverStripe\Core\Extension;
 use SilverStripe\Dev\TestOnly;

@@ -6,6 +6,8 @@ use SilverStripe\Omnipay\Service\AuthorizeService;
 use SilverStripe\Omnipay\Tests\BasePurchaseServiceTest;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Omnipay\Model\Message;
 
 class AuthorizeServiceTest extends BasePurchaseServiceTest
 {
@@ -18,34 +20,34 @@ class AuthorizeServiceTest extends BasePurchaseServiceTest
     protected $omnipayCompleteMethod = 'completeAuthorize';
 
     protected $onsiteSuccessMessages = [
-        ['ClassName' => 'AuthorizeRequest'],
-        ['ClassName' => 'AuthorizedResponse']
+        ['ClassName' => Message\AuthorizeRequest::class],
+        ['ClassName' => Message\AuthorizedResponse::class]
     ];
 
     protected $onsiteFailMessages = [
-        ['ClassName' => 'AuthorizeRequest'],
-        ['ClassName' => 'AuthorizeError']
+        ['ClassName' => Message\AuthorizeRequest::class],
+        ['ClassName' => Message\AuthorizeError::class]
     ];
 
     protected $failMessages = [
-        ['ClassName' => 'AuthorizeError']
+        ['ClassName' => Message\AuthorizeError::class]
     ];
 
     protected $offsiteSuccessMessages = [
-        ['ClassName' => 'AuthorizeRequest'],
-        ['ClassName' => 'AuthorizeRedirectResponse'],
-        ['ClassName' => 'CompleteAuthorizeRequest'],
-        ['ClassName' => 'AuthorizedResponse']
+        ['ClassName' => Message\AuthorizeRequest::class],
+        ['ClassName' => Message\AuthorizeRedirectResponse::class],
+        ['ClassName' => Message\CompleteAuthorizeRequest::class],
+        ['ClassName' => Message\AuthorizedResponse::class]
     ];
 
     protected $offsiteFailMessages = [
-        ['ClassName' => 'AuthorizeRequest'],
-        ['ClassName' => 'AuthorizeRedirectResponse'],
-        ['ClassName' => 'CompleteAuthorizeRequest'],
-        ['ClassName' => 'CompleteAuthorizeError']
+        ['ClassName' => Message\AuthorizeRequest::class],
+        ['ClassName' => Message\AuthorizeRedirectResponse::class],
+        ['ClassName' => Message\CompleteAuthorizeRequest::class],
+        ['ClassName' => Message\CompleteAuthorizeError::class]
     ];
 
-    protected $failureMessageClass = 'CompleteAuthorizeError';
+    protected $failureMessageClass = Message\CompleteAuthorizeError::class;
 
     protected $paymentId = '62b26e0a8a77f60cce3e9a7994087b0e';
 

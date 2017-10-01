@@ -9,12 +9,9 @@
 
 Live chat: [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/silverstripe/silverstripe-omnipay?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-The aim of this module is to make it easy for developers to add online payments to their SilverStripe application. It makes heavy use of the [Omnipay Library](https://github.com/thephpleague/omnipay).
-There are many gateway options to choose from, and integrating with additional gateways has a structured approach that should be understandable.
-
-A high quality, simple to use payment module will help to boost the SilverStripe ecosystem, as it allows applications to be profitable.
-
-This module is a complete rewrite of the past Payment module. It is not backwards-compatible, but a migration task is available. In a nutshell, it wraps the PHP Omnipay payments library and provides some additional functionality. To understand more about omnipay, see: https://github.com/thephpleague/omnipay
+The aim of this module is to make it easy for developers to add online payments to their SilverStripe application. In a
+nutshell, it wraps the PHP Omnipay payments library and provides some additional functionality. To understand more about
+omnipay, see: https://github.com/thephpleague/omnipay
 
 ## Version
 
@@ -55,7 +52,8 @@ It is not too difficult to write your own gateway integration either, if needed.
 composer require silverstripe/silverstripe-omnipay
 ```
 
-As of version 2.0 this module only requires `omnipay/common` so you will also need to pull in your payment adapter of choice. Have a look at http://omnipay.thephpleague.com/gateways/official/ where the second column is the package name.
+As of version 2.0 this module only requires `omnipay/common` so you will also need to pull in your payment adapter of
+choice. Have a look at http://omnipay.thephpleague.com/gateways/official/ where the second column is the package name.
 
 For example, if your site uses PayPal you would also need to run:
 
@@ -95,7 +93,7 @@ Throughout the documentation and examples of this module, you'll find the syntax
 
 ## Usage
 
-We have produced a comprehensive [getting started guide](docs/en/GettingStarted.md) in our documentation pages 
+We have produced a comprehensive [getting started guide](docs/en/GettingStarted.md) in our documentation pages
 
 
 ### The Payment Services and Service Factory
@@ -148,7 +146,8 @@ $response = $service->initiate($data);
 
 ### Passing correct data to the purchase function
 
-The omnipay library has a defined set of parameters that need to be passed in. Here is a list of parameters that you should map your data to:
+The omnipay library has a defined set of parameters that need to be passed in. Here is a list of parameters that you
+should map your data to:
 
 ```
 transactionId
@@ -177,11 +176,10 @@ It usually shows up on bank statements for reconciliation purposes, but ultimate
 
 ## Security
 
-When customizing the payment flow (e.g. subclassing `PaymentForm` or `OrderProcessor`),
-please take care to only pass whitelisted user input to `PurchaseService` and the underlying
-omnipay gateways. The easiest way to ensure no arbitrary data can be injected
-is by using `Form->getData()` rather than acessing `$_REQUEST` directly,
-since this will only return you data for fields originally defined in the form.
+When customizing the payment flow (e.g. subclassing `PaymentForm` or `OrderProcessor`), please take care to only pass
+whitelisted user input to `PurchaseService` and the underlying omnipay gateways. The easiest way to ensure no arbitrary
+data can be injected is by using `Form->getData()` rather than acessing `$_REQUEST` directly, since this will only
+return you data for fields originally defined in the form.
 
 ## Debugging payments
 
@@ -191,13 +189,14 @@ A useful way to debug payment issues is to enable file logging:
 ---
 Name: payment
 ---
-Payment:
+SilverStripe\Omnipay\Model\Payment:
   file_logging: true #or use 'verbose' for more detailed output
 ```
 
 ## Renaming gateways and translation
 
-You can change the front-end visible name of a gateway using the translation system. The gateway name must match what you entered in the `allowed_gateways` YAML config.
+You can change the front-end visible name of a gateway using the translation system. The gateway name must match what
+you entered in the `allowed_gateways` YAML config.
 
 For example, inside `mysite/lang/en.yml`:
 
@@ -208,40 +207,13 @@ en:
     PayPal_Express: "PayPal"
 ```
 
-This approach can also be used to provide different translations.
-For further information about module translations, please read [docs/en/Translating.md](docs/en/Translating.md)
+This approach can also be used to provide different translations. For further information about module translations,
+please read [docs/en/Translating.md](docs/en/Translating.md)
 
 ## Caveats and Troubleshooting
 
-Logs will be saved to `debug.log` in the root of your SilverStripe directory.
-
- * Payments have both an amount and a currency. That means you should check if all currencies match if you will be adding them up.
-
-It's highly recommended that you enable general error-logging on production environments.
-Example for your `mysite/_config.php`:
-
-```php
-// log warnings and errors to file.
-// Make sure the logfile is not accessible via HTTP. Best put it in a folder outside of the webroot.
-SS_Log::add_writer(new SS_LogFileWriter('/var/log/silverstripe-log.log'), SS_Log::WARN, '<=');
-```
-
-## Migrating from Payment module
-
-Before you import your database and do a DB/build, add the following YAML config to your site:
-
-```yaml
----
-Name: payment
----
-Payment:
-  db:
-    Status: "Enum('Created,Authorized,Captured,Refunded,Void,Incomplete,Success,Failure,Pending','Created')"
-```
-
-This will re-introduce old enumeration values to the DB.
-
-Run the migration task: yoursite.com/dev/tasks/MigratePaymentTask
+Logs will be saved to `debug.log` in the root of your SilverStripe directory. It's highly recommended that you enable
+general error-logging on production environments.
 
 
 ## Further Documentation

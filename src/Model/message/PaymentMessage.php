@@ -1,9 +1,11 @@
 <?php
 
-namespace SilverStripe\Omnipay\Model\Messaging;
+namespace SilverStripe\Omnipay\Model\Message;
 
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\Security;
+use SilverStripe\Security\Member;
+use SilverStripe\Omnipay\Model\Payment;
 
 /**
  * Base class for logging messages, transactions etc associated with a payment.
@@ -11,21 +13,23 @@ use SilverStripe\Security\Security;
  */
 class PaymentMessage extends DataObject
 {
-    private static $db = array(
-        "Message" => "Varchar(255)",
-        "ClientIp" => "Varchar(39)"
-    );
+    private static $db = [
+        'Message' => 'Varchar(255)',
+        'ClientIp' => 'Varchar(39)'
+    ];
 
-    private static $has_one = array(
-        "Payment" => "Payment",
-        "User" => "Member" //currently logged in user, if appliciable
-    );
+    private static $has_one = [
+        'Payment' => Payment::class,
+        'User' => Member::class
+    ];
 
-    private static $summary_fields = array(
-        'i18n_singular_name' => "Type",
-        'Message' => "Message",
-        'User.Name' => "User"
-    );
+    private static $summary_fields = [
+        'i18n_singular_name' => 'Type',
+        'Message' => 'Message',
+        'User.Name' => 'User'
+    ];
+
+    private static $table_name = 'Omnipay_PaymentMessage';
 
     public function getCMSFields()
     {

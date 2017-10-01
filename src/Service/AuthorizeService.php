@@ -5,6 +5,9 @@ namespace SilverStripe\Omnipay\Service;
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Helper;
+use SilverStripe\Omnipay\Model\Message\AuthorizeRequest;
+use SilverStripe\Omnipay\Model\Message\AuthorizedResponse;
+use SilverStripe\Omnipay\Model\Message\CompleteAuthorizeError;
 
 class AuthorizeService extends PaymentService
 {
@@ -36,12 +39,12 @@ class AuthorizeService extends PaymentService
         $request = $this->oGateway()->authorize($gatewayData);
         $this->extend('onAfterAuthorize', $request);
 
-        $this->createMessage('AuthorizeRequest', $request);
+        $this->createMessage(AuthorizeRequest::class, $request);
 
         try {
             $response = $this->response = $request->send();
         } catch (\Omnipay\Common\Exception\OmnipayException $e) {
-            $this->createMessage('AuthorizeError', $e);
+            $this->createMessage(AuthorizeError::class, $e);
             // create an error response
             return $this->generateServiceResponse(ServiceResponse::SERVICE_ERROR);
         }
@@ -59,7 +62,7 @@ class AuthorizeService extends PaymentService
                 $response
             );
         } elseif ($serviceResponse->isError()) {
-            $this->createMessage('AuthorizeError', $response);
+            $this->createMessage(AuthorizeError::class, $response);
         } else {
             $this->markCompleted('Authorized', $serviceResponse, $response);
         }
@@ -99,19 +102,20 @@ class AuthorizeService extends PaymentService
         $request = $gateway->completeAuthorize($gatewayData);
         $this->extend('onAfterCompleteAuthorize', $request);
 
-        $this->createMessage('CompleteAuthorizeRequest', $request);
+        $this->createMessage(CompleteAuthorizeRequest::class, $request);
         $response = null;
         try {
             $response = $this->response = $request->send();
         } catch (\Omnipay\Common\Exception\OmnipayException $e) {
-            $this->createMessage('CompleteAuthorizeError', $e);
+            $this->createMessage(CompleteAuthorizeError::class, $e);
+
             return $this->generateServiceResponse($flags | ServiceResponse::SERVICE_ERROR);
         }
 
         $serviceResponse = $this->wrapOmnipayResponse($response, $isNotification);
 
         if ($serviceResponse->isError()) {
-            $this->createMessage('CompleteAuthorizeError', $response);
+            $this->createMessage(CompleteAuthorizeError::class, $response);
             return $serviceResponse;
         }
 
@@ -127,7 +131,7 @@ class AuthorizeService extends PaymentService
     protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
     {
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
-        $this->createMessage('AuthorizedResponse', $gatewayMessage);
+        $this->createMessage(AuthorizedResponse::class, $gatewayMessage);
         Helper::safeExtend($this->payment, 'onAuthorized', $serviceResponse);
     }
 }

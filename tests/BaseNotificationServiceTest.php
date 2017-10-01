@@ -3,9 +3,12 @@
 namespace SilverStripe\Omnipay\Tests;
 
 use Omnipay\Common\Message\NotificationInterface;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Omnipay\Service\PaymentService;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 
 /**
  * Base class with common tests for Void, Capture and Refund Services
@@ -216,7 +219,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
     public function testSuccessViaNotification()
     {
         // load a payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
         Config::inst()->update('GatewayInfo', $payment->Gateway, array(
@@ -259,7 +262,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         // ensure payment hooks were called
         $this->assertEquals(
             $this->successPaymentExtensionHooks,
-            PaymentTest_PaymentExtensionHooks::findExtensionForID($payment->ID)->getCalledMethods()
+            PaymentTestPaymentExtensionHooks::findExtensionForID($payment->ID)->getCalledMethods()
         );
 
         // ensure the correct service hooks were called
@@ -298,7 +301,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
     public function testFailure()
     {
         // load an authorized payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         $stubGateway = $this->buildPaymentGatewayStub(false, $this->fixtureReceipt);
         // register our mock gateway factory as injection
@@ -336,7 +339,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
     {
         // load an authorized payment from fixture
         /** @var Payment $payment */
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         $stubGateway = $this->buildPaymentGatewayStub(
             false,
@@ -399,7 +402,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
     public function testFailureViaNotification()
     {
         // load a payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
         Config::inst()->update('GatewayInfo', $payment->Gateway, array(
@@ -434,7 +437,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
 
     public function testGatewayNotificationFailure()
     {
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         $stubGateway = $this->buildPaymentGatewayStub(
             true,
@@ -472,7 +475,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
 
     public function testNotificationTransactionReferenceMismatch()
     {
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // create gateway but use a different transaction reference
         $stubGateway = $this->buildPaymentGatewayStub(true, 'DifferentReference');

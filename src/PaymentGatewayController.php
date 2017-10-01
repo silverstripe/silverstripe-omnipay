@@ -59,7 +59,7 @@ class PaymentGatewayController extends Controller
         $payment = $this->getPayment();
 
         if (!$payment) {
-            $this->httpError(404, _t('Payment.NotFound', 'Payment could not be found.'));
+            $this->httpError(404, _t('SilverStripe\\Omnipay\\Model\\Payment.NotFound', 'Payment could not be found.'));
         }
 
         $intent = null;
@@ -89,7 +89,7 @@ class PaymentGatewayController extends Controller
                 $intent = ServiceFactory::INTENT_VOID;
                 break;
             default:
-                $this->httpError(403, _t('Payment.InvalidStatus', 'Invalid/unhandled payment status'));
+                $this->httpError(403, _t('SilverStripe\\Omnipay\\Model\\Payment.InvalidStatus', 'Invalid/unhandled payment status'));
         }
 
         $service = ServiceFactory::create()->getService($payment, $intent);
@@ -109,7 +109,7 @@ class PaymentGatewayController extends Controller
                 $response = $serviceResponse->redirectOrRespond();
                 break;
             default:
-                $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
+                $this->httpError(404, _t('SilverStripe\\Omnipay\\Model\\Payment.InvalidUrl', 'Invalid payment url.'));
         }
 
         return $response;

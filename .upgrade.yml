@@ -14,7 +14,7 @@ mappings:
   PaymentModelTest: SilverStripe\Omnipay\Tests\PaymentModelTest
   PaymentServiceTest: SilverStripe\Omnipay\Tests\PaymentServiceTest
   PaymentTest: SilverStripe\Omnipay\Tests\PaymentTest
-  PaymentTest_PaymentExtensionHooks: SilverStripe\Omnipay\Tests\PaymentTestPaymentExtensionHooks
+  PaymentTestPaymentExtensionHooks: SilverStripe\Omnipay\Tests\PaymentTestPaymentExtensionHooks
   PaymentTest_ServiceExtensionHooks: SilverStripe\Omnipay\Tests\PaymentTestServiceExtensionHooks
   PurchaseServiceTest: SilverStripe\Omnipay\Tests\PurchaseServiceTest
   RefundServiceTest: SilverStripe\Omnipay\Tests\RefundServiceTest

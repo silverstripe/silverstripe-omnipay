@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\Omnipay\Tests;
+namespace SilverStripe\Omnipay\Tests\Extensions;
 
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\Dev\TestOnly;
@@ -14,9 +14,9 @@ class PaymentTestPaymentExtensionHooks extends DataExtension implements TestOnly
     protected static $instances = [];
 
     /**
-     * Fint the PaymentTest_PaymentExtensionHooks instance for a given payment ID
+     * Fint the PaymentTestPaymentExtensionHooks instance for a given payment ID
      * @param $id
-     * @return PaymentTest_PaymentExtensionHooks|null
+     * @return PaymentTestPaymentExtensionHooks|null
      */
     public static function findExtensionForID($id)
     {

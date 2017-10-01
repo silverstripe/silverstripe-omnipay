@@ -49,7 +49,7 @@ SilverStripe\Omnipay\Model\Payment:
     Identifier: 18f2fcac2b8f7549fd0295b251d9e9db
     SuccessUrl: 'shop/complete'
     FailureUrl: 'shop/incomplete'
-SilverStripe\Omnipay\Model\Messaging\GatewayMessage:
+SilverStripe\Omnipay\Model\Message\GatewayMessage:
   message1:
     ClassName: PurchaseRequest
     Reference:

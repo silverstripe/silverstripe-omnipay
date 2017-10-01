@@ -5,6 +5,8 @@ namespace SilverStripe\Omnipay\Tests;
 use SilverStripe\Omnipay\Service\ServiceResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Control\HTTPResponse;
 
 class ServiceResponseTest extends SapphireTest
 {
@@ -132,7 +134,7 @@ class ServiceResponseTest extends SapphireTest
         $this->assertEquals($httpResponse->getStatusCode(), 302);
 
         // explicitly set a response
-        $response->setHttpResponse(new SS_HTTPResponse('Body', 200));
+        $response->setHttpResponse(new HTTPResponse('Body', 200));
 
         // response should take precedence before redirect defined through target URL
         $httpResponse = $response->redirectOrRespond();
@@ -167,7 +169,7 @@ class ServiceResponseTest extends SapphireTest
         $this->assertEquals($response->getTargetUrl(), 'https://gateway.tld/endpoint');
 
         // explicitly set a response
-        $response->setHttpResponse(new SS_HTTPResponse('Body', 200));
+        $response->setHttpResponse(new HTTPResponse('Body', 200));
 
         // redirecting should always return a redirect, EVEN when the http response was set!
         $httpResponse = $response->redirectOrRespond();
@@ -207,7 +209,7 @@ class ServiceResponseTest extends SapphireTest
         $this->assertEquals($response->getTargetUrl(), '/my/target/url');
 
         // explicitly set a response
-        $response->setHttpResponse(new SS_HTTPResponse('Body', 200));
+        $response->setHttpResponse(new HTTPResponse('Body', 200));
 
         // redirecting should always return the response from Omnipay, EVEN when the http response was set!
         $httpResponse = $response->redirectOrRespond();

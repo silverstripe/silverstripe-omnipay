@@ -5,6 +5,9 @@ namespace SilverStripe\Omnipay\Service;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Omnipay\Exception\ServiceException;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Control\HTTPResponse;
+use SilverStripe\Control\Controller;
 
 /**
  * Class ServiceResponse.
@@ -68,17 +71,17 @@ class ServiceResponse
     protected $targetUrl;
 
     /**
-     * @var \SS_HTTPResponse
+     * @var HTTPResponse
      */
     protected $httpResponse;
 
 
     /**
-     * ServiceResponse constructor.
      * Additional arguments will be treated as state flags
-     * @param \Payment $payment the payment instance
+     *
+     * @param Payment $payment the payment instance
      */
-    public function __construct(\Payment $payment)
+    public function __construct(Payment $payment)
     {
         $this->payment = $payment;
         for ($i = 1, $len = func_num_args(); $i < $len; $i++) {
@@ -87,7 +90,7 @@ class ServiceResponse
     }
 
     /**
-     * @return \Payment
+     * @return Payment
      */
     public function getPayment()
     {
@@ -97,6 +100,7 @@ class ServiceResponse
     /**
      * Whether or not this is an *offsite* redirect.
      * This is only the case when there's an Omnipay response present that *is* a redirect.
+     *
      * @return bool
      */
     public function isRedirect()
@@ -106,6 +110,7 @@ class ServiceResponse
 
     /**
      * Whether or not this response is an error-response.
+     *
      * Attention: This doesn't necessarily correlate with the Omnipay response being successful or not…
      * A redirect is not successful in terms of completing a payment (response from omnipay isn't successful), yet the
      * service completed successfully and shouldn't report an error here!
@@ -118,7 +123,8 @@ class ServiceResponse
     }
 
     /**
-     * Whether or not the request is pending and waiting for an async notification
+     * Whether or not the request is pending and waiting for an async notification.
+     *
      * @return bool
      */
     public function isAwaitingNotification()
@@ -127,7 +133,8 @@ class ServiceResponse
     }
 
     /**
-     * Whether or not this is a response to a notification
+     * Whether or not this is a response to a notification.
+     *
      * @return bool
      */
     public function isNotification()
@@ -136,7 +143,8 @@ class ServiceResponse
     }
 
     /**
-     * Whether or not the payment was cancelled
+     * Whether or not the payment was cancelled.
+     *
      * @return bool
      */
     public function isCancelled()
@@ -256,7 +264,7 @@ class ServiceResponse
      *
      * If none of these parameters are given, this method will return null
      *
-     * @return \SS_HTTPResponse
+     * @return HTTPResponse
      */
     public function redirectOrRespond()
     {
@@ -264,9 +272,10 @@ class ServiceResponse
             $redirectResponse = $this->omnipayResponse->getRedirectResponse();
             if ($redirectResponse instanceof \Symfony\Component\HttpFoundation\RedirectResponse) {
                 $this->targetUrl = $redirectResponse->getTargetUrl();
-                return \Controller::curr()->redirect($this->targetUrl);
+
+                return Controller::curr()->redirect($this->targetUrl);
             } else {
-                return new \SS_HTTPResponse((string)$redirectResponse->getContent(), 200);
+                return new HTTPResponse((string)$redirectResponse->getContent(), 200);
             }
         }
 
@@ -275,19 +284,19 @@ class ServiceResponse
         }
 
         if ($this->targetUrl) {
-            return \Controller::curr()->redirect($this->targetUrl);
+            return Controller::curr()->redirect($this->targetUrl);
         }
 
         // return some default HTTP responses
         return $this->isError()
-            ? new \SS_HTTPResponse("NOK", 500)
-            : new \SS_HTTPResponse("OK", 200);
+            ? new HTTPResponse("NOK", 500)
+            : new HTTPResponse("OK", 200);
     }
 
     /**
      * Return the HTTP response given by this gateway.
      * This could be a redirect, but might also be a response with content.
-     * @return \SS_HTTPResponse
+     * @return HTTPResponse
      */
     public function getHttpResponse()
     {
@@ -295,11 +304,13 @@ class ServiceResponse
     }
 
     /**
-     * Set the HTTP response
-     * @param \SS_HTTPResponse $response the HTTP response. Can be used to return directly from a payment request
+     * Set the HTTP response.
+     *
+     * @param HTTPResponse $response the HTTP response. Can be used to return directly from a payment request
+     *
      * @return $this
      */
-    public function setHttpResponse(\SS_HTTPResponse $response)
+    public function setHttpResponse(HTTPResponse $response)
     {
         $this->httpResponse = $response;
         return $this;

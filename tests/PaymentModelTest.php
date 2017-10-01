@@ -2,14 +2,17 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\i18n\i18n;
 
 class PaymentModelTest extends PaymentTest
 {
     public function setUp()
     {
         parent::setUp();
-        Config::inst()->update('GatewayInfo', 'Manual', array(
+        Config::inst()->update(GatewayInfo::class, 'Manual', array(
             'can_capture' => true,
             'can_refund' => true,
             'can_void' => true
@@ -36,33 +39,31 @@ class PaymentModelTest extends PaymentTest
     {
         $oldLocale = i18n::get_locale();
 
-        $payment = $this->objFromFixture("Payment", "payment1");
+        $payment = $this->objFromFixture(Payment::class, "payment1");
 
         i18n::set_locale('en_US');
-        i18n::get_translator('core')->getAdapter()->addTranslation(array(
-            'Gateway.Manual' => 'Manual',
-            'Payment.TitleTemplate' => '{Gateway} {Money} %d/%m/%Y'
-        ), 'en_US');
+        i18n::getMessageProvider()->translate(Gateway::class .'.Manual', 'Manual');
+        i18n::getMessageProvider()->translate(Payment::class .'.TitleTemplate', '{Gateway} {Money} %d/%m/%Y'
+        );
 
         $this->assertEquals(
             'Manual NZ$20.23 10/10/2013',
             $payment->getTitle()
         );
 
-        i18n::get_translator('core')->getAdapter()->addTranslation(array(
-            'Gateway.Manual' => 'Invoice',
-            'Payment.TitleTemplate' => '{Money} via {Gateway} on %Y-%m-%d'
-        ), 'en_US');
+        i18n::getMessageProvider()->translate(Gateway::class .'.Manual', 'Invoice');
+        i18n::getMessageProvider()->translate(Payment::class .'.TitleTemplate', '{Money} via {Gateway} on %Y-%m-%d'
+        );
 
         $this->assertEquals(
             'NZ$20.23 via Invoice on 2013-10-10',
             $payment->getTitle()
         );
 
-        i18n::get_translator('core')->getAdapter()->addTranslation(array(
-            'Gateway.Manual' => 'Rechnung',
-            'Payment.TitleTemplate' => '{Money} per {Gateway} am %d.%m.%Y'
-        ), 'en_US');
+        i18n::getMessageProvider()->translate(Gateway::class .'.Manual', 'Rechnung');
+
+        i18n::getMessageProvider()->translate(Payment::class .'.TitleTemplate', '{Money} per {Gateway} am %d.%m.%Y'
+        );
 
         $this->assertEquals(
             'NZ$20.23 per Rechnung am 10.10.2013',

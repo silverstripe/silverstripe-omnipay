@@ -18,20 +18,30 @@ use Omnipay\Common\Exception\OmnipayException;
 use Symfony\Component\EventDispatcher\Tests\Service;
 use Symfony\Component\HttpFoundation\Request;
 use SilverStripe\Core\Extensible;
+use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Control\Controller;
+use SilverStripe\Omnipay\Model\Message\NotificationError;
+use SilverStripe\Omnipay\Model\Message\NotificationPending;
+use SilverStripe\Omnipay\Model\Message\NotificationSuccessful;
 
 /**
- * Payment Service
+ * Provides wrapper methods for interacting with the omnipay gateways library.
  *
- * Provides wrapper methods for interacting with the omnipay gateways
- * library.
- *
- * Interfaces with the omnipay library
- *
- * @package payment
+ * Interfaces with the omnipay library.
  */
 abstract class PaymentService
 {
     use Extensible;
+    use Injectable;
+
+    /**
+     *
+     */
+    private static $dependencies = [
+        'logger' => '%$Psr\Log\LoggerInterface',
+    ];
 
     /**
      * @var \Guzzle\Http\ClientInterface
@@ -44,7 +54,7 @@ abstract class PaymentService
     private static $httpRequest;
 
     /**
-     * @var \Payment
+     * @var Payment
      */
     protected $payment;
 
@@ -59,11 +69,10 @@ abstract class PaymentService
     protected $gatewayFactory;
 
     /**
-     * @param \Payment
+     * @param Payment
      */
-    public function __construct(\Payment $payment)
+    public function __construct(Payment $payment)
     {
-        parent::__construct();
         $this->payment = $payment;
     }
 
@@ -90,6 +99,7 @@ abstract class PaymentService
 
     /**
      * Cancel a payment
+     *
      * @return ServiceResponse
      */
     public function cancel()
@@ -104,8 +114,9 @@ abstract class PaymentService
     }
 
     /**
-     * Get the payment associated with this service
-     * @return \Payment
+     * Get the payment associated with this service.
+     *
+     * @return Payment
      */
     public function getPayment()
     {
@@ -122,6 +133,7 @@ abstract class PaymentService
     public function oGateway()
     {
         $gatewayName = $this->payment->Gateway;
+
         $gateway = $this->getGatewayFactory()->create(
             $gatewayName,
             self::$httpClient,
@@ -129,6 +141,7 @@ abstract class PaymentService
         );
 
         $parameters = GatewayInfo::getParameters($gatewayName);
+
         if (is_array($parameters)) {
             $gateway->initialize($parameters);
         }
@@ -168,7 +181,7 @@ abstract class PaymentService
 
         if (!($notification instanceof NotificationInterface)) {
             $this->createMessage(
-                'NotificationError',
+                NotificationError::class,
                 'Notification from Omnipay doesn\'t implement NotificationInterface'
             );
             return $this->generateServiceResponse(
@@ -178,11 +191,11 @@ abstract class PaymentService
 
         switch ($notification->getTransactionStatus()) {
             case NotificationInterface::STATUS_COMPLETED:
-                $this->createMessage('NotificationSuccessful', $notification);
+                $this->createMessage(NotificationSuccessful::class, $notification);
                 return $this->generateServiceResponse(ServiceResponse::SERVICE_NOTIFICATION, $notification);
                 break;
             case NotificationInterface::STATUS_PENDING:
-                $this->createMessage('NotificationPending', $notification);
+                $this->createMessage(NotificationPending::class, $notification);
                 return $this->generateServiceResponse(
                     ServiceResponse::SERVICE_NOTIFICATION | ServiceResponse::SERVICE_PENDING,
                     $notification
@@ -211,7 +224,7 @@ abstract class PaymentService
     {
         //set the client IP address, if not already set
         if (!isset($data['clientIp'])) {
-            $data['clientIp'] = \Controller::curr()->getRequest()->getIP();
+            $data['clientIp'] = Controller::curr()->getRequest()->getIP();
         }
 
         $gatewaydata = array_merge($data, array(
@@ -313,12 +326,12 @@ abstract class PaymentService
      * @param float $amount the amount that the partial payment should have
      * @param string $status the desired payment status
      * @param boolean $write whether or not to directly write the new Payment to DB (optional)
-     * @return \Payment the newly created payment (already written to the DB)
+     * @return Payment the newly created payment (already written to the DB)
      */
     protected function createPartialPayment($amount, $status, $write = true)
     {
         /** @var \Payment $payment */
-        $payment = \Payment::create(array(
+        $payment = Payment::create(array(
             'Gateway' => $this->payment->Gateway,
             'TransactionReference' => $this->payment->TransactionReference,
             'SuccessUrl' => $this->payment->SuccessUrl,
@@ -377,14 +390,18 @@ abstract class PaymentService
 
     /**
      * Record a transaction on this for this payment.
+     *
      * @param string $type the type of transaction to create.
      *        This is any class that is (or extends) PaymentMessage.
-     * @param array|string|AbstractResponse|AbstractRequest|OmnipayException|NotificationInterface $data the response to record, or data to store
-     * @return \PaymentMessage newly created DataObject, saved to database.
+     *
+     * @param array|string|AbstractResponse|AbstractRequest|OmnipayException|NotificationInterface $data
+     *
+     * @return PaymentMessage newly created DataObject, saved to database.
      */
     protected function createMessage($type, $data = null)
     {
         $output = array();
+
         if (is_string($data)) {
             $output = array(
                 'Message' => $data
@@ -432,9 +449,11 @@ abstract class PaymentService
             'PaymentID' => $this->payment->ID,
             'Gateway' => $this->payment->Gateway
         ));
+
         $this->logToFile($output, $type);
-        $message = $type::create($output);
+        $message = Injector::inst()->create($type, $output);
         $message->write();
+
         $this->payment->Messages()->add($message);
 
         return $message;
@@ -445,16 +464,13 @@ abstract class PaymentService
      */
     protected function logToFile($data, $type = "")
     {
-        if ($logstyle = \Payment::config()->file_logging) {
+        if ($logstyle = Payment::config()->file_logging) {
             $title = $type . " (" . $this->payment->Gateway . ")";
+
             if ($logstyle === "verbose") {
-                \Debug::log(
-                    $title . "\n\n" .
-                    print_r($data, true)
-                );
+                $this->logger->debug($title . "\n\n" . print_r($data, true));
             } elseif ($logstyle) {
-                \Debug::log(implode(", ", array(
-                    $title,
+                $this->logger->debug(implode(", ", array($title,
                     isset($data['Message']) ? $data['Message'] : " ",
                     isset($data['Code']) ? $data['Code'] : " ",
                 )));
@@ -468,7 +484,7 @@ abstract class PaymentService
     public function getGatewayFactory()
     {
         if (!isset($this->gatewayFactory)) {
-            $this->gatewayFactory = \Injector::inst()->get('Omnipay\Common\GatewayFactory');
+            $this->gatewayFactory = Injector::inst()->get('Omnipay\Common\GatewayFactory');
         }
 
         return $this->gatewayFactory;
@@ -493,10 +509,9 @@ abstract class PaymentService
         return new CreditCard($data);
     }
 
-    //testing functions (could these instead be injected somehow?)
-
     /**
-     * Set the guzzle client (for testing)
+     * Set the guzzle client
+     *
      * @param \Guzzle\Http\ClientInterface $httpClient guzzle client for testing
      */
     public static function setHttpClient(ClientInterface $httpClient)
@@ -510,7 +525,8 @@ abstract class PaymentService
     }
 
     /**
-     * Set the symphony http request (for testing)
+     * Set the symphony http request
+     *
      * @param \Symfony\Component\HttpFoundation\Request $httpRequest symphony http request for testing
      */
     public static function setHttpRequest(Request $httpRequest)
@@ -521,101 +537,5 @@ abstract class PaymentService
     public static function getHttpRequest()
     {
         return self::$httpRequest;
-    }
-
-    // -----------------------------------------------------------------------------------------------------------------
-    // Deprecated methods
-    // TODO: Remove with 3.0
-    // -----------------------------------------------------------------------------------------------------------------
-
-    /**
-     * Get the url to return to, that has been previously stored.
-     * This is not a database field.
-     * @return string the url
-     * @deprecated 3.0 get the SuccessUrl directly from payments
-     */
-    public function getReturnUrl()
-    {
-        return $this->payment->SuccessUrl;
-    }
-
-    /**
-     * Set the url to redirect to after payment is made/attempted.
-     * This function also populates the cancel url, if it is empty.
-     * @return $this this object for chaining
-     * @deprecated 3.0 set the SuccessUrl directly on payments
-     * @codeCoverageIgnore
-     */
-    public function setReturnUrl($url)
-    {
-        $this->payment->SuccessUrl = $url;
-        return $this;
-    }
-
-    /**
-     * @return string cancel url
-     * @deprecated 3.0 get the FailureUrl directly from payments
-     * @codeCoverageIgnore
-     */
-    public function getCancelUrl()
-    {
-        return $this->payment->FailureUrl;
-    }
-
-    /**
-     * Set the url to redirect to after payment is cancelled
-     * @return $this this object for chaining
-     * @deprecated 3.0 set the FailureUrl directly on payments
-     * @codeCoverageIgnore
-     */
-    public function setCancelUrl($url)
-    {
-        $this->payment->FailureUrl = $url;
-        return $this;
-    }
-
-
-    /**
-     * Set the guzzle client (for testing)
-     * @param \Guzzle\Http\ClientInterface $httpClient guzzle client for testing
-     * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use setHttpClient
-     * @codeCoverageIgnore
-     */
-    public static function set_http_client(ClientInterface $httpClient)
-    {
-        \Deprecation::notice('3.0', 'Snake-case methods will be deprecated with 3.0, use setHttpClient');
-        self::setHttpClient($httpClient);
-    }
-
-    /**
-     * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use getHttpClient
-     * @codeCoverageIgnore
-     */
-    public static function get_http_client()
-    {
-        \Deprecation::notice('3.0', 'Snake-case methods will be deprecated with 3.0, use getHttpClient');
-        return self::getHttpClient();
-    }
-
-    /**
-     * Set the symphony http request (for testing)
-     * @param \Symfony\Component\HttpFoundation\Request $httpRequest symphony http request for testing
-     * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use setHttpRequest
-     * @codeCoverageIgnore
-     */
-    public static function set_http_request(Request $httpRequest)
-    {
-        \Deprecation::notice('3.0', 'Snake-case methods will be deprecated with 3.0, use setHttpRequest');
-        self::setHttpRequest($httpRequest);
-    }
-
-    /**
-     * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use getHttpRequest
-     * @codeCoverageIgnore
-     */
-    public static function get_http_request()
-    {
-        \Deprecation::notice('3.0', 'Snake-case methods will be deprecated with 3.0, use getHttpRequest');
-        return self::getHttpRequest();
     }
 }

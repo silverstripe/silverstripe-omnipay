@@ -7,11 +7,11 @@ use SilverStripe\Omnipay\Service\PaymentService;
 use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Dev\FunctionalTest;
-use SilverStripe\Core\Config;
+use SilverStripe\Core\Config\Config;
 
 abstract class PaymentTest extends FunctionalTest
 {
-    protected static $fixture_file = 'payment.yml';
+    protected static $fixture_file = 'PaymentTest.yml';
 
     protected $autoFollowRedirection = false;
 
@@ -22,19 +22,20 @@ abstract class PaymentTest extends FunctionalTest
     protected $factory;
 
     protected $httpClient;
+
     protected $httpRequest;
 
-    private $factoryExtensions;
+    protected static $factoryExtensions;
 
-    public function setUpOnce()
+    public static function setUpBeforeClass()
     {
-        parent::setUpOnce();
+        parent::setUpBeforeClass();
 
         // remove all extensions applied to ServiceFactory
-        $this->factoryExtensions = ServiceFactory::create()->extensions;
+        static::$factoryExtensions = ServiceFactory::create()->getExtensionInstances();
 
-        if ($this->factoryExtensions) {
-            foreach ($this->factoryExtensions as $extension) {
+        if (static::$factoryExtensions) {
+            foreach (static::$factoryExtensions as $extension) {
                 ServiceFactory::remove_extension($extension);
             }
         }
@@ -55,13 +56,13 @@ abstract class PaymentTest extends FunctionalTest
         Payment::add_extension(PaymentTestPaymentExtensionHooks::class);
     }
 
-    public function tearDownOnce()
+    public static function tearDownAfterClass()
     {
-        parent::tearDownOnce();
+        parent::tearDownAfterClass();
 
         // Add removed extensions back once the tests have completed
-        if ($this->factoryExtensions) {
-            foreach ($this->factoryExtensions as $extension) {
+        if (static::$factoryExtensions) {
+            foreach (static::$factoryExtensions as $extension) {
                 ServiceFactory::add_extension($extension);
             }
         }
@@ -69,14 +70,14 @@ abstract class PaymentTest extends FunctionalTest
         Payment::remove_extension(PaymentTestPaymentExtensionHooks::class);
     }
 
-    public function setUp()
+    protected function setUp()
     {
         parent::setUp();
 
-        PaymentTest_PaymentExtensionHooks::ResetAll();
+        PaymentTestPaymentExtensionHooks::ResetAll();
 
         // don't log test payments to file
-        Config::inst()->update('Payment', 'file_logging', 0);
+        Config::inst()->update(Payment::class, 'file_logging', 0);
 
         $this->factory = ServiceFactory::create();
 
@@ -88,8 +89,8 @@ abstract class PaymentTest extends FunctionalTest
         );
 
         // clear settings for PaymentExpress_PxPay (don't let user configs bleed into tests)
-        Config::inst()->remove('GatewayInfo', 'PaymentExpress_PxPay');
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+        Config::inst()->remove(GatewayInfo::class, 'PaymentExpress_PxPay');
+        Config::inst()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'parameters' => array(
                 'username' => 'EXAMPLEUSER',
                 'password' => '235llgwxle4tol23l'
@@ -109,7 +110,7 @@ abstract class PaymentTest extends FunctionalTest
     protected function getHttpClient()
     {
         if (null === $this->httpClient) {
-            $this->httpClient = new Guzzle\Http\Client;
+            $this->httpClient = new \Guzzle\Http\Client;
         }
 
         return $this->httpClient;
@@ -118,7 +119,7 @@ abstract class PaymentTest extends FunctionalTest
     public function getHttpRequest()
     {
         if (null === $this->httpRequest) {
-            $this->httpRequest = new Symfony\Component\HttpFoundation\Request;
+            $this->httpRequest = new \Symfony\Component\HttpFoundation\Request;
         }
 
         return $this->httpRequest;
@@ -128,7 +129,7 @@ abstract class PaymentTest extends FunctionalTest
     {
         $testspath = BASE_PATH . '/vendor/omnipay'; //TODO: improve?
 
-        $mock = new Guzzle\Plugin\Mock\MockPlugin(null, true);
+        $mock = new \Guzzle\Plugin\Mock\MockPlugin(null, true);
 
         $this->getHttpClient()->getEventDispatcher()->removeSubscriber($mock);
         foreach ((array)$paths as $path) {

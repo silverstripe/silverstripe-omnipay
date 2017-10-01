@@ -9,6 +9,8 @@ use Omnipay\Common\Exception\OmnipayException;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\PaymentMath;
 use SilverStripe\Omnipay\Helper;
+use SilverStripe\Omnipay\Model\Message\PartiallyCapturedResponse;
+use SilverStripe\Omnipay\Model\Message\CapturedResponse;
 
 /**
  * Service used in tandem with AuthorizeService.
@@ -195,10 +197,11 @@ class CaptureService extends NotificationCompleteService
         }
 
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
+
         if ($endStatus === 'Captured') {
-            $this->createMessage('CapturedResponse', $gatewayMessage);
+            $this->createMessage(CapturedResponse::class, $gatewayMessage);
         } else {
-            $this->createMessage('PartiallyCapturedResponse', $gatewayMessage);
+            $this->createMessage(PartiallyCapturedResponse::class, $gatewayMessage);
         }
 
         Helper::safeExtend($this->payment, 'onCaptured', $serviceResponse);

@@ -3,12 +3,12 @@
 namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Omnipay\PaymentGatewayController;
+use SilverStripe\Control\Director;
+use SilverStripe\Omnipay\Model\Payment;
 
 class PaymentGatewayControllerTest extends PaymentTest
 {
-    public static $fixture_file = array(
-        'payment.yml'
-    );
+    protected static $fixture_file = 'PaymentTest.yml';
 
     public function testReturnUrlGeneration()
     {

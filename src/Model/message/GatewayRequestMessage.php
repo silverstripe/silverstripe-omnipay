@@ -1,6 +1,6 @@
 <?php
 
-namespace SilverStripe\Omnipay\Model\Messaging;
+namespace SilverStripe\Omnipay\Model\Message;
 
 /**
  * Stores parameters for an offsite gateway request.
@@ -12,10 +12,10 @@ namespace SilverStripe\Omnipay\Model\Messaging;
  */
 class GatewayRequestMessage extends GatewayMessage
 {
-    private static $table_name = 'Omnipay_GatewayRequestMessage';
-
-    private static $db = array(
+    private static $db = [
         'SuccessURL' => 'Text',
         'FailureURL' => 'Text'
-    );
+    ];
+
+    private static $table_name = 'Omnipay_GatewayRequestMessage';
 }

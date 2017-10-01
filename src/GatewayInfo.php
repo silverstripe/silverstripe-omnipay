@@ -7,6 +7,8 @@ use Omnipay\Common\GatewayFactory;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Dev\Deprecation;
+use SilverStripe\Core\Config\Configurable;
 
 /**
  * Provides information about gateways.
@@ -63,23 +65,18 @@ use SilverStripe\Omnipay\Model\Payment;
  */
 class GatewayInfo
 {
+    use Configurable;
+
     const OFF = 'off';
     const FULL = 'full';
     const PARTIAL = 'partial';
     const MULTIPLE = 'multiple';
 
     /**
-     * Config accessor
-     * @return \Config_ForClass
-     */
-    public static function config()
-    {
-        return Config::inst()->forClass('GatewayInfo');
-    }
-
-    /**
      * Get the available configured payment types, optionally with i18n readable names.
+     *
      * @param bool $nice make the array values i18n readable.
+     *
      * @return array map of gateway short name to translated long name.
      */
     public static function getSupportedGateways($nice = true)
@@ -92,6 +89,7 @@ class GatewayInfo
         }
 
         $allowed = array_combine($allowed, $allowed);
+
         if ($nice) {
             $allowed = array_map('\SilverStripe\Omnipay\GatewayInfo::niceTitle', $allowed);
         }
@@ -100,8 +98,10 @@ class GatewayInfo
     }
 
     /**
-     * Get a locale aware title for the given gateway
+     * Get a locale aware title for the given gateway.
+     *
      * @param string $name gateway short name
+     *
      * @return string nice title for the gateway. Uses translations, if available
      */
     public static function niceTitle($name)
@@ -329,8 +329,7 @@ class GatewayInfo
                 return max(0, $setting['amount']);
             }
 
-            if (
-                is_array($setting['amount'])
+            if (is_array($setting['amount'])
                 && $currency
                 && !empty($setting['amount'][$currency])
                 && is_numeric($setting['amount'][$currency])
@@ -385,8 +384,9 @@ class GatewayInfo
     public static function getTokenKey($gateway, $default = 'token')
     {
         $tokenKey = Payment::config()->token_key;
+
         if ($tokenKey) {
-            \Deprecation::notice(
+            Deprecation::notice(
                 '3.0',
                 'Please refrain from setting token_key as config parameter of Payment. ' .
                 'Use GatewayInfo and set the token key on a gateway basis (see docs).'

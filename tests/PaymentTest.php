@@ -2,17 +2,17 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Service\PaymentService;
 use SilverStripe\Omnipay\Service\ServiceFactory;
+use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Dev\FunctionalTest;
+use SilverStripe\Core\Config;
 
 abstract class PaymentTest extends FunctionalTest
 {
-    protected static $fixture_file = array(
-        'payment.yml'
-    );
+    protected static $fixture_file = 'payment.yml';
 
-    //don't follow redirect urls
     protected $autoFollowRedirection = false;
 
     /** @var Payment */
@@ -31,7 +31,7 @@ abstract class PaymentTest extends FunctionalTest
         parent::setUpOnce();
 
         // remove all extensions applied to ServiceFactory
-        $this->factoryExtensions = Object::get_extensions('ServiceFactory');
+        $this->factoryExtensions = ServiceFactory::create()->extensions;
 
         if ($this->factoryExtensions) {
             foreach ($this->factoryExtensions as $extension) {
@@ -40,10 +40,10 @@ abstract class PaymentTest extends FunctionalTest
         }
 
         // clear existing config for the factory (clear user defined settings)
-        Config::inst()->remove('ServiceFactory', 'services');
+        Config::modify()->remove('ServiceFactory', 'services');
 
         // Create the default service map
-        Config::inst()->update('ServiceFactory', 'services', array(
+        Config::modify()->update('ServiceFactory', 'services', array(
             'authorize' => '\SilverStripe\Omnipay\Service\AuthorizeService',
             'createcard' => '\SilverStripe\Omnipay\Service\CreateCardService',
             'purchase' => '\SilverStripe\Omnipay\Service\PurchaseService',
@@ -52,7 +52,7 @@ abstract class PaymentTest extends FunctionalTest
             'void' => '\SilverStripe\Omnipay\Service\VoidService'
         ));
 
-        Payment::add_extension('PaymentTest_PaymentExtensionHooks');
+        Payment::add_extension(PaymentTestPaymentExtensionHooks::class);
     }
 
     public function tearDownOnce()
@@ -66,7 +66,7 @@ abstract class PaymentTest extends FunctionalTest
             }
         }
 
-        Payment::remove_extension('PaymentTest_PaymentExtensionHooks');
+        Payment::remove_extension(PaymentTestPaymentExtensionHooks::class);
     }
 
     public function setUp()

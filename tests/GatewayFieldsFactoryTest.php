@@ -60,13 +60,15 @@ class GatewayFieldsFactoryTest extends SapphireTest
         Config::inst()->remove('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename');
 
         $this->factory =  new GatewayFieldsFactory(
-            null, array(
+            null,
+            array(
             'Card',
             'Billing',
             'Shipping',
             'Company',
             'Email'
-        ));
+            )
+        );
     }
 
     public function testAllFieldGroups()
@@ -87,7 +89,8 @@ class GatewayFieldsFactoryTest extends SapphireTest
     {
         // Create a gateway-factory without a gateway
         $factory = new GatewayFieldsFactory(
-            null, array('Card')
+            null,
+            array('Card')
         );
 
         $fields = $factory->getFields();
@@ -101,7 +104,8 @@ class GatewayFieldsFactoryTest extends SapphireTest
     {
         // Create a gateway-factory without a gateway
         $factory = new GatewayFieldsFactory(
-            null, array('Billing')
+            null,
+            array('Billing')
         );
 
         $fields = $factory->getFields();
@@ -115,7 +119,8 @@ class GatewayFieldsFactoryTest extends SapphireTest
     {
         // Create a gateway-factory without a gateway
         $factory = new GatewayFieldsFactory(
-            null, array('Shipping')
+            null,
+            array('Shipping')
         );
 
         $fields = $factory->getFields();
@@ -129,7 +134,8 @@ class GatewayFieldsFactoryTest extends SapphireTest
     {
         // Create a gateway-factory without a gateway
         $factory = new GatewayFieldsFactory(
-            null, array('Company')
+            null,
+            array('Company')
         );
 
         $fields = $factory->getFields();
@@ -143,7 +149,8 @@ class GatewayFieldsFactoryTest extends SapphireTest
     {
         // Create a gateway-factory without a gateway
         $factory = new GatewayFieldsFactory(
-            null, array('Email')
+            null,
+            array('Email')
         );
 
         $fields = $factory->getFields();

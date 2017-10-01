@@ -4,6 +4,7 @@ namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Omnipay\Service\PurchaseService;
 use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 
 class PurchaseServiceTest extends BasePurchaseServiceTest
 {
@@ -75,13 +76,13 @@ class PurchaseServiceTest extends BasePurchaseServiceTest
     public function setUp()
     {
         parent::setUp();
-        PurchaseService::add_extension('PaymentTest_ServiceExtensionHooks');
+        PurchaseService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
     public function tearDown()
     {
         parent::tearDown();
-        PurchaseService::remove_extension('PaymentTest_ServiceExtensionHooks');
+        PurchaseService::remove_extension(PaymentTestServiceExtensionHooks::class);
     }
 
     protected function getService(Payment $payment)

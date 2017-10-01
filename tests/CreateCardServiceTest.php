@@ -5,6 +5,7 @@ namespace SilverStripe\Omnipay\Tests;
 use SilverStripe\Omnipay\Service\CreateCardService;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 
 class CreateCardServiceTest extends BasePurchaseServiceTest
 {
@@ -75,13 +76,13 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
     public function setUp()
     {
         parent::setUp();
-        CreateCardService::add_extension('PaymentTest_ServiceExtensionHooks');
+        CreateCardService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
     public function tearDown()
     {
         parent::tearDown();
-        CreateCardService::remove_extension('PaymentTest_ServiceExtensionHooks');
+        CreateCardService::remove_extension(PaymentTestServiceExtensionHooks::class);
     }
 
     protected function getService(Payment $payment)

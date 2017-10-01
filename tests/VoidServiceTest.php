@@ -3,6 +3,8 @@
 namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Omnipay\Service\VoidService;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 
 /**
  * Test the void service
@@ -100,13 +102,13 @@ class VoidServiceTest extends BaseNotificationServiceTest
     {
         parent::setUp();
         $this->logInWithPermission('VOID_PAYMENTS');
-        VoidService::add_extension('PaymentTest_ServiceExtensionHooks');
+        VoidService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
     public function tearDown()
     {
         parent::tearDown();
-        VoidService::remove_extension('PaymentTest_ServiceExtensionHooks');
+        VoidService::remove_extension(PaymentTestServiceExtensionHooks::class);
     }
 
     protected function getService(Payment $payment)

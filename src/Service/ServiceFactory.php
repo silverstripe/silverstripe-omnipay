@@ -4,9 +4,17 @@ namespace SilverStripe\Omnipay\Service;
 
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Core\Extensible;
+use SilverStripe\Core\Config\Configurable;
 
 class ServiceFactory
 {
+    use Injectable;
+    use Extensible;
+    use Configurable;
+
     /*
      * Different constants for commonly used intents.
      */
@@ -28,12 +36,13 @@ class ServiceFactory
      *
      * If the method didn't return an instance, this will fall back to the services configuration.
      *
-     * @param \Payment $payment the payment instance
+     * @param Payment $payment the payment instance
      * @param string $intent the intent of the service.
+     *
      * @return PaymentService
      * @throws InvalidConfigurationException when creation of the service failed due to misconfiguration
      */
-    public function getService(\Payment $payment, $intent)
+    public function getService(Payment $payment, $intent)
     {
         $method = 'create' . ucfirst($intent) . 'Service';
 
@@ -50,7 +59,7 @@ class ServiceFactory
             return $this->$method($payment);
         }
 
-        $serviceMap = \Config::inst()->get('ServiceFactory', 'services');
+        $serviceMap = $this->config()->get('services');
 
         if (is_array($serviceMap) && isset($serviceMap[$intent])) {
             $serviceType = $serviceMap[$intent];
@@ -65,11 +74,13 @@ class ServiceFactory
     /**
      * Create a payment service. This will either return an AuthorizeService or PurchaseService, depending on
      * the gateway config.
-     * @param \Payment $payment
+     *
+     * @param Payment $payment
      * @return AuthorizeService|PurchaseService
+     *
      * @throws InvalidConfigurationException
      */
-    protected function createPaymentService(\Payment $payment)
+    protected function createPaymentService(Payment $payment)
     {
         return $this->getService(
             $payment,

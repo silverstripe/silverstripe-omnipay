@@ -13,7 +13,7 @@ class PurchaseService extends PaymentService
      *
      * @inheritdoc
      * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
-     * 	Some keys (e.g. "amount") are overwritten with data from the associated {@link $payment}.
+     *  Some keys (e.g. "amount") are overwritten with data from the associated {@link $payment}.
      *  If this array is constructed from user data (e.g. a form submission), please take care
      *  to whitelist accepted fields, in order to ensure sensitive gateway parameters like "freeShipping" can't be set.
      *  If using {@link Form->getData()}, only fields which exist in the form are returned,
@@ -142,7 +142,7 @@ class PurchaseService extends PaymentService
      *
      * @inheritdoc
      * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
-     * 	Some keys (e.g. "amount") are overwritten with data from the associated {@link $payment}.
+     *  Some keys (e.g. "amount") are overwritten with data from the associated {@link $payment}.
      *  If this array is constructed from user data (e.g. a form submission), please take care
      *  to whitelist accepted fields, in order to ensure sensitive gateway parameters like "freeShipping" can't be set.
      *  If using {@link Form->getData()}, only fields which exist in the form are returned,

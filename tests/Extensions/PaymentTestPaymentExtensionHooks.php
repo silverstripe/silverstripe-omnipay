@@ -11,7 +11,7 @@ use SilverStripe\Dev\TestOnly;
  */
 class PaymentTestPaymentExtensionHooks extends DataExtension implements TestOnly
 {
-    protected static $instances = array();
+    protected static $instances = [];
 
     /**
      * Fint the PaymentTest_PaymentExtensionHooks instance for a given payment ID
@@ -32,10 +32,10 @@ class PaymentTestPaymentExtensionHooks extends DataExtension implements TestOnly
         foreach (self::$instances as $instance) {
             $instance->Reset();
         }
-        self::$instances = array();
+        self::$instances = [];
     }
 
-    protected $callStack = array();
+    protected $callStack = [];
 
     public function setOwner($owner, $ownerBaseClass = null)
     {
@@ -48,7 +48,7 @@ class PaymentTestPaymentExtensionHooks extends DataExtension implements TestOnly
 
     public function Reset()
     {
-        $this->callStack = array();
+        $this->callStack = [];
     }
 
     /**
@@ -66,7 +66,7 @@ class PaymentTestPaymentExtensionHooks extends DataExtension implements TestOnly
      */
     public function getCalledMethods()
     {
-        $result = array();
+        $result = [];
         array_walk($this->callStack, function ($value, $key) use (&$result) {
             $result[] = $value['method'];
         });
@@ -127,7 +127,7 @@ class PaymentTestPaymentExtensionHooks extends DataExtension implements TestOnly
     {
         $this->callStack[] = array(
             'method' => 'onCancelled',
-            'args' => array()
+            'args' => []
         );
     }
     public function onCardCreated($serviceResponse)

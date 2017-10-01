@@ -4,6 +4,8 @@ namespace SilverStripe\Omnipay\Tests;
 
 use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Omnipay\Service\PaymentService;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 
 /**
  * Base class with common tests for Void, Capture and Refund Services
@@ -62,7 +64,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
     public function testSuccess()
     {
         // load an authorized payment from fixture
-        $payment = $this->objFromFixture("Payment", $this->fixtureIdentifier);
+        $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
@@ -86,13 +88,13 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         // ensure payment hooks were called
         $this->assertEquals(
             $this->successPaymentExtensionHooks,
-            $payment->getExtensionInstance('PaymentTest_PaymentExtensionHooks')->getCalledMethods()
+            $payment->getExtensionInstance(PaymentTestPaymentExtensionHooks::class)->getCalledMethods()
         );
 
         // ensure the correct service hooks were called
         $this->assertEquals(
             $this->initiateServiceExtensionHooks,
-            $service->getExtensionInstance('PaymentTest_ServiceExtensionHooks')->getCalledMethods()
+            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
 
@@ -125,13 +127,13 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         // ensure payment hooks were called
         $this->assertEquals(
             $this->successPaymentExtensionHooks,
-            $payment->getExtensionInstance('PaymentTest_PaymentExtensionHooks')->getCalledMethods()
+            $payment->getExtensionInstance(PaymentTestPaymentExtensionHooks::class)->getCalledMethods()
         );
 
         // ensure the correct service hooks were called
         $this->assertEquals(
             $this->initiateServiceExtensionHooks,
-            $service->getExtensionInstance('PaymentTest_ServiceExtensionHooks')->getCalledMethods()
+            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
 
@@ -163,13 +165,13 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         // ensure payment hooks were called
         $this->assertEquals(
             $this->successPaymentExtensionHooks,
-            $this->payment->getExtensionInstance('PaymentTest_PaymentExtensionHooks')->getCalledMethods()
+            $this->payment->getExtensionInstance(PaymentTestPaymentExtensionHooks::class)->getCalledMethods()
         );
 
         // ensure the correct service hooks were called
         $this->assertEquals(
             $this->initiateServiceExtensionHooks,
-            $service->getExtensionInstance('PaymentTest_ServiceExtensionHooks')->getCalledMethods()
+            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
 
@@ -201,13 +203,13 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         // ensure payment hooks were called
         $this->assertEquals(
             $this->successPaymentExtensionHooks,
-            $this->payment->getExtensionInstance('PaymentTest_PaymentExtensionHooks')->getCalledMethods()
+            $this->payment->getExtensionInstance(PaymentTestPaymentExtensionHooks::class)->getCalledMethods()
         );
 
         // ensure the correct service hooks were called
         $this->assertEquals(
             $this->initiateServiceExtensionHooks,
-            $service->getExtensionInstance('PaymentTest_ServiceExtensionHooks')->getCalledMethods()
+            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
 
@@ -263,7 +265,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         // ensure the correct service hooks were called
         $this->assertEquals(
             $this->initiateServiceExtensionHooks,
-            $service->getExtensionInstance('PaymentTest_ServiceExtensionHooks')->getCalledMethods()
+            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
 
         // we'll have to "reload" the payment from the DB now
@@ -289,7 +291,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         // only a service response will be generated, as omnipay is no longer involved at this stage
         $this->assertEquals(
             array('updateServiceResponse'),
-            $service->getExtensionInstance('PaymentTest_ServiceExtensionHooks')->getCalledMethods()
+            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
 
@@ -319,14 +321,14 @@ abstract class BaseNotificationServiceTest extends PaymentTest
 
         // ensure payment hooks were called
         $this->assertEquals(
-            array(),
-            $payment->getExtensionInstance('PaymentTest_PaymentExtensionHooks')->getCalledMethods()
+            [],
+            $payment->getExtensionInstance(PaymentTestPaymentExtensionHooks::class)->getCalledMethods()
         );
 
         // ensure the correct service hooks were called
         $this->assertEquals(
             $this->initiateServiceExtensionHooks,
-            $service->getExtensionInstance('PaymentTest_ServiceExtensionHooks')->getCalledMethods()
+            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
 
@@ -363,14 +365,14 @@ abstract class BaseNotificationServiceTest extends PaymentTest
 
         // ensure payment hooks were called
         $this->assertEquals(
-            array(),
-            $payment->getExtensionInstance('PaymentTest_PaymentExtensionHooks')->getCalledMethods()
+            [],
+            $payment->getExtensionInstance(PaymentTestPaymentExtensionHooks::class)->getCalledMethods()
         );
 
         // ensure the correct service hooks were called
         $this->assertEquals(
             $this->initiateFailedServiceExtensionHooks,
-            $service->getExtensionInstance('PaymentTest_ServiceExtensionHooks')->getCalledMethods()
+            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
 
@@ -457,14 +459,14 @@ abstract class BaseNotificationServiceTest extends PaymentTest
 
         // ensure payment hooks were called
         $this->assertEquals(
-            array(),
-            $payment->getExtensionInstance('PaymentTest_PaymentExtensionHooks')->getCalledMethods()
+            [],
+            $payment->getExtensionInstance(PaymentTestPaymentExtensionHooks::class)->getCalledMethods()
         );
 
         // only a service response will be generated with the notification
         $this->assertEquals(
             array('updateServiceResponse'),
-            $service->getExtensionInstance('PaymentTest_ServiceExtensionHooks')->getCalledMethods()
+            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
 

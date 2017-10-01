@@ -17,6 +17,7 @@ use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Exception\OmnipayException;
 use Symfony\Component\EventDispatcher\Tests\Service;
 use Symfony\Component\HttpFoundation\Request;
+use SilverStripe\Core\Extensible;
 
 /**
  * Payment Service
@@ -30,6 +31,8 @@ use Symfony\Component\HttpFoundation\Request;
  */
 abstract class PaymentService
 {
+    use Extensible;
+
     /**
      * @var \Guzzle\Http\ClientInterface
      */

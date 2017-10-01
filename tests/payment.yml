@@ -1,4 +1,4 @@
-Payment:
+SilverStripe\Omnipay\Model\Payment:
   payment1:
     Gateway: Manual
     MoneyAmount: 20.23
@@ -49,35 +49,34 @@ Payment:
     Identifier: 18f2fcac2b8f7549fd0295b251d9e9db
     SuccessUrl: 'shop/complete'
     FailureUrl: 'shop/incomplete'
-
-GatewayMessage:
+SilverStripe\Omnipay\Model\Messaging\GatewayMessage:
   message1:
     ClassName: PurchaseRequest
     Reference:
     Message:
     Code:
-    PaymentID: =>Payment.payment2
+    PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment2'
   message2:
     ClassName: PurchaseRedirectResponse
-    PaymentID: =>Payment.payment2
+    PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment2'
   message3:
     ClassName: AuthorizeRequest
     Reference:
     Message:
     Code:
-    PaymentID: =>Payment.payment5
+    PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment5'
   message4:
     ClassName: AuthorizeRedirectResponse
-    PaymentID: =>Payment.payment5
+    PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment5'
   message5:
     ClassName: PurchasedResponse
     Reference: paymentReceipt
-    PaymentID: =>Payment.payment3
+    PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment3'
   message6:
     ClassName: AuthorizedResponse
     Reference: authorizedPaymentReceipt
-    PaymentID: =>Payment.payment6
+    PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment6'
   message7:
     ClassName: CreateCardResponse
     Reference: createCardPaymentReceipt
-    PaymentID: =>Payment.payment7
+    PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment7'

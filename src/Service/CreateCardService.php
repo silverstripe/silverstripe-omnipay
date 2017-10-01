@@ -27,7 +27,7 @@ class CreateCardService extends PaymentService
         $gateway = $this->oGateway();
         if (!$gateway->supportsCreateCard()) {
             throw new InvalidConfigurationException(
-            sprintf('The gateway "%s" doesn\'t support create card', $this->payment->Gateway)
+                sprintf('The gateway "%s" doesn\'t support create card', $this->payment->Gateway)
             );
         }
 
@@ -56,7 +56,8 @@ class CreateCardService extends PaymentService
             $this->payment->write();
 
             $this->createMessage(
-                $serviceResponse->isRedirect() ? 'CreateCardRedirectResponse' : 'AwaitingCreateCardResponse', $response
+                $serviceResponse->isRedirect() ? 'CreateCardRedirectResponse' : 'AwaitingCreateCardResponse',
+                $response
             );
         } elseif ($serviceResponse->isError()) {
             $this->createMessage('CreateCardError', $response);
@@ -88,7 +89,7 @@ class CreateCardService extends PaymentService
         $gateway = $this->oGateway();
         if (!method_exists($gateway, "completeCreateCard")) {
             throw new InvalidConfigurationException(
-            sprintf('The gateway "%s" doesn\'t support completeCreateCard', $this->payment->Gateway)
+                sprintf('The gateway "%s" doesn\'t support completeCreateCard', $this->payment->Gateway)
             );
         }
 

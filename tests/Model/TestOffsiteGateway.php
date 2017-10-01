@@ -14,14 +14,14 @@ class TestOffsiteGateway extends AbstractGateway implements TestOnly
 
     public function getDefaultParameters()
     {
-        return array();
+        return [];
     }
 
-    public function purchase(array $parameters = array())
+    public function purchase(array $parameters = [])
     {
     }
 
-    public function completePurchase(array $options = array())
+    public function completePurchase(array $options = [])
     {
     }
 }

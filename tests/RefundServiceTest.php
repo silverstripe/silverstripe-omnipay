@@ -4,6 +4,9 @@ namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Omnipay\Service\RefundService;
 use Omnipay\Common\Message\NotificationInterface;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
+use SilverStripe\Omnipay\Model\Payment;
 
 /**
  * Test the refund service
@@ -101,13 +104,13 @@ class RefundServiceTest extends BaseNotificationServiceTest
     {
         parent::setUp();
         $this->logInWithPermission('REFUND_PAYMENTS');
-        RefundService::add_extension('PaymentTest_ServiceExtensionHooks');
+        RefundService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
     public function tearDown()
     {
         parent::tearDown();
-        RefundService::remove_extension('PaymentTest_ServiceExtensionHooks');
+        RefundService::remove_extension(PaymentTestServiceExtensionHooks::class);
     }
 
     protected function getService(Payment $payment)
@@ -142,13 +145,13 @@ class RefundServiceTest extends BaseNotificationServiceTest
         // ensure payment hooks were called
         $this->assertEquals(
             $this->successPaymentExtensionHooks,
-            $payment->getExtensionInstance('PaymentTest_PaymentExtensionHooks')->getCalledMethods()
+            $payment->getExtensionInstance(PaymentTestPaymentExtensionHooks::class)->getCalledMethods()
         );
 
         // ensure the correct service hooks were called
         $this->assertEquals(
             $this->initiateServiceExtensionHooks,
-            $service->getExtensionInstance('PaymentTest_ServiceExtensionHooks')->getCalledMethods()
+            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
 
@@ -200,13 +203,13 @@ class RefundServiceTest extends BaseNotificationServiceTest
         // ensure payment hooks were called
         $this->assertEquals(
             $this->successPaymentExtensionHooks,
-            $payment->getExtensionInstance('PaymentTest_PaymentExtensionHooks')->getCalledMethods()
+            $payment->getExtensionInstance(PaymentTestPaymentExtensionHooks::class)->getCalledMethods()
         );
 
         // ensure the correct service hooks were called
         $this->assertEquals(
             array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment')),
-            $service->getExtensionInstance('PaymentTest_ServiceExtensionHooks')->getCalledMethods()
+            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
 
@@ -302,7 +305,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         // ensure the correct service hooks were called
         $this->assertEquals(
             array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment')),
-            $service->getExtensionInstance('PaymentTest_ServiceExtensionHooks')->getCalledMethods()
+            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
 
         // we'll have to "reload" the payment from the DB now

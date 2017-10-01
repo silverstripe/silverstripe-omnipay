@@ -19,25 +19,22 @@ class GatewayInfoTest extends SapphireTest
 
         $this->originalLocale = i18n::get_locale();
 
-        // Clear the allowed_gateways
-        Config::inst()->remove('Payment', 'allowed_gateways');
+        Config::modify()->remove(Payment::class, 'allowed_gateways');
+        Config::modify()->remove(GatewayInfo::class, 'PaymentExpress_PxPay');
 
-        // clear settings for PaymentExpress_PxPay (don't let user configs bleed into tests)
-        Config::inst()->remove('GatewayInfo', 'PaymentExpress_PxPay');
-
-        Config::inst()->update('Payment', 'allowed_gateways', array(
+        Config::modify()->update(Payment::class, 'allowed_gateways', array(
             'PayPal_Express',
             'PaymentExpress_PxPay',
             'Dummy'
         ));
 
-        i18n::get_translator('core')->getAdapter()->addTranslation(array(
+        i18n::getMessageProvider()->translate(array(
             'Gateway.PayPal_Express' => 'PayPal Express EN',
             'Gateway.PaymentExpress_PxPay' => 'Px Pay Express EN',
             'Gateway.Dummy' => 'Dummy EN'
         ), 'en_US');
 
-        i18n::get_translator('core')->getAdapter()->addTranslation(array(
+        i18n::getMessageProvider()->addTranslation(array(
             'Gateway.Dummy' => 'Dummy DE',
             'Gateway.PaymentExpress_PxPay' => '' // clear
         ), 'de_DE');
@@ -409,7 +406,7 @@ class GatewayInfoTest extends SapphireTest
         $this->assertEquals(GatewayInfo::FULL, GatewayInfo::refundMode('PaymentExpress_PxPay'));
 
         // check with explicit values
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'can_capture' => 'full',
             'can_refund' => 'off',
             'can_void' => 'off'
@@ -423,7 +420,7 @@ class GatewayInfoTest extends SapphireTest
         $this->assertEquals(GatewayInfo::OFF, GatewayInfo::refundMode('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
 
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'can_capture' => 'multiple',
             'can_refund' => 'full',
             'can_void' => 'false'
@@ -438,7 +435,7 @@ class GatewayInfoTest extends SapphireTest
         $this->assertFalse(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
 
         // check with true/false
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'can_capture' => false,
             'can_refund' => true,
             'can_void' => true
@@ -453,7 +450,7 @@ class GatewayInfoTest extends SapphireTest
         $this->assertTrue(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
 
         // check with "truthy" and "falsy" values
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'can_capture' => '0',
             'can_refund' => '1',
             'can_void' => '1'

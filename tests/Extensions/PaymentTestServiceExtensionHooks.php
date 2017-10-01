@@ -10,11 +10,11 @@ use SilverStripe\Dev\TestOnly;
  */
 class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
 {
-    protected $callStack = array();
+    protected $callStack = [];
 
     public function Reset()
     {
-        $this->callStack = array();
+        $this->callStack = [];
     }
 
     /**
@@ -32,7 +32,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
      */
     public function getCalledMethods()
     {
-        $result = array();
+        $result = [];
         array_walk($this->callStack, function ($value, $key) use (&$result) {
             $result[] = $value['method'];
         });

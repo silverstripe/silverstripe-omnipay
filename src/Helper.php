@@ -29,13 +29,13 @@ class Helper
     public static function safeExtend(
         $object,
         $method,
-        &$a1=null,
-        &$a2=null,
-        &$a3=null,
-        &$a4=null,
-        &$a5=null,
-        &$a6=null,
-        &$a7=null
+        &$a1 = null,
+        &$a2 = null,
+        &$a3 = null,
+        &$a4 = null,
+        &$a5 = null,
+        &$a6 = null,
+        &$a7 = null
     ) {
         if (!($object instanceof \Object)) {
             return array();

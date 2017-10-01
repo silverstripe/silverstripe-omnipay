@@ -6,6 +6,8 @@ use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\PaymentMath;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\Security\PermissionProvider;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Security\RandomGenerator;
 
 /**
  * Payment DataObject
@@ -97,12 +99,16 @@ final class Payment extends DataObject implements PermissionProvider
 
         $fields->removeByName('Gateway');
         $fields->removeByName('Created');
-        $fields->insertAfter(DropdownField::create('Gateway', _t('Payment.db_Gateway', 'Gateway'),
+        $fields->insertAfter(DropdownField::create(
+            'Gateway',
+            _t('Payment.db_Gateway', 'Gateway'),
             GatewayInfo::getSupportedGateways()
         )->setHasEmptyDefault(true), 'Money');
 
         // create a localized status dropdown for the search-context
-        $fields->insertAfter(DropdownField::create('Status', _t('Payment.db_Status', 'Status'),
+        $fields->insertAfter(DropdownField::create(
+            'Status',
+            _t('Payment.db_Status', 'Status'),
             $this->getStatusValues()
         )->setHasEmptyDefault(true), 'Gateway');
 
@@ -505,7 +511,7 @@ final class Payment extends DataObject implements PermissionProvider
      */
     public function generateUniquePaymentIdentifier()
     {
-        $generator = Injector::inst()->create('RandomGenerator');
+        $generator = Injector::inst()->create(RandomGenerator::class);
         $id = null;
         do {
             $id = substr($generator->randomToken(), 0, 30);

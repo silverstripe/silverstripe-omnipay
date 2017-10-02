@@ -29,5 +29,7 @@
     },
     "suggest": {
         "bummzack/silverstripe-omnipay-ui": "Adds UI Components to manage payments in the SilverStripe CMS."
-    }
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
 }

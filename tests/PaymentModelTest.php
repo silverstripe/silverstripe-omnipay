@@ -12,7 +12,7 @@ class PaymentModelTest extends PaymentTest
     public function setUp()
     {
         parent::setUp();
-        Config::inst()->update(GatewayInfo::class, 'Manual', array(
+        Config::modify()->update(GatewayInfo::class, 'Manual', array(
             'can_capture' => true,
             'can_refund' => true,
             'can_void' => true
@@ -157,21 +157,21 @@ class PaymentModelTest extends PaymentTest
         $this->assertTrue($payment->canCapture());
         $this->assertTrue($payment->canCapture(null, true));
 
-        Config::inst()->update('GatewayInfo', 'Manual', array(
+        Config::modify()->update(GatewayInfo::class, 'Manual', array(
             'can_capture' => false
         ));
 
         $this->assertFalse($payment->canCapture());
         $this->assertFalse($payment->canCapture(null, true));
 
-        Config::inst()->update('GatewayInfo', 'Manual', array(
+        Config::modify()->update(GatewayInfo::class, 'Manual', array(
             'can_capture' => 'full'
         ));
 
         $this->assertTrue($payment->canCapture());
         $this->assertFalse($payment->canCapture(null, true));
 
-        Config::inst()->update('GatewayInfo', 'Manual', array(
+        Config::modify()->update(GatewayInfo::class, 'Manual', array(
             'can_capture' => 'partial'
         ));
 
@@ -198,21 +198,21 @@ class PaymentModelTest extends PaymentTest
         $this->assertTrue($payment->canRefund());
         $this->assertTrue($payment->canRefund(null, true));
 
-        Config::inst()->update('GatewayInfo', 'Manual', array(
+        Config::modify()->update(GatewayInfo::class, 'Manual', array(
             'can_refund' => false
         ));
 
         $this->assertFalse($payment->canRefund());
         $this->assertFalse($payment->canRefund(null, true));
 
-        Config::inst()->update('GatewayInfo', 'Manual', array(
+        Config::modify()->update(GatewayInfo::class, 'Manual', array(
             'can_refund' => 'full'
         ));
 
         $this->assertTrue($payment->canRefund());
         $this->assertFalse($payment->canRefund(null, true));
 
-        Config::inst()->update('GatewayInfo', 'Manual', array(
+        Config::modify()->update(GatewayInfo::class, 'Manual', array(
             'can_refund' => 'partial'
         ));
 
@@ -237,13 +237,13 @@ class PaymentModelTest extends PaymentTest
 
         $this->assertTrue($payment->canVoid());
 
-        Config::inst()->update('GatewayInfo', 'Manual', array(
+        Config::modify()->update(GatewayInfo::class, 'Manual', array(
             'can_void' => false
         ));
 
         $this->assertFalse($payment->canVoid());
 
-        Config::inst()->update('GatewayInfo', 'Manual', array(
+        Config::modify()->update(GatewayInfo::class, 'Manual', array(
             'can_void' => true
         ));
 
@@ -262,17 +262,17 @@ class PaymentModelTest extends PaymentTest
 
         $payment->Status = 'Authorized';
 
-        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => '30'));
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => '30'));
         $this->assertEquals('150.00', $payment->getMaxCaptureAmount());
 
-        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => '30%'));
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => '30%'));
         $this->assertEquals('156.00', $payment->getMaxCaptureAmount());
 
-        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => '17%'));
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => '17%'));
         $this->assertEquals('140.40', $payment->getMaxCaptureAmount());
 
         Config::inst()->remove('GatewayInfo', 'Dummy');
-        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => array(
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => array(
             'amount' => array(
                 'USD' => 80,
                 'EUR' => 70,

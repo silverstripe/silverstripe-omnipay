@@ -6,6 +6,7 @@ use SilverStripe\Omnipay\Service\CreateCardService;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
+use SilverStripe\Omnipay\Model\Message;
 
 class CreateCardServiceTest extends BasePurchaseServiceTest
 {
@@ -16,33 +17,33 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
     protected $omnipayCompleteMethod = 'completeCreateCard';
 
     protected $onsiteSuccessMessages = array(
-        array('ClassName' => 'CreateCardRequest'),
-        array('ClassName' => 'CreateCardResponse')
+        array('ClassName' => Message\CreateCardRequest::class),
+        array('ClassName' => Message\CreateCardResponse::class)
     );
 
     protected $onsiteFailMessages = array(
-        array('ClassName' => 'CreateCardRequest'),
-        array('ClassName' => 'CreateCardError')
+        array('ClassName' => Mesasge\CreateCardRequest::class),
+        array('ClassName' => Mesasge\CreateCardError::class)
     );
 
     protected $failMessages = array(
-        array('ClassName' => 'CreateCardError')
+        array('ClassName' => Mesasge\CreateCardError::class)
     );
 
     protected $offsiteSuccessMessages = array(
-        array('ClassName' => 'CreateCardRequest'),
-        array('ClassName' => 'CreateCardRedirectResponse'),
-        array('ClassName' => 'CompleteCreateCardRequest'),
-        array('ClassName' => 'CreateCardResponse')
+        array('ClassName' => Mesasge\CreateCardRequest::class),
+        array('ClassName' => Mesasge\CreateCardRedirectResponse::class),
+        array('ClassName' => Mesasge\CompleteCreateCardRequest::class),
+        array('ClassName' => Mesasge\CreateCardResponse::class)
     );
 
     protected $offsiteFailMessages = array(
-        array('ClassName' => 'CreateCardResponse'),
-        array('ClassName' => 'CompleteCreateCardRequest'),
-        array('ClassName' => 'CompleteCreateCardError')
+        array('ClassName' => Mesasge\CreateCardResponse::class),
+        array('ClassName' => Mesasge\CompleteCreateCardRequest::class),
+        array('ClassName' => Mesasge\CompleteCreateCardError::class)
     );
 
-    protected $failureMessageClass = 'CompleteCreateCardError';
+    protected $failureMessageClass = Message\CompleteCreateCardError::class;
 
     protected $paymentId = '18f2fcac2b8f7549fd0295b251d9e9db';
 

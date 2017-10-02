@@ -5,6 +5,8 @@ namespace SilverStripe\Omnipay\Service;
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Helper;
+use SilverStripe\Omnipay\Model\Message;
+use SilverStripe\Omnipay\Service\ServiceResponse;
 
 class PurchaseService extends PaymentService
 {
@@ -42,12 +44,12 @@ class PurchaseService extends PaymentService
         $request = $this->oGateway()->purchase($gatewayData);
         $this->extend('onAfterPurchase', $request);
 
-        $this->createMessage('PurchaseRequest', $request);
+        $this->createMessage(Message\PurchaseRequest::class, $request);
 
         try {
             $response = $this->response = $request->send();
         } catch (\Omnipay\Common\Exception\OmnipayException $e) {
-            $this->createMessage('PurchaseError', $e);
+            $this->createMessage(Message\PurchaseError::class, $e);
             // create an error response
             return $this->generateServiceResponse(ServiceResponse::SERVICE_ERROR);
         }
@@ -65,7 +67,7 @@ class PurchaseService extends PaymentService
                 $response
             );
         } elseif ($serviceResponse->isError()) {
-            $this->createMessage('PurchaseError', $response);
+            $this->createMessage(Message\PurchaseError::class, $response);
         } else {
             $this->markCompleted('Captured', $serviceResponse, $response);
         }
@@ -104,18 +106,18 @@ class PurchaseService extends PaymentService
         $request = $gateway->completePurchase($gatewayData);
         $this->extend('onAfterCompletePurchase', $request);
 
-        $this->createMessage('CompletePurchaseRequest', $request);
+        $this->createMessage(Message\CompletePurchaseRequest::class, $request);
         $response = null;
         try {
             $response = $this->response = $request->send();
         } catch (\Omnipay\Common\Exception\OmnipayException $e) {
-            $this->createMessage('CompletePurchaseError', $e);
+            $this->createMessage(Message\CompletePurchaseError::class, $e);
             return $this->generateServiceResponse($flags | ServiceResponse::SERVICE_ERROR);
         }
 
         $serviceResponse = $this->wrapOmnipayResponse($response, $isNotification);
         if ($serviceResponse->isError()) {
-            $this->createMessage('CompletePurchaseError', $response);
+            $this->createMessage(Message\CompletePurchaseError::class, $response);
             return $serviceResponse;
         }
 
@@ -133,38 +135,7 @@ class PurchaseService extends PaymentService
     protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
     {
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
-        $this->createMessage('PurchasedResponse', $gatewayMessage);
+        $this->createMessage(Message\PurchasedResponse::class, $gatewayMessage);
         Helper::safeExtend($this->payment, 'onCaptured', $serviceResponse);
-    }
-
-    /**
-     * Attempt to make a payment.
-     *
-     * @inheritdoc
-     * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
-     *  Some keys (e.g. "amount") are overwritten with data from the associated {@link $payment}.
-     *  If this array is constructed from user data (e.g. a form submission), please take care
-     *  to whitelist accepted fields, in order to ensure sensitive gateway parameters like "freeShipping" can't be set.
-     *  If using {@link Form->getData()}, only fields which exist in the form are returned,
-     *  effectively whitelisting against arbitrary user input.
-     * @deprecated 3.0 Use the `initiate` method instead
-     * @codeCoverageIgnore
-     */
-    public function purchase($data = array())
-    {
-        \Deprecation::notice('3.0', 'Use the `initiate` method instead.');
-        return $this->initiate($data);
-    }
-
-    /**
-     * Finalise this payment, after off-site external processing.
-     * This is ususally only called by PaymentGatewayController.
-     * @deprecated 3.0 Use the `complete` method instead
-     * @codeCoverageIgnore
-     */
-    public function completePurchase($data = array())
-    {
-        \Deprecation::notice('3.0', 'Use the `complete` method instead.');
-        return $this->complete($data);
     }
 }

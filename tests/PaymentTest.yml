@@ -51,7 +51,7 @@ SilverStripe\Omnipay\Model\Payment:
     FailureUrl: 'shop/incomplete'
 SilverStripe\Omnipay\Model\Message\GatewayMessage:
   message1:
-    ClassName: PurchaseRequest
+    ClassName: SilverStripe\Omnipay\Model\Message\PurchaseRequest
     Reference:
     Message:
     Code:
@@ -66,17 +66,17 @@ SilverStripe\Omnipay\Model\Message\GatewayMessage:
     Code:
     PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment5'
   message4:
-    ClassName: AuthorizeRedirectResponse
+    ClassName: SilverStripe\Omnipay\Model\Message\AuthorizeRedirectResponse
     PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment5'
   message5:
-    ClassName: PurchasedResponse
+    ClassName: SilverStripe\Omnipay\Model\Message\PurchasedResponse
     Reference: paymentReceipt
     PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment3'
   message6:
-    ClassName: AuthorizedResponse
+    ClassName: SilverStripe\Omnipay\Model\Message\AuthorizedResponse
     Reference: authorizedPaymentReceipt
     PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment6'
   message7:
-    ClassName: CreateCardResponse
+    ClassName: SilverStripe\Omnipay\Model\Message\CreateCardResponse
     Reference: createCardPaymentReceipt
     PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment7'

@@ -173,7 +173,7 @@ abstract class PaymentService
         try {
             $notification = $gateway->acceptNotification();
         } catch (\Omnipay\Common\Exception\OmnipayException $e) {
-            $this->createMessage('NotificationError', $e);
+            $this->createMessage(NotificationError::class, $e);
             return $this->generateServiceResponse(
                 ServiceResponse::SERVICE_NOTIFICATION | ServiceResponse::SERVICE_ERROR
             );
@@ -203,7 +203,7 @@ abstract class PaymentService
         }
 
         // The only status left is error
-        $this->createMessage('NotificationError', $notification);
+        $this->createMessage(NotificationError::class, $notification);
         return $this->generateServiceResponse(
             ServiceResponse::SERVICE_NOTIFICATION | ServiceResponse::SERVICE_ERROR,
             $notification

@@ -5,6 +5,7 @@ namespace SilverStripe\Omnipay\Tests;
 use SilverStripe\Omnipay\Service\VoidService;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
+use SilverStripe\Omnipay\Model\Message;
 
 /**
  * Test the void service
@@ -25,61 +26,61 @@ class VoidServiceTest extends BaseNotificationServiceTest
 
     protected $successFromFixtureMessages = array(
         array( // response that was loaded from the fixture
-            'ClassName' => 'AuthorizedResponse',
+            'ClassName' => Message\AuthorizedResponse::class,
             'Reference' => 'authorizedPaymentReceipt'
         ),
         array( // the generated void request
-            'ClassName' => 'VoidRequest',
+            'ClassName' => Message\VoidRequest::class,
             'Reference' => 'authorizedPaymentReceipt'
         ),
         array( // the generated void response
-            'ClassName' => 'VoidedResponse',
+            'ClassName' => Message\VoidedResponse::class,
             'Reference' => 'authorizedPaymentReceipt'
         )
     );
 
     protected $successMessages = array(
         array( // the generated void request
-            'ClassName' => 'VoidRequest',
+            'ClassName' => Message\VoidRequest::class,
             'Reference' => 'testThisRecipe123'
         ),
         array( // the generated void response
-            'ClassName' => 'VoidedResponse',
+            'ClassName' => Message\VoidedResponse::class,
             'Reference' => 'testThisRecipe123'
         )
     );
 
     protected $failureMessages = array(
         array( // response that was loaded from the fixture
-            'ClassName' => 'AuthorizedResponse',
+            'ClassName' => Message\AuthorizedResponse::class,
             'Reference' => 'authorizedPaymentReceipt'
         ),
         array( // the generated void request
-            'ClassName' => 'VoidRequest',
+            'ClassName' => Message\VoidRequest::class,
             'Reference' => 'authorizedPaymentReceipt'
         ),
         array( // the generated void error
-            'ClassName' => 'VoidError',
+            'ClassName' => Message\VoidError::class,
             'Reference' => 'authorizedPaymentReceipt'
         )
     );
 
     protected $notificationFailureMessages = array(
         array(
-            'ClassName' => 'AuthorizedResponse',
+            'ClassName' => Message\AuthorizedResponse::class,
             'Reference' => 'authorizedPaymentReceipt'
         ),
         array(
-            'ClassName' => 'VoidRequest',
+            'ClassName' => Message\VoidRequest::class,
             'Reference' => 'authorizedPaymentReceipt'
         ),
         array(
-            'ClassName' => 'NotificationError',
+            'ClassName' => Message\NotificationError::class,
             'Reference' => 'authorizedPaymentReceipt'
         )
     );
 
-    protected $errorMessageClass = 'VoidError';
+    protected $errorMessageClass = Message\VoidError::class;
 
     protected $successPaymentExtensionHooks = array(
         'onVoid'

@@ -365,7 +365,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // allow multiple captures
-        Config::inst()->update('GatewayInfo', $payment->Gateway, array(
+        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
             'can_capture' => 'multiple'
         ));
 
@@ -415,7 +415,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::inst()->update('GatewayInfo', $payment->Gateway, array(
+        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true,
             'can_capture' => 'multiple'
         ));
@@ -506,7 +506,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::inst()->update('GatewayInfo', $payment->Gateway, array(
+        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -618,7 +618,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // only allow full capture, thus disabling partial refunds
-        Config::inst()->update('GatewayInfo', $payment->Gateway, array(
+        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
             'can_capture' => 'full'
         ));
 
@@ -653,7 +653,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::inst()->update('GatewayInfo', $payment->Gateway, array(
+        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 

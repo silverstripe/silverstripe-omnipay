@@ -8,6 +8,10 @@ use SilverStripe\Omnipay\Helper;
 use SilverStripe\Omnipay\Model\Message\AuthorizeRequest;
 use SilverStripe\Omnipay\Model\Message\AuthorizedResponse;
 use SilverStripe\Omnipay\Model\Message\CompleteAuthorizeError;
+use SilverStripe\Omnipay\Model\Message\AuthorizeError;
+use SilverStripe\Omnipay\Model\Message\AuthorizeRedirectResponse;
+use SilverStripe\Omnipay\Model\Message\AwaitingAuthorizeResponse;
+use SilverStripe\Omnipay\Model\Message\CompleteAuthorizeRequest;
 
 class AuthorizeService extends PaymentService
 {
@@ -58,7 +62,7 @@ class AuthorizeService extends PaymentService
             $this->payment->write();
 
             $this->createMessage(
-                $serviceResponse->isRedirect() ? 'AuthorizeRedirectResponse' : 'AwaitingAuthorizeResponse',
+                $serviceResponse->isRedirect() ? AuthorizeRedirectResponse::class : AwaitingAuthorizeResponse::class,
                 $response
             );
         } elseif ($serviceResponse->isError()) {

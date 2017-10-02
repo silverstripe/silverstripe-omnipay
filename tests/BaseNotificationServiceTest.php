@@ -222,7 +222,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::inst()->update('GatewayInfo', $payment->Gateway, array(
+        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -405,7 +405,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::inst()->update('GatewayInfo', $payment->Gateway, array(
+        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -550,7 +550,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
     {
         // disallow the service via config
         $method = 'allow_' . $this->gatewayMethod;
-        Config::inst()->update('GatewayInfo', 'Dummy', array(
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array(
             $method => false
         ));
         $this->payment->setGateway('Dummy')->Status = 'Created';

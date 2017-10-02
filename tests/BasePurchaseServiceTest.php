@@ -9,6 +9,8 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
+use SilverStripe\Control\Director;
+use Closure;
 
 /**
  * Abstract base-class that implements common tests for "authorize" and "purchase".
@@ -463,7 +465,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
     public function testTokenGateway()
     {
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPost', array(
+        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPost', array(
             'token_key' => 'token'
         ));
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
@@ -493,7 +495,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
     public function testTokenGatewayWithAlternateKey()
     {
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPost', array(
+        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPost', array(
             'token_key' => 'my_token'
         ));
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
@@ -523,7 +525,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
     public function testAsyncPaymentConfirmation()
     {
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'use_async_notification' => true
         ));
 
@@ -596,7 +598,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
     // Test an async response that comes in before the user returns from the offsite form
     public function testAsyncPaymentConfirmationIncomingFirst()
     {
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'use_async_notification' => true
         ));
 
@@ -670,7 +672,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
     // Test via PaymentGatewayController
     public function testPaymentGatewayControllerConfirmationIncomingFirst()
     {
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'use_async_notification' => true
         ));
 

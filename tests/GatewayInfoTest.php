@@ -39,7 +39,7 @@ class GatewayInfoTest extends SapphireTest
             'Gateway.PaymentExpress_PxPay' => '' // clear
         ), 'de_DE');
 
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'parameters' => array(
                 'username' => 'EXAMPLEUSER',
                 'password' => '235llgwxle4tol23l'
@@ -152,7 +152,7 @@ class GatewayInfoTest extends SapphireTest
      */
     public function testIsOffsite()
     {
-        Config::inst()->update('GatewayInfo', 'OffsiteGateway', array(
+        Config::modify()->update(GatewayInfo::class, 'OffsiteGateway', array(
             'is_offsite' => true
         ));
 
@@ -169,7 +169,7 @@ class GatewayInfoTest extends SapphireTest
      */
     public function testIsManual()
     {
-        Config::inst()->update('GatewayInfo', 'Dummy', array(
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array(
             'is_manual' => true
         ));
 
@@ -197,7 +197,7 @@ class GatewayInfoTest extends SapphireTest
         );
 
         // update config
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'use_authorize' => true
         ));
 
@@ -218,7 +218,7 @@ class GatewayInfoTest extends SapphireTest
         );
 
         // update config on manual gateway (should be ignored!)
-        Config::inst()->update('GatewayInfo', 'Manual', array(
+        Config::modify()->update(GatewayInfo::class, 'Manual', array(
             'use_async_notification' => true
         ));
 
@@ -228,7 +228,7 @@ class GatewayInfoTest extends SapphireTest
         );
 
         // update config of existing (non manual) gateway
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'use_async_notification' => true
         ));
 
@@ -250,7 +250,7 @@ class GatewayInfoTest extends SapphireTest
         );
 
         // update config of existing gateway
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'token_key' => 'MyTokenKey'
         ));
 
@@ -261,7 +261,7 @@ class GatewayInfoTest extends SapphireTest
         );
 
         // update config to an invalid token key (not a string)
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'token_key' => 12
         ));
 
@@ -289,7 +289,7 @@ class GatewayInfoTest extends SapphireTest
             'Required fields must match the ones defined in config'
         );
 
-        Config::inst()->update('GatewayInfo', '\GatewayInfoTest_OnsiteGateway', array(
+        Config::modify()->update(GatewayInfo::class, '\GatewayInfoTest_OnsiteGateway', array(
             'required_fields' => array('important', 'very_important', 'cvv')
         ));
 
@@ -318,40 +318,40 @@ class GatewayInfoTest extends SapphireTest
         $this->assertEquals(20, GatewayInfo::maxExcessCapturePercent('PaymentExpress_PxPay'));
 
         // set only max amount
-        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => '12'));
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => '12'));
 
         $this->assertEquals(12, GatewayInfo::maxExcessCaptureAmount('Dummy'));
         $this->assertEquals(-1, GatewayInfo::maxExcessCapturePercent('Dummy'));
 
         // set only percentage
-        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => '15%'));
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => '15%'));
 
         $this->assertEquals(-1, GatewayInfo::maxExcessCaptureAmount('Dummy'));
         $this->assertEquals(15, GatewayInfo::maxExcessCapturePercent('Dummy'));
 
         // invalid values
-        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => '-1'));
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => '-1'));
         $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy'));
         $this->assertEquals(0, GatewayInfo::maxExcessCapturePercent('Dummy'));
 
-        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => '-20%'));
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => '-20%'));
         $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy'));
         $this->assertEquals(0, GatewayInfo::maxExcessCapturePercent('Dummy'));
 
-        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => 'test'));
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => 'test'));
         $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy'));
         $this->assertEquals(0, GatewayInfo::maxExcessCapturePercent('Dummy'));
 
         // both values
         Config::inst()->remove('GatewayInfo', 'Dummy');
-        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => array(
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => array(
             'amount' => 80,
             'percent' => 14
         )));
         $this->assertEquals(80, GatewayInfo::maxExcessCaptureAmount('Dummy'));
         $this->assertEquals(14, GatewayInfo::maxExcessCapturePercent('Dummy'));
 
-        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => array(
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => array(
             'amount' => 60,
             'percent' => '30%'
         )));
@@ -359,7 +359,7 @@ class GatewayInfoTest extends SapphireTest
         $this->assertEquals(30, GatewayInfo::maxExcessCapturePercent('Dummy'));
 
         // invalid values
-        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => array(
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => array(
             'amount' => -30,
             'percent' => '-10%'
         )));
@@ -368,7 +368,7 @@ class GatewayInfoTest extends SapphireTest
 
         // Amount values per currency
         Config::inst()->remove('GatewayInfo', 'Dummy');
-        Config::inst()->update('GatewayInfo', 'Dummy', array('max_capture' => array(
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => array(
             'amount' => array(
                 'USD' => 80,
                 'EUR' => '70%', // invalid value, should result in 0

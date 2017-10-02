@@ -9,14 +9,19 @@ use Omnipay\Common\Exception\OmnipayException;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Helper;
 use SilverStripe\Omnipay\PaymentMath;
+use SilverStripe\Omnipay\Model\Message;
 
 class RefundService extends NotificationCompleteService
 {
     protected $startState = 'Captured';
+
     protected $endState = 'Refunded';
+
     protected $pendingState = 'PendingRefund';
-    protected $requestMessageType = 'RefundRequest';
-    protected $errorMessageType = 'RefundError';
+
+    protected $requestMessageType = Message\RefundRequest::class;
+
+    protected $errorMessageType = Message\RefundError::class;
 
     /**
      * Return money to the previously charged credit card.
@@ -175,9 +180,9 @@ class RefundService extends NotificationCompleteService
 
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
         if ($endStatus === 'Captured') {
-            $this->createMessage('PartiallyRefundedResponse', $gatewayMessage);
+            $this->createMessage(Message\PartiallyRefundedResponse::class, $gatewayMessage);
         } else {
-            $this->createMessage('RefundedResponse', $gatewayMessage);
+            $this->createMessage(Message\RefundedResponse::class, $gatewayMessage);
         }
 
         Helper::safeExtend($this->payment, 'onRefunded', $serviceResponse);

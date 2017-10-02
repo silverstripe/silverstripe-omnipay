@@ -11,25 +11,32 @@ use SilverStripe\Omnipay\PaymentMath;
 use SilverStripe\Omnipay\Helper;
 use SilverStripe\Omnipay\Model\Message\PartiallyCapturedResponse;
 use SilverStripe\Omnipay\Model\Message\CapturedResponse;
+use SilverStripe\Omnipay\Model\Message\CaptureRequest;
+use SilverStripe\Omnipay\Model\Message\CaptureError;
 
 /**
  * Service used in tandem with AuthorizeService.
+ *
  * This service captures a previously authorized amount
  */
 class CaptureService extends NotificationCompleteService
 {
     protected $startState = 'Authorized';
+
     protected $endState = 'Captured';
+
     protected $pendingState = 'PendingCapture';
-    protected $requestMessageType = 'CaptureRequest';
-    protected $errorMessageType = 'CaptureError';
+
+    protected $requestMessageType = CaptureRequest::class;
+
+    protected $errorMessageType = CaptureError::class;
 
     /**
      * Capture a previously authorized payment
      *
      * If the transaction-reference of the payment to capture is known, pass it via $data as
-     * `transactionReference` parameter. Otherwise the service will try to look up the reference
-     * from previous payment messages.
+     * `transactionReference` parameter. Otherwise the service will try to look up the reference from previous payment
+     * messages.
      *
      * If there's no transaction-reference to be found, this method will raise an exception.
      *

@@ -7,8 +7,10 @@ use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\Model\Message;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Omnipay\GatewayInfo;
 
 /**
  * Test the refund service
@@ -29,61 +31,61 @@ class RefundServiceTest extends BaseNotificationServiceTest
 
     protected $successFromFixtureMessages = array(
         array( // response that was loaded from the fixture
-            'ClassName' => 'PurchasedResponse',
+            'ClassName' => Message\PurchasedResponse::class,
             'Reference' => 'paymentReceipt'
         ),
         array( // the generated refund request
-            'ClassName' => 'RefundRequest',
+            'ClassName' => Message\RefundRequest::class,
             'Reference' => 'paymentReceipt'
         ),
         array( // the generated refund response
-            'ClassName' => 'RefundedResponse',
+            'ClassName' => Message\RefundedResponse::class,
             'Reference' => 'paymentReceipt'
         )
     );
 
     protected $successMessages = array(
         array( // the generated refund request
-            'ClassName' => 'RefundRequest',
+            'ClassName' => Message\RefundRequest::class,
             'Reference' => 'testThisRecipe123'
         ),
         array( // the generated refund response
-            'ClassName' => 'RefundedResponse',
+            'ClassName' => Message\RefundedResponse::class,
             'Reference' => 'testThisRecipe123'
         )
     );
 
     protected $failureMessages = array(
         array( // response that was loaded from the fixture
-            'ClassName' => 'PurchasedResponse',
+            'ClassName' => Message\PurchasedResponse::class,
             'Reference' => 'paymentReceipt'
         ),
         array( // the generated refund request
-            'ClassName' => 'RefundRequest',
+            'ClassName' => Message\RefundRequest::class,
             'Reference' => 'paymentReceipt'
         ),
         array( // the generated refund response
-            'ClassName' => 'RefundError',
+            'ClassName' => Message\RefundError::class,
             'Reference' => 'paymentReceipt'
         )
     );
 
     protected $notificationFailureMessages = array(
         array(
-            'ClassName' => 'PurchasedResponse',
+            'ClassName' => Message\PurchasedResponse::class,
             'Reference' => 'paymentReceipt'
         ),
         array(
-            'ClassName' => 'RefundRequest',
+            'ClassName' => Message\RefundRequest::class,
             'Reference' => 'paymentReceipt'
         ),
         array(
-            'ClassName' => 'NotificationError',
+            'ClassName' => Message\NotificationError::class,
             'Reference' => 'paymentReceipt'
         )
     );
 
-    protected $errorMessageClass = 'RefundError';
+    protected $errorMessageClass = Message\RefundError::class;
 
     protected $successPaymentExtensionHooks = array(
         'onRefunded'
@@ -188,16 +190,16 @@ class RefundServiceTest extends BaseNotificationServiceTest
         // check existance of messages and existence of references
         $this->assertDOSContains(array(
             array(
-                'ClassName' => 'PurchasedResponse',
+                'ClassName' => Message\PurchasedResponse::class,
                 'Reference' => 'paymentReceipt',
             ),
 
             array(
-                'ClassName' => 'RefundRequest',
+                'ClassName' => Message\RefundRequest::class,
                 'Reference' => 'paymentReceipt',
             ),
             array(
-                'ClassName' => 'PartiallyRefundedResponse',
+                'ClassName' => Message\PartiallyRefundedResponse::class,
                 'Reference' => 'paymentReceipt',
             ),
         ), $payment->Messages());
@@ -221,7 +223,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // allow multiple partial captures
-        Config::inst()->update('GatewayInfo', $payment->Gateway, array(
+        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
             'can_refund' => 'multiple'
         ));
 
@@ -272,7 +274,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::inst()->update('GatewayInfo', $payment->Gateway, array(
+        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -326,19 +328,19 @@ class RefundServiceTest extends BaseNotificationServiceTest
         // check existance of messages
         $this->assertDOSContains(array(
             array(
-                'ClassName' => 'PurchasedResponse',
+                'ClassName' => Message\PurchasedResponse::class,
                 'Reference' => 'paymentReceipt'
             ),
             array(
-                'ClassName' => 'RefundRequest',
+                'ClassName' => Message\RefundRequest::class,
                 'Reference' => 'paymentReceipt'
             ),
             array(
-                'ClassName' => 'NotificationSuccessful',
+                'ClassName' => Message\NotificationSuccessful::class,
                 'Reference' => 'paymentReceipt'
             ),
             array(
-                'ClassName' => 'PartiallyRefundedResponse',
+                'ClassName' => Message\PartiallyRefundedResponse::class,
                 'Reference' => 'paymentReceipt'
             )
         ), $payment->Messages());
@@ -359,7 +361,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::inst()->update('GatewayInfo', $payment->Gateway, array(
+        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -393,11 +395,11 @@ class RefundServiceTest extends BaseNotificationServiceTest
         // check existance of messages
         $this->assertDOSContains(array(
             array(
-                'ClassName' => 'PurchasedResponse',
+                'ClassName' => Message\PurchasedResponse::class,
                 'Reference' => 'paymentReceipt'
             ),
             array(
-                'ClassName' => 'RefundRequest',
+                'ClassName' => Message\RefundRequest::class,
                 'Reference' => 'paymentReceipt'
             )
         ), $payment->Messages());
@@ -471,7 +473,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // only allow full refunds, thus disabling partial refunds
-        Config::inst()->update('GatewayInfo', $payment->Gateway, array(
+        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
            'can_refund' => 'full'
         ));
 
@@ -506,7 +508,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::inst()->update('GatewayInfo', $payment->Gateway, array(
+        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 

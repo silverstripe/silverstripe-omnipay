@@ -6,6 +6,9 @@ use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\Omnipay\Service\PaymentService;
 use Omnipay\Common\Message\NotificationInterface;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Control\HTTPResponse;
 
 class PaymentServiceTest extends PaymentTest
 {
@@ -29,7 +32,7 @@ class PaymentServiceTest extends PaymentTest
 
     public function testGateway()
     {
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array(
+        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             // set some invalid params
             'parameters' => array(
                 'DummyParameter' => 'DummyValue'
@@ -78,7 +81,7 @@ class PaymentServiceTest extends PaymentTest
             $serviceResponse->getOmnipayResponse()
         );
         $httpResponse = $serviceResponse->redirectOrRespond();
-        $this->assertInstanceOf('SS_HTTPResponse', $httpResponse);
+        $this->assertInstanceOf(HTTPResponse::class, $httpResponse);
         $this->assertEquals(200, $httpResponse->getStatusCode());
         $this->assertEquals('OK', $httpResponse->getBody());
     }
@@ -106,7 +109,7 @@ class PaymentServiceTest extends PaymentTest
         );
 
         $httpResponse = $serviceResponse->redirectOrRespond();
-        $this->assertInstanceOf('SS_HTTPResponse', $httpResponse);
+        $this->assertInstanceOf(HTTPResponse::class, $httpResponse);
         $this->assertEquals(200, $httpResponse->getStatusCode());
         $this->assertEquals('OK', $httpResponse->getBody());
         $this->assertEquals('apikey12345', $httpResponse->getHeader('X-FantasyGateway-Api'));
@@ -128,7 +131,7 @@ class PaymentServiceTest extends PaymentTest
         );
 
         $httpResponse = $serviceResponse->redirectOrRespond();
-        $this->assertInstanceOf('SS_HTTPResponse', $httpResponse);
+        $this->assertInstanceOf(HTTPResponse::class, $httpResponse);
         $this->assertEquals(200, $httpResponse->getStatusCode());
         // body will be SUCCESS instead of OK
         $this->assertEquals('SUCCESS', $httpResponse->getBody());

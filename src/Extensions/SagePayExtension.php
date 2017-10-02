@@ -5,6 +5,10 @@ namespace SilverStripe\Omnipay\Extensions;
 use Omnipay\SagePay\Message\ServerNotifyResponse;
 use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\Core\Extension;
+use SilverStripe\Omnipay\Model\Message;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Control\HTTPResponse;
+use SilverStripe\Control\Director;
 
 /**
  * Sagepay has some very indiviual needs so to help we have created this
@@ -85,7 +89,7 @@ class SagePayExtension extends Extension
 
         // Only apply the changes if the gateway is SagePay Server
         if ($payment->Gateway == 'SagePay_Server') {
-            $type = ($isAuthorize) ? 'AuthorizeRedirectResponse' : 'PurchaseRedirectResponse';
+            $type = ($isAuthorize) ? Message\AuthorizeRedirectResponse::class : Message\PurchaseRedirectResponse::class;
 
             /** @var PurchaseRedirectResponse $message */
             $message = $payment->getLatestMessageOfType($type);
@@ -126,7 +130,8 @@ class SagePayExtension extends Extension
                 'RedirectUrl=' . Director::absoluteURL($payment->SuccessUrl),
                 'StatusDetail=Accepted payment ' . $payment->Identifier
             ];
-            $response->setHttpResponse(new SS_HTTPResponse(implode(ServerNotifyResponse::LINE_SEP, $msg), 200));
+
+            $response->setHttpResponse(new HTTPResponse(implode(ServerNotifyResponse::LINE_SEP, $msg), 200));
         }
     }
 }

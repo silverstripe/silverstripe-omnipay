@@ -5,16 +5,22 @@ namespace SilverStripe\Omnipay\Service;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Exception\MissingParameterException;
 use Omnipay\Common\Exception\OmnipayException;
+use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Helper;
+use SilverStripe\Omnipay\Model\Message;
 
 class VoidService extends NotificationCompleteService
 {
     protected $startState = 'Authorized';
+
     protected $endState = 'Void';
+
     protected $pendingState = 'PendingVoid';
-    protected $requestMessageType = 'VoidRequest';
-    protected $errorMessageType = 'VoidError';
+
+    protected $requestMessageType = Message\VoidRequest::class;
+
+    protected $errorMessageType = Message\VoidError::class;
 
     /**
      * Void/cancel a payment
@@ -105,7 +111,7 @@ class VoidService extends NotificationCompleteService
     protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
     {
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
-        $this->createMessage('VoidedResponse', $gatewayMessage);
+        $this->createMessage(Message\VoidedResponse::class, $gatewayMessage);
         Helper::safeExtend($this->payment, 'onVoid', $serviceResponse);
     }
 }

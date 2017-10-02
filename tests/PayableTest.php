@@ -5,34 +5,40 @@ namespace SilverStripe\Omnipay\Tests;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Omnipay\Tests\Extensions\TestPaymentExtension;
+use SilverStripe\Omnipay\Tests\Model\TestOrder;
 
 class PayableTest extends SapphireTest
 {
-    /** @var Test_Order */
     protected $order;
+
     protected static $fixture_file = 'PayableTest.yml';
-    protected $extraDataObjects = array('Test_Order');
 
-    public function setUpOnce()
+    protected $extraDataObjects = [
+        TestOrder::class
+    ];
+
+    public static function setUpBeforeClass()
     {
-        Payment::add_extension('Test_PaymentExtension');
+        parent::setUpBeforeClass();
 
-        parent::setUpOnce();
+        Payment::add_extension(TestPaymentExtension::class);
     }
 
-    public function tearDownOnce()
+    public static function tearDownAfterClass()
     {
-        parent::tearDownOnce();
+        parent::tearDownAfterClass();
 
-        Payment::remove_extension('Test_PaymentExtension');
+        Payment::remove_extension(TestPaymentExtension::class);
     }
 
     public function setUp()
     {
         parent::setUp();
-        // don't log test payments to file
-        Config::inst()->update('Payment', 'file_logging', 0);
-        $this->order = $this->objFromFixture('Test_Order', 'order1');
+
+        Config::modify()->update(Payment::class, 'file_logging', 0);
+
+        $this->order = $this->objFromFixture(TestOrder::class, 'order1');
     }
 
     /**

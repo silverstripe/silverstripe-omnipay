@@ -173,7 +173,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
 
     public function testRequiredFields()
     {
-        Config::inst()->update('GatewayInfo', 'Dummy', array(
+        Config::modify()->update(GatewayInfo::class, 'Dummy', array(
             'required_fields' => array(
                 'billingAddress1',
                 'city',
@@ -183,7 +183,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
             )
         ));
 
-        Config::inst()->update('GatewayInfo', 'PayPal_Express', array(
+        Config::modify()->update(GatewayInfo::class, 'PayPal_Express', array(
             'required_fields' => array(
                 'billingAddress1',
                 'city',
@@ -249,7 +249,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
 
     public function testRenamedFields()
     {
-        Config::inst()->update('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename', array(
+        Config::modify()->update('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename', array(
             'prefix' => 'prefix_',
             'name' => 'testName',
             'number' => 'testNumber',
@@ -300,7 +300,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
 
     public function testNormalizeFormData()
     {
-        Config::inst()->update('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename', array(
+        Config::modify()->update('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename', array(
             'prefix' => 'prefix_',
             'name' => 'testName',
             'number' => 'testNumber',

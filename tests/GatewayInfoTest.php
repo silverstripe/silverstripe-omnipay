@@ -8,36 +8,54 @@ use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\i18n\i18n;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\i18n\Messages\MessageProvider;
+use SilverStripe\Omnipay\Model\TestOnsiteGateway;
+use SilverStripe\Omnipay\Model\TestOffsiteGateway;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\i18n\Tests\i18nTestManifest;
 
 class GatewayInfoTest extends SapphireTest
 {
-    protected $originalLocale;
+    use i18nTestManifest;
+
+    protected function tearDown()
+    {
+        $this->tearDownManifest();
+        parent::tearDown();
+    }
+
 
     public function setUp()
     {
         parent::setUp();
-
-        $this->originalLocale = i18n::get_locale();
-
+        $this->setupManifest();
         Config::modify()->remove(Payment::class, 'allowed_gateways');
         Config::modify()->remove(GatewayInfo::class, 'PaymentExpress_PxPay');
 
-        Config::modify()->update(Payment::class, 'allowed_gateways', array(
+        Config::modify()->set(Payment::class, 'allowed_gateways', array(
             'PayPal_Express',
             'PaymentExpress_PxPay',
             'Dummy'
         ));
 
-        i18n::getMessageProvider()->translate(array(
-            'Gateway.PayPal_Express' => 'PayPal Express EN',
-            'Gateway.PaymentExpress_PxPay' => 'Px Pay Express EN',
-            'Gateway.Dummy' => 'Dummy EN'
-        ), 'en_US');
+        $provider = Injector::inst()->get(MessageProvider::class);
+        $provider->getTranslator()->addResource(
+            'array',[
+                'Gateway.PayPal_Express' => 'PayPal Express EN',
+                'Gateway.PaymentExpress_PxPay' => 'Px Pay Express EN',
+                'Gateway.Dummy' => 'Dummy EN'
+            ],
+            'en_US'
+        );
 
-        i18n::getMessageProvider()->addTranslation(array(
-            'Gateway.Dummy' => 'Dummy DE',
-            'Gateway.PaymentExpress_PxPay' => '' // clear
-        ), 'de_DE');
+        $provider->getTranslator()->addResource(
+            'array', [
+                'Gateway.Dummy' => 'Dummy DE',
+                'Gateway.PaymentExpress_PxPay' => '' // clear
+            ],
+            'de_DE'
+        );
 
         Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'parameters' => array(
@@ -58,13 +76,6 @@ class GatewayInfoTest extends SapphireTest
         ));
     }
 
-    public function tearDown()
-    {
-        parent::tearDown();
-
-        i18n::set_locale($this->originalLocale);
-    }
-
     /**
      * Test the allowed_gateways config
      * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
@@ -75,14 +86,14 @@ class GatewayInfoTest extends SapphireTest
 
         $this->assertTrue(GatewayInfo::isSupported('PayPal_Express'), 'PayPal_Express is in the list of allowed gateways');
 
-        Config::inst()->remove('Payment', 'allowed_gateways');
+        Config::modify()->remove(Payment::class, 'allowed_gateways');
+
         // this should throw an InvalidConfigurationException (no gateways configured)
         GatewayInfo::getSupportedGateways();
     }
 
     /**
      * Test the niceTitle method
-     * @expectedException PHPUnit_Framework_Error_Deprecated
      */
     public function testNiceTitle()
     {
@@ -111,9 +122,12 @@ class GatewayInfoTest extends SapphireTest
             'niceTitle should return the gateway name if there\'s no localization present'
         );
 
-        i18n::get_translator('core')->getAdapter()->addTranslation(array(
-            'Payment.Dummy' => 'Dummy DE'
-        ), 'de_DE');
+        $provider = Injector::inst()->get(MessageProvider::class);
+        $provider->getTranslator()->addResource(
+            'array',
+            ['Payment.Dummy' => 'Dummy DE'],
+            'de_DE'
+        );
 
         // Should generate a deprecation error
         GatewayInfo::niceTitle('Dummy');
@@ -157,9 +171,11 @@ class GatewayInfoTest extends SapphireTest
         ));
 
         // this gateway doesn't implement `completePurchase`
-        $this->assertFalse(GatewayInfo::isOffsite('\GatewayInfoTest_OnsiteGateway'));
+        $this->assertFalse(GatewayInfo::isOffsite('\SilverStripe\Omnipay\Tests\Model\TestOnsiteGateway'));
+
         // this gateway does implement `completePurchase`
-        $this->assertTrue(GatewayInfo::isOffsite('\GatewayInfoTest_OffsiteGateway'));
+        $this->assertTrue(GatewayInfo::isOffsite('\SilverStripe\Omnipay\Tests\Model\TestOffsiteGateway'));
+
         // check a gateway that was configured to be offsite (purely based on config)
         $this->assertTrue(GatewayInfo::isOffsite('OffsiteGateway'));
     }
@@ -169,14 +185,16 @@ class GatewayInfoTest extends SapphireTest
      */
     public function testIsManual()
     {
-        Config::modify()->update(GatewayInfo::class, 'Dummy', array(
+        Config::modify()->update(GatewayInfo::class, 'Dummy', [
             'is_manual' => true
-        ));
+        ]);
 
         // should be manual, as it's explicitly configured
         $this->assertTrue(GatewayInfo::isManual('Dummy'));
+
         // should be manual, as it's actually a manual gateway
         $this->assertTrue(GatewayInfo::isManual('Manual'));
+
         // should not be manual
         $this->assertFalse(GatewayInfo::isManual('PaymentExpress_PxPay'));
     }
@@ -196,7 +214,6 @@ class GatewayInfoTest extends SapphireTest
             'Manual payments should always use authorize'
         );
 
-        // update config
         Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'use_authorize' => true
         ));
@@ -278,7 +295,7 @@ class GatewayInfoTest extends SapphireTest
     public function testRequiredFields()
     {
         $this->assertEquals(
-            GatewayInfo::requiredFields('\GatewayInfoTest_OnsiteGateway'),
+            GatewayInfo::requiredFields('\SilverStripe\Omnipay\Tests\Model\TestOnsiteGateway'),
             array('name', 'number', 'expiryMonth', 'expiryYear', 'cvv'),
             'Onsite gateway must have at least these default required fields'
         );
@@ -289,12 +306,12 @@ class GatewayInfoTest extends SapphireTest
             'Required fields must match the ones defined in config'
         );
 
-        Config::modify()->update(GatewayInfo::class, '\GatewayInfoTest_OnsiteGateway', array(
+        Config::modify()->update(GatewayInfo::class, '\SilverStripe\Omnipay\Tests\Model\TestOnsiteGateway', array(
             'required_fields' => array('important', 'very_important', 'cvv')
         ));
 
         $this->assertEquals(
-            GatewayInfo::requiredFields('\GatewayInfoTest_OnsiteGateway'),
+            GatewayInfo::requiredFields('\SilverStripe\Omnipay\Tests\Model\TestOnsiteGateway'),
             array('important', 'very_important', 'cvv', 'name', 'number', 'expiryMonth', 'expiryYear'),
             'Onsite gateway must merge default and defined required fields'
         );

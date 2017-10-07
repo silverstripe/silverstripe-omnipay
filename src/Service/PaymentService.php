@@ -406,23 +406,23 @@ abstract class PaymentService
             $output = array(
                 'Message' => $data
             );
-        } elseif (is_array($data)) {
+        } else if (is_array($data)) {
             $output = $data;
-        } elseif ($data instanceof OmnipayException) {
+        } else if ($data instanceof OmnipayException) {
             $output = array(
                 'Message' => $data->getMessage(),
                 'Code' => $data->getCode(),
                 'Exception' => get_class($data),
                 'Backtrace' => $data->getTraceAsString()
             );
-        } elseif ($data instanceof AbstractResponse) {
+        } else if ($data instanceof AbstractResponse) {
             $output = array(
                 'Message' => $data->getMessage(),
                 'Code' => $data->getCode(),
                 'Reference' => $data->getTransactionReference(),
                 'Data' => $data->getData()
             );
-        } elseif ($data instanceof AbstractRequest) {
+        } else if ($data instanceof AbstractRequest) {
             $output = array(
                 'Token' => $data->getToken(),
                 'CardReference' => $data->getCardReference(),
@@ -437,7 +437,7 @@ abstract class PaymentService
                 'NotifyUrl' => $data->getNotifyUrl(),
                 'Parameters' => $data->getParameters()
             );
-        } elseif ($data instanceof NotificationInterface) {
+        } else if ($data instanceof NotificationInterface) {
             $output = array(
                 'Message' => $data->getMessage(),
                 'Code' => $data->getTransactionStatus(),
@@ -451,6 +451,8 @@ abstract class PaymentService
         ));
 
         $this->logToFile($output, $type);
+
+        echo 'creating message of '. $type . ' '. json_encode($output) . PHP_EOL . PHP_EOL;
         $message = Injector::inst()->create($type, $output);
         $message->write();
 

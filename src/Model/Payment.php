@@ -66,6 +66,13 @@ final class Payment extends DataObject implements PermissionProvider
 
     private static $default_sort = '"Created" DESC, "ID" DESC';
 
+    /**
+     * @config
+     *
+     * @var array $allowed_gateways
+     */
+    private static $allowed_gateways = [];
+
     public function getCMSFields()
     {
         $fields = new FieldList(

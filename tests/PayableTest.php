@@ -14,23 +14,15 @@ class PayableTest extends SapphireTest
 
     protected static $fixture_file = 'PayableTest.yml';
 
-    protected $extraDataObjects = [
+    protected static $extra_dataobjects = [
         TestOrder::class
     ];
 
-    public static function setUpBeforeClass()
-    {
-        parent::setUpBeforeClass();
-
-        Payment::add_extension(TestPaymentExtension::class);
-    }
-
-    public static function tearDownAfterClass()
-    {
-        parent::tearDownAfterClass();
-
-        Payment::remove_extension(TestPaymentExtension::class);
-    }
+    protected static $required_extensions = [
+        Payment::class => [
+            TestPaymentExtension::class
+        ]
+    ];
 
     public function setUp()
     {
@@ -47,6 +39,7 @@ class PayableTest extends SapphireTest
     public function testRelation()
     {
         $payments = $this->order->Payments();
+
         $this->assertNotNull($payments);
         $this->assertEquals(4, $payments->Count());
     }

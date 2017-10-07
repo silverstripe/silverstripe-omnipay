@@ -8,12 +8,20 @@ use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Omnipay\Service\PaymentService;
 
 class ServiceFactory
 {
     use Injectable;
     use Extensible;
     use Configurable;
+
+    /**
+     * @var array $services
+     *
+     * @config
+     */
+    private static $services = [];
 
     /*
      * Different constants for commonly used intents.
@@ -45,8 +53,8 @@ class ServiceFactory
     public function getService(Payment $payment, $intent)
     {
         $method = 'create' . ucfirst($intent) . 'Service';
-
         $values = $this->extend($method, $payment);
+
         if (count($values) > 1) {
             throw new InvalidConfigurationException("Multiple extensions are trying to create a service for '$intent'");
         }
@@ -63,7 +71,8 @@ class ServiceFactory
 
         if (is_array($serviceMap) && isset($serviceMap[$intent])) {
             $serviceType = $serviceMap[$intent];
-            if (is_subclass_of($serviceType, '\SilverStripe\Omnipay\Service\PaymentService')) {
+
+            if (is_subclass_of($serviceType, PaymentService::class)) {
                 return $serviceType::create($payment);
             }
         }

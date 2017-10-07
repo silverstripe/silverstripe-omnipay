@@ -101,7 +101,9 @@ abstract class NotificationCompleteService extends PaymentService
         }
 
         // void any pending partial payments
-        foreach ($this->payment->getPartialPayments()->filter('Status', $this->pendingState) as $payment) {
+        $pending = $this->payment->getPartialPayments()->filter('Status', $this->pendingState);
+
+        foreach ($pending as $payment) {
             $payment->Status = 'Void';
             $payment->write();
         }

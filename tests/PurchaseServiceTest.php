@@ -4,6 +4,7 @@ namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Omnipay\Service\PurchaseService;
 use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\Model\Message;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 
 class PurchaseServiceTest extends BasePurchaseServiceTest
@@ -15,34 +16,34 @@ class PurchaseServiceTest extends BasePurchaseServiceTest
     protected $omnipayCompleteMethod = 'completePurchase';
 
     protected $onsiteSuccessMessages = array(
-        array('ClassName' => 'PurchaseRequest'),
-        array('ClassName' => 'PurchasedResponse')
+        array('ClassName' => Message\PurchaseRequest::class),
+        array('ClassName' => Message\PurchasedResponse::class)
     );
 
     protected $onsiteFailMessages = array(
-        array('ClassName' => 'PurchaseRequest'),
-        array('ClassName' => 'PurchaseError')
+        array('ClassName' => Message\PurchaseRequest::class),
+        array('ClassName' => Message\PurchaseError::class)
     );
 
     protected $failMessages = array(
-        array('ClassName' => 'PurchaseError')
+        array('ClassName' => Message\PurchaseError::class)
     );
 
     protected $offsiteSuccessMessages = array(
-        array('ClassName' => 'PurchaseRequest'),
-        array('ClassName' => 'PurchaseRedirectResponse'),
-        array('ClassName' => 'CompletePurchaseRequest'),
-        array('ClassName' => 'PurchasedResponse')
+        array('ClassName' => Message\PurchaseRequest::class),
+        array('ClassName' => Message\PurchaseRedirectResponse::class),
+        array('ClassName' => Message\CompletePurchaseRequest::class),
+        array('ClassName' => Message\PurchasedResponse::class)
     );
 
     protected $offsiteFailMessages = array(
-        array('ClassName' => 'PurchaseRequest'),
-        array('ClassName' => 'PurchaseRedirectResponse'),
-        array('ClassName' => 'CompletePurchaseRequest'),
-        array('ClassName' => 'CompletePurchaseError')
+        array('ClassName' => Message\PurchaseRequest::class),
+        array('ClassName' => Message\PurchaseRedirectResponse::class),
+        array('ClassName' => Message\CompletePurchaseRequest::class),
+        array('ClassName' => Message\CompletePurchaseError::class)
     );
 
-    protected $failureMessageClass = 'CompletePurchaseError';
+    protected $failureMessageClass = Message\CompletePurchaseError::class;
 
     protected $paymentId = 'UNIQUEHASH23q5123tqasdf';
 
@@ -76,12 +77,14 @@ class PurchaseServiceTest extends BasePurchaseServiceTest
     public function setUp()
     {
         parent::setUp();
+
         PurchaseService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
     public function tearDown()
     {
         parent::tearDown();
+
         PurchaseService::remove_extension(PaymentTestServiceExtensionHooks::class);
     }
 

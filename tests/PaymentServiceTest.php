@@ -9,6 +9,7 @@ use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Control\HTTPResponse;
+use SilverStripe\Omnipay\Tests\Extensions\TestNotifyResponseExtension;
 
 class PaymentServiceTest extends PaymentTest
 {
@@ -89,7 +90,7 @@ class PaymentServiceTest extends PaymentTest
     // Test notification response modified by extension
     public function testHandleModifiedNotification()
     {
-        PaymentService::add_extension('PaymentServiceTest_NotifyResponseExtension');
+        PaymentService::add_extension(TestNotifyResponseExtension::class);
 
         $service = $this->buildNotificationService(NotificationInterface::STATUS_COMPLETED);
 
@@ -136,7 +137,7 @@ class PaymentServiceTest extends PaymentTest
         // body will be SUCCESS instead of OK
         $this->assertEquals('SUCCESS', $httpResponse->getBody());
 
-        PaymentService::remove_extension('PaymentServiceTest_NotifyResponseExtension');
+        PaymentService::remove_extension(TestNotifyResponseExtension::class);
     }
 
     // Test an error notification

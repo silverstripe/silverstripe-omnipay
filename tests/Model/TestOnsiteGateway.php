@@ -9,7 +9,7 @@ class TestOnsiteGateway extends AbstractGateway implements TestOnly
 {
     public function getName()
     {
-        return 'GatewayInfoTest_OnsiteGateway';
+        return 'TestOnsite';
     }
 
     public function getDefaultParameters()

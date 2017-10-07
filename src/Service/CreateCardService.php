@@ -58,7 +58,7 @@ class CreateCardService extends PaymentService
             $this->payment->write();
 
             $this->createMessage(
-                $serviceResponse->isRedirect() ? 'CreateCardRedirectResponse' : 'AwaitingCreateCardResponse',
+                $serviceResponse->isRedirect() ? Message\CreateCardRedirectResponse::class : Message\AwaitingCreateCardResponse::class,
                 $response
             );
         } elseif ($serviceResponse->isError()) {

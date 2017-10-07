@@ -14,9 +14,9 @@ use SilverStripe\Core\Config\Configurable;
  * Provides information about gateways.
  *
  * Use this class in YAML to configure your gateway settings.
- * Eg.
+ *
  * <code>
- * GatewayInfo:
+ * SilverStripe\Omnipay\Models\GatewayInfo:
  *   PayPal_Express:
  *     use_authorize: true
  *     parameters:
@@ -82,6 +82,7 @@ class GatewayInfo
     public static function getSupportedGateways($nice = true)
     {
         $allowed = Payment::config()->allowed_gateways;
+
         if (!is_array($allowed) || empty($allowed)) {
             throw new InvalidConfigurationException(
                 'No allowed gateways configured. Use Payment.allowed_gateways config.'
@@ -91,7 +92,7 @@ class GatewayInfo
         $allowed = array_combine($allowed, $allowed);
 
         if ($nice) {
-            $allowed = array_map('\SilverStripe\Omnipay\GatewayInfo::niceTitle', $allowed);
+            $allowed = array_map('SilverStripe\Omnipay\GatewayInfo::niceTitle', $allowed);
         }
 
         return $allowed;
@@ -115,10 +116,12 @@ class GatewayInfo
             /** do nothing */
         }
 
-        return _t(
+        $title = _t(
             'Gateway.' . $name,
             $gateway ? $gateway->getName() : $name
         );
+
+        return ($title) ? $title : $gateway->getName();
     }
 
     /**
@@ -147,6 +150,7 @@ class GatewayInfo
 
         $factory = new GatewayFactory();
         $gateway = $factory->create($gateway);
+
         // Some offsite gateways don't separate between authorize and complete requests,
         // so we need a different way to determine they're off site in the first place
         // without kicking off a purchase request within Omnipay.
@@ -163,12 +167,17 @@ class GatewayInfo
 
     /**
      * Check for special 'manual' payment type.
+     *
      * @param  string $gateway
      * @return boolean
      */
     public static function isManual($gateway)
     {
         if (self::getConfigSetting($gateway, 'is_manual')) {
+            return true;
+        }
+
+        if ($gateway === 'Manual') {
             return true;
         }
 

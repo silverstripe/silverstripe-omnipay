@@ -2,6 +2,6 @@
 
 namespace SilverStripe\Omnipay\Model\Message;
 
-class AuthorizedResponse extends GatewayRedirectResponseMessage
+class AuthorizedResponse extends GatewayResponseMessage
 {
 }

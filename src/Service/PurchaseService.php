@@ -63,7 +63,7 @@ class PurchaseService extends PaymentService
             $this->payment->write();
 
             $this->createMessage(
-                $serviceResponse->isRedirect() ? 'PurchaseRedirectResponse' : 'AwaitingPurchaseResponse',
+                $serviceResponse->isRedirect() ? Message\PurchaseRedirectResponse::class : Message\AwaitingPurchaseResponse::class,
                 $response
             );
         } elseif ($serviceResponse->isError()) {

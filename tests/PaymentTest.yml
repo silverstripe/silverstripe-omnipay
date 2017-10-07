@@ -57,7 +57,7 @@ SilverStripe\Omnipay\Model\Message\GatewayMessage:
     Code:
     PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment2'
   message2:
-    ClassName: PurchaseRedirectResponse
+    ClassName: SilverStripe\Omnipay\Model\Message\PurchaseRedirectResponse
     PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment2'
   message3:
     ClassName: AuthorizeRequest

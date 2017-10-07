@@ -62,6 +62,7 @@ class VoidService extends NotificationCompleteService
         }
 
         $gateway = $this->oGateway();
+
         if (!$gateway->supportsVoid()) {
             throw new InvalidConfigurationException(
                 sprintf('The gateway "%s" doesn\'t support void', $this->payment->Gateway)
@@ -87,6 +88,7 @@ class VoidService extends NotificationCompleteService
             $response = $this->response = $request->send();
         } catch (OmnipayException $e) {
             $this->createMessage($this->errorMessageType, $e);
+
             return $this->generateServiceResponse(ServiceResponse::SERVICE_ERROR);
         }
 
@@ -112,6 +114,7 @@ class VoidService extends NotificationCompleteService
     {
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
         $this->createMessage(Message\VoidedResponse::class, $gatewayMessage);
+
         Helper::safeExtend($this->payment, 'onVoid', $serviceResponse);
     }
 }

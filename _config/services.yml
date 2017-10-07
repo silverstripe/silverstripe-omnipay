@@ -1,7 +1,7 @@
 ---
 Name: omnipay-services
 ---
-ServiceFactory:
+SilverStripe\Omnipay\Service\ServiceFactory:
   services:
     authorize: '\SilverStripe\Omnipay\Service\AuthorizeService'
     createcard: '\SilverStripe\Omnipay\Service\CreateCardService'

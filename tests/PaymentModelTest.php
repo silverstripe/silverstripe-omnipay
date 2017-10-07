@@ -42,7 +42,8 @@ class PaymentModelTest extends PaymentTest
         $payment = $this->objFromFixture(Payment::class, "payment1");
 
         i18n::set_locale('en_US');
-        i18n::getMessageProvider()->translate(Gateway::class .'.Manual', 'Manual');
+        $provider->getTranslator()->addResource(
+            Gateway::class .'.Manual', 'Manual');
         i18n::getMessageProvider()->translate(Payment::class .'.TitleTemplate', '{Gateway} {Money} %d/%m/%Y'
         );
 

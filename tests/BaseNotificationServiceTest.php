@@ -70,6 +70,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
+
         // register our mock gateway factory as injection
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
 
@@ -85,7 +86,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         // check payment status
         $this->assertEquals($payment->Status, $this->endStatus, 'Payment status should be set to ' . $this->endStatus);
 
-        // check existance of messages and existence of references
+        // check existence of messages and existence of references
         $this->assertDOSContains($this->successFromFixtureMessages, $payment->Messages());
 
         // ensure payment hooks were called
@@ -118,9 +119,11 @@ abstract class BaseNotificationServiceTest extends PaymentTest
 
         // the service should not respond with an error
         $this->assertFalse($serviceResponse->isError());
+
         // we should get a successful Omnipay response
         $this->assertNotNull($serviceResponse->getOmnipayResponse());
         $this->assertTrue($serviceResponse->getOmnipayResponse()->isSuccessful());
+
         // check payment status
         $this->assertEquals($payment->Status, $this->endStatus, 'Payment status should be set to ' . $this->endStatus);
 
@@ -313,9 +316,11 @@ abstract class BaseNotificationServiceTest extends PaymentTest
 
         // the service should respond with an error
         $this->assertTrue($serviceResponse->isError());
+
         // Omnipay response should be unsuccessful
         $this->assertNotNull($serviceResponse->getOmnipayResponse());
         $this->assertFalse($serviceResponse->getOmnipayResponse()->isSuccessful());
+
         // payment status should be unchanged
         $this->assertEquals($payment->Status, $this->startStatus, 'Payment status should be unchanged');
 
@@ -419,7 +424,6 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
 
         $service = $this->getService($payment);
-
         $service->initiate();
 
         // Now a notification comes in (will fail)

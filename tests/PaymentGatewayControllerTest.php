@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Omnipay\Model\Message\CompletePurchaseRequest;
 use SilverStripe\Omnipay\Model\Message\PurchasedResponse;
 use SilverStripe\Omnipay\Model\Message\PurchaseRedirectResponse;
@@ -41,7 +42,7 @@ class PaymentGatewayControllerTest extends PaymentTest
         $payment = Payment::get()
                         ->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
                         ->first();
-        $this->assertDOSContains(array(
+        SapphireTest::assertListContains(array(
             array('ClassName' => PurchaseRequest::class),
             array('ClassName' => PurchaseRedirectResponse::class),
             array('ClassName' => CompletePurchaseRequest::class),
@@ -63,7 +64,7 @@ class PaymentGatewayControllerTest extends PaymentTest
         $payment = Payment::get()
                         ->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
                         ->first();
-        $this->assertDOSContains(array(
+        SapphireTest::assertListContains(array(
             array('ClassName' => PurchaseRequest::class),
             array('ClassName' => PurchaseRedirectResponse::class),
             array('ClassName' => CompletePurchaseRequest::class),
@@ -86,7 +87,7 @@ class PaymentGatewayControllerTest extends PaymentTest
             ->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
             ->first();
 
-        $this->assertDOSContains(array(
+        SapphireTest::assertListContains(array(
             array('ClassName' => PurchaseRequest::class),
             array('ClassName' => PurchaseRedirectResponse::class)
         ), $payment->Messages());

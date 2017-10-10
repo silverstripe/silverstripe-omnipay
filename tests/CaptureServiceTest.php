@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Model\Message\NotificationSuccessful;
 use SilverStripe\Omnipay\Model\Message\PartiallyCapturedResponse;
@@ -150,7 +151,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('123.45', $payment->MoneyAmount);
 
         // check existance of messages and existence of references
-        $this->assertDOSContains($this->successFromFixtureMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->successFromFixtureMessages, $payment->Messages());
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -197,7 +198,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('135.80', $payment->MoneyAmount);
 
         // check existance of messages and existence of references
-        $this->assertDOSContains($this->successFromFixtureMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->successFromFixtureMessages, $payment->Messages());
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -258,7 +259,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // ensure the correct service hooks were called
         $this->assertEquals(
-            array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment')),
+            array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment', 'updateServiceResponse')),
             $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
 
@@ -275,7 +276,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('24.69', $partialPayment->MoneyAmount);
 
         // check existance of messages
-        $this->assertDOSContains(array(
+        SapphireTest::assertListContains(array(
             array(
                 'ClassName' => AuthorizedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt'
@@ -333,7 +334,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertFalse($payment->canCapture(null, true));
 
         // check existance of messages and existence of references
-        $this->assertDOSContains(array(
+        SapphireTest::assertListContains(array(
             array(
                 'ClassName' => AuthorizedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt',
@@ -428,7 +429,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
 
         $service = $this->getService($payment);
-
+        $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->Reset();
         $service->initiate(array('amount' => '100.45'));
 
         // payment amount should still be the full amount!
@@ -453,7 +454,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // ensure the correct service hooks were called
         $this->assertEquals(
-            array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment')),
+            array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment', 'updateServiceResponse')),
             $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
 
@@ -474,7 +475,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertTrue($payment->canCapture(null, true));
 
         // check existance of messages
-        $this->assertDOSContains(array(
+        SapphireTest::assertListContains(array(
             array(
                 'ClassName' => AuthorizedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt'
@@ -541,7 +542,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('-100.00', $partialPayment->MoneyAmount);
 
         // check existance of messages
-        $this->assertDOSContains(array(
+        SapphireTest::assertListContains(array(
             array(
                 'ClassName' => AuthorizedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt'
@@ -690,6 +691,6 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('-53.45', $partialPayment->MoneyAmount);
 
         // check existance of messages
-        $this->assertDOSContains($this->notificationFailureMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->notificationFailureMessages, $payment->Messages());
     }
 }

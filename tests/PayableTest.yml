@@ -1,6 +1,6 @@
 SilverStripe\Omnipay\Tests\Model\TestOrder:
   order1:
-    Created: 2013-10-09 12:00:00
+    Created: '2013-10-09 12:00:00'
 
 SilverStripe\Omnipay\Model\Payment:
   payment1:

@@ -3,6 +3,8 @@
 namespace SilverStripe\Omnipay\Tasks;
 
 use SilverStripe\Dev\BuildTask;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\ORM\Queries\SQLSelect;
 
 class MigratePaymentTask extends BuildTask
 {
@@ -13,7 +15,7 @@ class MigratePaymentTask extends BuildTask
 
     public function run($request)
     {
-        $query = new SQLQuery("*", "Payment");
+        $query = SQLSelect::create("*", Payment::singleton()->baseTable());
         foreach ($query->execute() as $record) {
             if ($this->migrationRequired($record)) {
                 $this->migrateRecord($record);
@@ -33,7 +35,8 @@ class MigratePaymentTask extends BuildTask
 
     protected function migrateRecord($record)
     {
-        $payment = new Payment($record);
+        $payment = Payment::create();
+        $payment->update($record);
         $payment->Status = "Created";
         $payment->ClassName = "Payment";
         $payment->MoneyAmount = $record['AmountAmount'];

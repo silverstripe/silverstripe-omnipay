@@ -15,7 +15,6 @@ use Omnipay\Common\CreditCard;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Exception\OmnipayException;
-use Symfony\Component\EventDispatcher\Tests\Service;
 use Symfony\Component\HttpFoundation\Request;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
@@ -406,23 +405,23 @@ abstract class PaymentService
             $output = array(
                 'Message' => $data
             );
-        } else if (is_array($data)) {
+        } elseif (is_array($data)) {
             $output = $data;
-        } else if ($data instanceof OmnipayException) {
+        } elseif ($data instanceof OmnipayException) {
             $output = array(
                 'Message' => $data->getMessage(),
                 'Code' => $data->getCode(),
                 'Exception' => get_class($data),
                 'Backtrace' => $data->getTraceAsString()
             );
-        } else if ($data instanceof AbstractResponse) {
+        } elseif ($data instanceof AbstractResponse) {
             $output = array(
                 'Message' => $data->getMessage(),
                 'Code' => $data->getCode(),
                 'Reference' => $data->getTransactionReference(),
                 'Data' => $data->getData()
             );
-        } else if ($data instanceof AbstractRequest) {
+        } elseif ($data instanceof AbstractRequest) {
             $output = array(
                 'Token' => $data->getToken(),
                 'CardReference' => $data->getCardReference(),
@@ -437,7 +436,7 @@ abstract class PaymentService
                 'NotifyUrl' => $data->getNotifyUrl(),
                 'Parameters' => $data->getParameters()
             );
-        } else if ($data instanceof NotificationInterface) {
+        } elseif ($data instanceof NotificationInterface) {
             $output = array(
                 'Message' => $data->getMessage(),
                 'Code' => $data->getTransactionStatus(),
@@ -452,7 +451,6 @@ abstract class PaymentService
 
         $this->logToFile($output, $type);
 
-        echo 'creating message of '. $type . ' '. json_encode($output) . PHP_EOL . PHP_EOL;
         $message = Injector::inst()->create($type, $output);
         $message->write();
 

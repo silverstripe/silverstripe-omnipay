@@ -2,13 +2,13 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Omnipay\Service\ServiceResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Control\HTTPResponse;
 
-class ServiceResponseTest extends SapphireTest
+class ServiceResponseTest extends FunctionalTest
 {
     /** @var Payment */
     protected $payment;
@@ -130,7 +130,7 @@ class ServiceResponseTest extends SapphireTest
         $response->setTargetUrl('/my/target/url');
 
         $httpResponse = $response->redirectOrRespond();
-        $this->assertEquals($httpResponse->getHeader('Location'), '/my/target/url');
+        $this->assertStringEndsWith('/my/target/url', $httpResponse->getHeader('Location'));
         $this->assertEquals($httpResponse->getStatusCode(), 302);
 
         // explicitly set a response
@@ -176,7 +176,7 @@ class ServiceResponseTest extends SapphireTest
         $this->assertEquals($httpResponse->getHeader('Location'), 'https://gateway.tld/endpoint');
         $this->assertEquals($httpResponse->getStatusCode(), 302);
 
-        // tryin to set the URL now should trigger an exception
+        // trying to set the URL now should trigger an exception
         $response->setTargetUrl('/my/endpoint');
     }
 

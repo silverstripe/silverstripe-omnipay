@@ -5,7 +5,6 @@ namespace SilverStripe\Omnipay\Service;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Exception\MissingParameterException;
 use Omnipay\Common\Exception\OmnipayException;
-use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Helper;
 use SilverStripe\Omnipay\Model\Message;

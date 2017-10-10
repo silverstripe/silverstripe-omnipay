@@ -4,7 +4,7 @@ SilverStripe\Omnipay\Model\Payment:
     MoneyAmount: 20.23
     MoneyCurrency: NZD
     Status: Created
-    Created: 2013-10-10 12:00:00
+    Created: '2013-10-10 12:00:00'
     Identifier: ce3a0b03349078d8e85d1de8ded3f0
   payment2:
     Gateway: PaymentExpress_PxPay
@@ -49,34 +49,28 @@ SilverStripe\Omnipay\Model\Payment:
     Identifier: 18f2fcac2b8f7549fd0295b251d9e9db
     SuccessUrl: 'shop/complete'
     FailureUrl: 'shop/incomplete'
-SilverStripe\Omnipay\Model\Message\GatewayMessage:
+SilverStripe\Omnipay\Model\Message\PurchaseRequest:
   message1:
-    ClassName: SilverStripe\Omnipay\Model\Message\PurchaseRequest
-    Reference:
-    Message:
-    Code:
     PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment2'
+SilverStripe\Omnipay\Model\Message\PurchaseRedirectResponse:
   message2:
-    ClassName: SilverStripe\Omnipay\Model\Message\PurchaseRedirectResponse
     PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment2'
+SilverStripe\Omnipay\Model\Message\AuthorizeRequest:
   message3:
-    ClassName: AuthorizeRequest
-    Reference:
-    Message:
-    Code:
     PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment5'
+SilverStripe\Omnipay\Model\Message\AuthorizeRedirectResponse:
   message4:
-    ClassName: SilverStripe\Omnipay\Model\Message\AuthorizeRedirectResponse
     PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment5'
+SilverStripe\Omnipay\Model\Message\PurchasedResponse:
   message5:
-    ClassName: SilverStripe\Omnipay\Model\Message\PurchasedResponse
     Reference: paymentReceipt
     PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment3'
+SilverStripe\Omnipay\Model\Message\AuthorizedResponse:
   message6:
-    ClassName: SilverStripe\Omnipay\Model\Message\AuthorizedResponse
     Reference: authorizedPaymentReceipt
     PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment6'
+SilverStripe\Omnipay\Model\Message\CreateCardResponse:
   message7:
-    ClassName: SilverStripe\Omnipay\Model\Message\CreateCardResponse
     Reference: createCardPaymentReceipt
     PaymentID: '=>SilverStripe\Omnipay\Model\Payment.payment7'
+

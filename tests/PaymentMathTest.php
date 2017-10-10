@@ -14,8 +14,8 @@ class PaymentMathTest extends SapphireTest
     public function setUp()
     {
         parent::setUp();
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 2);
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'useBcMath', true);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 2);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'useBcMath', true);
     }
 
     public function testPrecision()
@@ -25,48 +25,48 @@ class PaymentMathTest extends SapphireTest
             return;
         }
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', -1);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', -1);
         $this->assertEquals('99', PaymentMath::subtract('100.00', '0.1'));
         $this->assertEquals('0', PaymentMath::add('0.273', '0.226'));
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 0);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 0);
         $this->assertEquals('99', PaymentMath::subtract('100.00', '0.1'));
         $this->assertEquals('0', PaymentMath::add('0.273', '0.226'));
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 1);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 1);
         $this->assertEquals('99.9', PaymentMath::subtract('100.00', '0.1'));
         $this->assertEquals('0.4', PaymentMath::add('0.273', '0.226'));
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 2);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 2);
         $this->assertEquals('99.90', PaymentMath::subtract('100.00', '0.1'));
         $this->assertEquals('0.49', PaymentMath::add('0.273', '0.226'));
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 15);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 15);
         $this->assertEquals('99.900000000000000', PaymentMath::subtract('100.00', '0.1'));
         $this->assertEquals('0.499000000000000', PaymentMath::add('0.273', '0.226'));
     }
 
     public function testPrecisionFloat()
     {
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'useBcMath', false);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'useBcMath', false);
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', -1);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', -1);
         $this->assertEquals('99', PaymentMath::subtract('100.00', '0.1'));
         $this->assertEquals('0', PaymentMath::add('0.273', '0.226'));
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 0);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 0);
         $this->assertEquals('99', PaymentMath::subtract('100.00', '0.1'));
         $this->assertEquals('0', PaymentMath::add('0.273', '0.226'));
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 1);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 1);
         $this->assertEquals('99.9', PaymentMath::subtract('100.00', '0.1'));
         $this->assertEquals('0.4', PaymentMath::add('0.273', '0.226'));
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 2);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 2);
         $this->assertEquals('99.90', PaymentMath::subtract('100.00', '0.1'));
         $this->assertEquals('0.49', PaymentMath::add('0.273', '0.226'));
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 15);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 15);
         $this->assertEquals('99.900000000000000', PaymentMath::subtract('100.00', '0.1'));
         $this->assertEquals('0.499000000000000', PaymentMath::add('0.273', '0.226'));
     }
@@ -84,7 +84,7 @@ class PaymentMathTest extends SapphireTest
         $result = PaymentMath::subtract('100.00', '54.001');
         $this->assertEquals('45.99', $result);
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
 
         $result = PaymentMath::subtract('100.00', '3.6');
         $this->assertEquals('96.4000', $result);
@@ -95,7 +95,7 @@ class PaymentMathTest extends SapphireTest
 
     public function testSubtractionFloat()
     {
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'useBcMath', false);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'useBcMath', false);
 
         $result = PaymentMath::subtract('100.00', '3.6');
         $this->assertEquals('96.40', $result);
@@ -103,7 +103,7 @@ class PaymentMathTest extends SapphireTest
         $result = PaymentMath::subtract('100.00', '54.001');
         $this->assertEquals('45.99', $result);
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
 
         $result = PaymentMath::subtract('100.00', '3.6');
         $this->assertEquals('96.4000', $result);
@@ -125,7 +125,7 @@ class PaymentMathTest extends SapphireTest
         $result = PaymentMath::add('100000.001', '0.1');
         $this->assertEquals('100000.10', $result);
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
 
         $result = PaymentMath::add('3.6', '80.40');
         $this->assertEquals('84.0000', $result);
@@ -136,7 +136,7 @@ class PaymentMathTest extends SapphireTest
 
     public function testAdditionFloat()
     {
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'useBcMath', false);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'useBcMath', false);
 
         $result = PaymentMath::add('3.6', '80.40');
         $this->assertEquals('84.00', $result);
@@ -144,7 +144,7 @@ class PaymentMathTest extends SapphireTest
         $result = PaymentMath::add('100000.001', '0.1');
         $this->assertEquals('100000.10', $result);
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
 
         $result = PaymentMath::add('3.6', '80.40');
         $this->assertEquals('84.0000', $result);
@@ -162,7 +162,7 @@ class PaymentMathTest extends SapphireTest
         $this->assertEquals('912345678000000.00', PaymentMath::multiply('912345678', '1000000'));
         $this->assertEquals('912345678000000000.00', PaymentMath::multiply('912345678', '1000000000'));
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
 
         $this->assertEquals('0.0010', PaymentMath::multiply('0.0001', '10'));
         $this->assertEquals('19.9999', PaymentMath::multiply('0.0199999', '1000'));
@@ -174,7 +174,7 @@ class PaymentMathTest extends SapphireTest
 
     public function testMultiplyFloat()
     {
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'useBcMath', false);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'useBcMath', false);
 
         $this->assertEquals('0.00', PaymentMath::multiply('0.0001', '10'));
         $this->assertEquals('19.99', PaymentMath::multiply('0.0199999', '1000'));
@@ -184,7 +184,7 @@ class PaymentMathTest extends SapphireTest
         // this will fail due to integer overflow
         $this->assertNotEquals('912345678000000000.00', PaymentMath::multiply('912345678', '1000000000'));
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
 
         $this->assertEquals('0.0010', PaymentMath::multiply('0.0001', '10'));
         $this->assertEquals('19.9999', PaymentMath::multiply('0.0199999', '1000'));
@@ -207,7 +207,7 @@ class PaymentMathTest extends SapphireTest
         $this->assertEquals(0, PaymentMath::compare('1.0001', '1.0002'));
         $this->assertEquals(0, PaymentMath::compare('1.11112', '1.11113'));
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
 
         $this->assertEquals(1, PaymentMath::compare('10000000', '-1000000'));
         $this->assertEquals(-1, PaymentMath::compare('-10', '-5'));
@@ -224,7 +224,7 @@ class PaymentMathTest extends SapphireTest
 
     public function testCompareFloat()
     {
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'useBcMath', false);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'useBcMath', false);
 
         $this->assertEquals(1, PaymentMath::compare('10', '0'));
         $this->assertEquals(-1, PaymentMath::compare('-10', '0'));
@@ -236,7 +236,7 @@ class PaymentMathTest extends SapphireTest
         $this->assertEquals(0, PaymentMath::compare('1.0001', '1.0002'));
         $this->assertEquals(0, PaymentMath::compare('1.11112', '1.11113'));
 
-        Config::modify()->update('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
+        Config::modify()->set('SilverStripe\Omnipay\PaymentMath', 'precision', 4);
 
         $this->assertEquals(1, PaymentMath::compare('10000000', '-1000000'));
         $this->assertEquals(-1, PaymentMath::compare('-10', '-5'));

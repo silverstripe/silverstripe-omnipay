@@ -2,6 +2,8 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Service\RefundService;
 use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
@@ -144,7 +146,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('769.50', $payment->MoneyAmount);
 
         // check existance of messages and existence of references
-        $this->assertDOSContains($this->successFromFixtureMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->successFromFixtureMessages, $payment->Messages());
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -188,7 +190,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $this->assertFalse($payment->canRefund(null, true));
 
         // check existance of messages and existence of references
-        $this->assertDOSContains(array(
+        SapphireTest::assertListContains(array(
             array(
                 'ClassName' => Message\PurchasedResponse::class,
                 'Reference' => 'paymentReceipt',
@@ -223,7 +225,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // allow multiple partial captures
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'can_refund' => 'multiple'
         ));
 
@@ -274,7 +276,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -283,7 +285,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
 
         $service = $this->getService($payment);
-
+        $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->Reset();
         $service->initiate(array('amount' => '669.50'));
 
         // payment amount should still be the full amount!
@@ -308,7 +310,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
 
         // ensure the correct service hooks were called
         $this->assertEquals(
-            array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment')),
+            array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment', 'updateServiceResponse')),
             $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
 
@@ -326,7 +328,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('669.50', $partialPayment->MoneyAmount);
 
         // check existance of messages
-        $this->assertDOSContains(array(
+        SapphireTest::assertListContains(array(
             array(
                 'ClassName' => Message\PurchasedResponse::class,
                 'Reference' => 'paymentReceipt'
@@ -361,7 +363,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -378,11 +380,11 @@ class RefundServiceTest extends BaseNotificationServiceTest
         try {
             // the second attempt must throw an exception!
             $service->initiate(array('amount' => '69.50'));
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             $exception = $ex;
         }
 
-        $this->assertInstanceOf('SilverStripe\Omnipay\Exception\InvalidConfigurationException', $exception);
+        $this->assertInstanceOf(InvalidConfigurationException::class, $exception);
 
         // there must be a partial payment
         $this->assertEquals(1, $payment->getPartialPayments()->count());
@@ -393,7 +395,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('-100.00', $partialPayment->MoneyAmount);
 
         // check existance of messages
-        $this->assertDOSContains(array(
+        SapphireTest::assertListContains(array(
             array(
                 'ClassName' => Message\PurchasedResponse::class,
                 'Reference' => 'paymentReceipt'
@@ -473,7 +475,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // only allow full refunds, thus disabling partial refunds
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
            'can_refund' => 'full'
         ));
 
@@ -508,7 +510,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -542,6 +544,6 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('-669.50', $partialPayment->MoneyAmount);
 
         // check existance of messages
-        $this->assertDOSContains($this->notificationFailureMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->notificationFailureMessages, $payment->Messages());
     }
 }

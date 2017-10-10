@@ -2,14 +2,14 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Omnipay\GatewayInfo;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use SilverStripe\Omnipay\Tests\PaymentTest;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
-use SilverStripe\Control\Director;
 use Closure;
 
 /**
@@ -109,7 +109,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $this->assertEquals("Dummy", $payment->Gateway);
 
         //check messaging
-        $this->assertDOSContains($this->onsiteSuccessMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->onsiteSuccessMessages, $payment->Messages());
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -143,7 +143,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $this->assertFalse($response->isRedirect());
 
         //check messaging
-        $this->assertDOSContains($this->onsiteFailMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->onsiteFailMessages, $payment->Messages());
 
         // no extension hook will be called on payment
         $this->assertEquals(
@@ -176,7 +176,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $this->assertSame($this->completeStatus, $payment->Status);
 
         //check messaging
-        $this->assertDOSContains($this->onsiteSuccessMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->onsiteSuccessMessages, $payment->Messages());
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -201,7 +201,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         //check messaging
         $this->assertFalse($response->isRedirect());
         $this->assertTrue($response->isError());
-        $this->assertDOSContains($this->failMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->failMessages, $payment->Messages());
 
         $this->assertEquals(
             [],
@@ -231,7 +231,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $this->assertSame("Created", $payment->Status);
 
         //check messaging
-        $this->assertDOSContains($this->onsiteFailMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->onsiteFailMessages, $payment->Messages());
 
         $this->assertEquals(
             [],
@@ -278,7 +278,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $this->assertEquals($payment->TransactionReference, $reference);
 
         //check messaging
-        $this->assertDOSContains($this->offsiteSuccessMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->offsiteSuccessMessages, $payment->Messages());
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -307,7 +307,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         //check messaging.
         // We use the onsite fail messages here, since the payment fails *before* we redirect to the offsite gateway.
         // Therefore this should generate the same messages as an onsite-payment failure.
-        $this->assertDOSContains($this->onsiteFailMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->onsiteFailMessages, $payment->Messages());
 
         $this->assertEquals(
             [],
@@ -331,16 +331,14 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         //mimic a redirect or request from offsite gateway
         $response = $this->get("paymentendpoint/$this->paymentId/complete");
         //redirect works
-        $headers = $response->getHeaders();
-        $this->assertEquals(
-            Director::baseURL() . "shop/incomplete",
-            $headers['Location'],
-            "redirected to shop/incomplete"
+        $this->assertStringEndsWith(
+            '/shop/incomplete',
+            $response->getHeader('Location')
         );
         $payment = Payment::get()
             ->filter('Identifier', $this->paymentId)
             ->first();
-        $this->assertDOSContains($this->offsiteFailMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->offsiteFailMessages, $payment->Messages());
 
         $this->assertEquals(
             [],
@@ -443,7 +441,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
         $this->assertTrue($serviceResponse->isError());
         $this->assertNull($serviceResponse->getOmnipayResponse());
-        $this->assertDOSContains(array(
+        SapphireTest::assertListContains(array(
             array(
                 'ClassName' => $this->failureMessageClass,
                 'Message' => 'Mock Exception'
@@ -465,7 +463,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
     public function testTokenGateway()
     {
-        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPost', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPost', array(
             'token_key' => 'token'
         ));
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
@@ -495,7 +493,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
     public function testTokenGatewayWithAlternateKey()
     {
-        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPost', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPost', array(
             'token_key' => 'my_token'
         ));
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
@@ -525,7 +523,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
     public function testAsyncPaymentConfirmation()
     {
-        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'use_async_notification' => true
         ));
 
@@ -598,7 +596,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
     // Test an async response that comes in before the user returns from the offsite form
     public function testAsyncPaymentConfirmationIncomingFirst()
     {
-        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'use_async_notification' => true
         ));
 
@@ -672,7 +670,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
     // Test via PaymentGatewayController
     public function testPaymentGatewayControllerConfirmationIncomingFirst()
     {
-        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'use_async_notification' => true
         ));
 
@@ -710,7 +708,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $httpResponse = $this->get('paymentendpoint/'. $payment->Identifier .'/complete');
 
         // we should be redirected to the success page
-        $this->assertEquals($httpResponse->getHeader('Location'), BASE_URL . '/my/return/url');
+        $this->assertStringEndsWith('/my/return/url', $httpResponse->getHeader('Location'));
         $this->assertEquals($httpResponse->getStatusCode(), 302);
 
         // reload payment from DB

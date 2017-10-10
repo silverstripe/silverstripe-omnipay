@@ -2,6 +2,9 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use Omnipay\Dummy\Gateway;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\i18n\Messages\MessageProvider;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Core\Config\Config;
@@ -12,7 +15,7 @@ class PaymentModelTest extends PaymentTest
     public function setUp()
     {
         parent::setUp();
-        Config::modify()->update(GatewayInfo::class, 'Manual', array(
+        Config::modify()->merge(GatewayInfo::class, 'Manual', array(
             'can_capture' => true,
             'can_refund' => true,
             'can_void' => true
@@ -40,31 +43,27 @@ class PaymentModelTest extends PaymentTest
         $oldLocale = i18n::get_locale();
 
         $payment = $this->objFromFixture(Payment::class, "payment1");
-
         i18n::set_locale('en_US');
-        $provider->getTranslator()->addResource(
-            Gateway::class .'.Manual', 'Manual');
-        i18n::getMessageProvider()->translate(Payment::class .'.TitleTemplate', '{Gateway} {Money} %d/%m/%Y'
-        );
+        $provider = i18n::getMessageProvider();
+        $catalogue = $provider->getTranslator()->getCatalogue('en_US');
+        $catalogue->set('Gateway.Manual', 'Manual');
+        $catalogue->set(Payment::class .'.TitleTemplate', '{Gateway} {Money} %d/%m/%Y');
 
         $this->assertEquals(
             'Manual NZ$20.23 10/10/2013',
             $payment->getTitle()
         );
 
-        i18n::getMessageProvider()->translate(Gateway::class .'.Manual', 'Invoice');
-        i18n::getMessageProvider()->translate(Payment::class .'.TitleTemplate', '{Money} via {Gateway} on %Y-%m-%d'
-        );
+        $catalogue->set('Gateway.Manual', 'Invoice');
+        $catalogue->set(Payment::class .'.TitleTemplate', '{Money} via {Gateway} on %Y-%m-%d');
 
         $this->assertEquals(
             'NZ$20.23 via Invoice on 2013-10-10',
             $payment->getTitle()
         );
 
-        i18n::getMessageProvider()->translate(Gateway::class .'.Manual', 'Rechnung');
-
-        i18n::getMessageProvider()->translate(Payment::class .'.TitleTemplate', '{Money} per {Gateway} am %d.%m.%Y'
-        );
+        $catalogue->set('Gateway.Manual', 'Rechnung');
+        $catalogue->set(Payment::class .'.TitleTemplate', '{Money} per {Gateway} am %d.%m.%Y');
 
         $this->assertEquals(
             'NZ$20.23 per Rechnung am 10.10.2013',
@@ -102,7 +101,7 @@ class PaymentModelTest extends PaymentTest
 
     public function testChangeIdentifier()
     {
-        $payment = $this->objFromFixture('Payment', 'payment2');
+        $payment = $this->objFromFixture(Payment::class, 'payment2');
         $payment->Identifier = "somethingelse";
         $this->assertEquals("UNIQUEHASH23q5123tqasdf", $payment->Identifier);
     }
@@ -158,21 +157,21 @@ class PaymentModelTest extends PaymentTest
         $this->assertTrue($payment->canCapture());
         $this->assertTrue($payment->canCapture(null, true));
 
-        Config::modify()->update(GatewayInfo::class, 'Manual', array(
+        Config::modify()->merge(GatewayInfo::class, 'Manual', array(
             'can_capture' => false
         ));
 
         $this->assertFalse($payment->canCapture());
         $this->assertFalse($payment->canCapture(null, true));
 
-        Config::modify()->update(GatewayInfo::class, 'Manual', array(
+        Config::modify()->merge(GatewayInfo::class, 'Manual', array(
             'can_capture' => 'full'
         ));
 
         $this->assertTrue($payment->canCapture());
         $this->assertFalse($payment->canCapture(null, true));
 
-        Config::modify()->update(GatewayInfo::class, 'Manual', array(
+        Config::modify()->merge(GatewayInfo::class, 'Manual', array(
             'can_capture' => 'partial'
         ));
 
@@ -199,21 +198,21 @@ class PaymentModelTest extends PaymentTest
         $this->assertTrue($payment->canRefund());
         $this->assertTrue($payment->canRefund(null, true));
 
-        Config::modify()->update(GatewayInfo::class, 'Manual', array(
+        Config::modify()->merge(GatewayInfo::class, 'Manual', array(
             'can_refund' => false
         ));
 
         $this->assertFalse($payment->canRefund());
         $this->assertFalse($payment->canRefund(null, true));
 
-        Config::modify()->update(GatewayInfo::class, 'Manual', array(
+        Config::modify()->merge(GatewayInfo::class, 'Manual', array(
             'can_refund' => 'full'
         ));
 
         $this->assertTrue($payment->canRefund());
         $this->assertFalse($payment->canRefund(null, true));
 
-        Config::modify()->update(GatewayInfo::class, 'Manual', array(
+        Config::modify()->merge(GatewayInfo::class, 'Manual', array(
             'can_refund' => 'partial'
         ));
 
@@ -238,13 +237,13 @@ class PaymentModelTest extends PaymentTest
 
         $this->assertTrue($payment->canVoid());
 
-        Config::modify()->update(GatewayInfo::class, 'Manual', array(
+        Config::modify()->merge(GatewayInfo::class, 'Manual', array(
             'can_void' => false
         ));
 
         $this->assertFalse($payment->canVoid());
 
-        Config::modify()->update(GatewayInfo::class, 'Manual', array(
+        Config::modify()->merge(GatewayInfo::class, 'Manual', array(
             'can_void' => true
         ));
 
@@ -263,17 +262,17 @@ class PaymentModelTest extends PaymentTest
 
         $payment->Status = 'Authorized';
 
-        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => '30'));
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', array('max_capture' => '30'));
         $this->assertEquals('150.00', $payment->getMaxCaptureAmount());
 
-        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => '30%'));
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', array('max_capture' => '30%'));
         $this->assertEquals('156.00', $payment->getMaxCaptureAmount());
 
-        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => '17%'));
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', array('max_capture' => '17%'));
         $this->assertEquals('140.40', $payment->getMaxCaptureAmount());
 
         Config::inst()->remove('GatewayInfo', 'Dummy');
-        Config::modify()->update(GatewayInfo::class, 'Dummy', array('max_capture' => array(
+        Config::modify()->set(GatewayInfo::class, 'Dummy', array('max_capture' => array(
             'amount' => array(
                 'USD' => 80,
                 'EUR' => 70,

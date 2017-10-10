@@ -6,7 +6,6 @@ use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Helper;
 use SilverStripe\Omnipay\Model\Message;
-use SilverStripe\Omnipay\Service\ServiceResponse;
 
 class CreateCardService extends PaymentService
 {

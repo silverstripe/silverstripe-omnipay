@@ -8,7 +8,6 @@ use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Config\Configurable;
-use SilverStripe\Omnipay\Service\PaymentService;
 
 class ServiceFactory
 {
@@ -85,7 +84,7 @@ class ServiceFactory
      * the gateway config.
      *
      * @param Payment $payment
-     * @return AuthorizeService|PurchaseService
+     * @return PaymentService
      *
      * @throws InvalidConfigurationException
      */

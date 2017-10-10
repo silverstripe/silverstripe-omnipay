@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Omnipay;
 
+use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
@@ -31,20 +32,6 @@ class PaymentGatewayController extends Controller
         return Director::absoluteURL(
             Controller::join_links('paymentendpoint', $identifier, $action)
         );
-    }
-
-    /**
-     * Generate an absolute url for gateways to return to, or send requests to.
-     * @param  string             $action      the intended action of the gateway
-     * @param  string             $returnurl   the application url to re-redirect to
-     * @return string                          the resulting redirect url
-     * @deprecated 3.0 Snake-case methods will be deprecated with 3.0, use getEndpointUrl
-     * @codeCoverageIgnore
-     */
-    public static function get_endpoint_url($action, $identifier)
-    {
-        \Deprecation::notice('3.0', 'Snake-case methods will be deprecated with 3.0, use getEndpointUrl');
-        return self::getEndpointUrl($action, $identifier);
     }
 
     /**
@@ -117,11 +104,11 @@ class PaymentGatewayController extends Controller
 
     /**
      * Get the the payment according to the identifer given in the url
-     * @return \Payment the payment
+     * @return Payment the payment
      */
     private function getPayment()
     {
-        return \Payment::get()
+        return Payment::get()
                 ->filter('Identifier', $this->request->param('Identifier'))
                 ->filter('Identifier:not', "")
                 ->first();

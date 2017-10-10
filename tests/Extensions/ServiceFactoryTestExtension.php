@@ -5,6 +5,8 @@ namespace SilverStripe\Omnipay\Tests\Extensions;
 use SilverStripe\Core\Extension;
 use SilverStripe\Dev\TestOnly;
 use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\Service\CaptureService;
+use SilverStripe\Omnipay\Tests\Service\ServiceFactoryTestService;
 
 class ServiceFactoryTestExtension extends Extension implements TestOnly
 {
@@ -16,7 +18,7 @@ class ServiceFactoryTestExtension extends Extension implements TestOnly
 
     public function createTestService($payment)
     {
-        return ServiceFactoryTest_TestService::create($payment);
+        return ServiceFactoryTestService::create($payment);
     }
 
     public function createAuthorizeService(Payment $payment)

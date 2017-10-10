@@ -17,8 +17,8 @@ class PaymentDevelopmentAdmin extends Controller
     public function index()
     {
         $renderer = DebugView::create();
-        $renderer->writeHeader();
-        $renderer->writeInfo("Installed Omnipay Payment Gateways", Director::absoluteBaseURL());
+        $renderer->renderHeader();
+        $renderer->renderInfo("Installed Omnipay Payment Gateways", Director::absoluteBaseURL());
         $types = $this->PaymentTypes();
 
         echo "<table style=\"font-size:12px;\" border=1 cellspacing=0>
@@ -64,7 +64,7 @@ class PaymentDevelopmentAdmin extends Controller
             }
         }
         echo "</tbody></table>";
-        $renderer->writeFooter();
+        $renderer->renderFooter();
     }
 
     /**
@@ -86,7 +86,7 @@ class PaymentDevelopmentAdmin extends Controller
             try {
                 $instance = $factory->create($name);
                 $supportedGateways[$name] = $instance;
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
             }
         });
 

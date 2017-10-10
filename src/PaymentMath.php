@@ -3,6 +3,7 @@
 namespace SilverStripe\Omnipay;
 
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Config\Configurable;
 
 /**
  * Helper class to deal with payment arithmetic.
@@ -12,6 +13,8 @@ use SilverStripe\Core\Config\Config;
  */
 class PaymentMath
 {
+    use Configurable;
+
     /**
      * Desired precision for the output strings.
      *

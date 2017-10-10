@@ -5,6 +5,8 @@ namespace SilverStripe\Omnipay\Tests;
 use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Service\PaymentService;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
@@ -87,7 +89,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $this->assertEquals($payment->Status, $this->endStatus, 'Payment status should be set to ' . $this->endStatus);
 
         // check existence of messages and existence of references
-        $this->assertDOSContains($this->successFromFixtureMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->successFromFixtureMessages, $payment->Messages());
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -128,7 +130,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $this->assertEquals($payment->Status, $this->endStatus, 'Payment status should be set to ' . $this->endStatus);
 
         // check existance of messages and existence of references
-        $this->assertDOSContains($this->successMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->successMessages, $payment->Messages());
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -166,7 +168,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $this->assertEquals($this->payment->Status, $this->endStatus, 'Payment status should be set to ' . $this->endStatus);
 
         // check existance of messages and existence of references
-        $this->assertDOSContains($this->successMessages, $this->payment->Messages());
+        SapphireTest::assertListContains($this->successMessages, $this->payment->Messages());
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -204,7 +206,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $this->assertEquals($this->payment->Status, $this->endStatus, 'Payment status should be set to ' . $this->endStatus);
 
         // check existance of messages and existence of references
-        $this->assertDOSContains($this->successMessages, $this->payment->Messages());
+        SapphireTest::assertListContains($this->successMessages, $this->payment->Messages());
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -225,7 +227,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -234,7 +236,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
 
         $service = $this->getService($payment);
-
+        $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->Reset();
         // pass transaction reference as parameter
         $serviceResponse = $service->initiate();
 
@@ -254,7 +256,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
 
         // check existance of messages and existence of references.
         // Since operation isn't complete, we shave off the latest message from the exptected messages!
-        $this->assertDOSContains(array_slice($this->successFromFixtureMessages, 0, -1), $payment->Messages());
+        SapphireTest::assertListContains(array_slice($this->successFromFixtureMessages, 0, -1), $payment->Messages());
 
         // Now a notification comes in
         $response = $this->get('paymentendpoint/'. $payment->Identifier .'/notify');
@@ -270,7 +272,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
 
         // ensure the correct service hooks were called
         $this->assertEquals(
-            $this->initiateServiceExtensionHooks,
+            array_merge($this->initiateServiceExtensionHooks, ['updateServiceResponse']),
             $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
 
@@ -279,8 +281,9 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $this->assertEquals($payment->Status, $this->endStatus, 'Payment status should be set to ' . $this->endStatus);
 
         // check existance of messages
-        $this->assertDOSContains($this->successFromFixtureMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->successFromFixtureMessages, $payment->Messages());
 
+        $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->Reset();
         // try to complete a second time
         $service = $this->getService($payment);
         $serviceResponse = $service->complete();
@@ -325,7 +328,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $this->assertEquals($payment->Status, $this->startStatus, 'Payment status should be unchanged');
 
         // check existance of messages and existence of references
-        $this->assertDOSContains($this->failureMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->failureMessages, $payment->Messages());
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -410,7 +413,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -436,7 +439,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $this->assertEquals($this->startStatus, $payment->Status);
 
         // check existance of messages
-        $this->assertDOSContains($this->notificationFailureMessages, $payment->Messages());
+        SapphireTest::assertListContains($this->notificationFailureMessages, $payment->Messages());
     }
 
     public function testGatewayNotificationFailure()
@@ -554,7 +557,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
     {
         // disallow the service via config
         $method = 'allow_' . $this->gatewayMethod;
-        Config::modify()->update(GatewayInfo::class, 'Dummy', array(
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', array(
             $method => false
         ));
         $this->payment->setGateway('Dummy')->Status = 'Created';

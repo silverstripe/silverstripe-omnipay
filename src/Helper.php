@@ -1,6 +1,7 @@
 <?php
 
 namespace SilverStripe\Omnipay;
+
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Injector\Injector;
@@ -40,7 +41,7 @@ class Helper
         &$a6 = null,
         &$a7 = null
     ) {
-        if (!(method_exists($object,'extend'))) {
+        if (!(method_exists($object, 'extend'))) {
             return [];
         }
 
@@ -53,7 +54,8 @@ class Helper
             $retVal = $object->extend($method, $a1, $a2, $a3, $a4, $a5, $a6, $a7);
         } catch (\Exception $ex) {
             self::getLogger()->warn(
-                'An error occurred when trying to run extension point: '. $object->class . '->' . $method);
+                'An error occurred when trying to run extension point: '. $object->class . '->' . $method
+            );
 
             self::getLogger()->warn($ex);
 
@@ -99,7 +101,8 @@ class Helper
         restore_error_handler();
     }
 
-    private static function getLogger(){
+    private static function getLogger()
+    {
         return Injector::inst()->get(LoggerInterface::class);
     }
 }

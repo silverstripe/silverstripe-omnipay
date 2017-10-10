@@ -41,7 +41,8 @@ class GatewayInfoTest extends SapphireTest
 
         $provider = Injector::inst()->get(MessageProvider::class);
         $provider->getTranslator()->addResource(
-            'array',[
+            'array',
+            [
                 'Gateway.PayPal_Express' => 'PayPal Express EN',
                 'Gateway.PaymentExpress_PxPay' => 'Px Pay Express EN',
                 'Gateway.Dummy' => 'Dummy EN'
@@ -50,7 +51,8 @@ class GatewayInfoTest extends SapphireTest
         );
 
         $provider->getTranslator()->addResource(
-            'array', [
+            'array',
+            [
                 'Gateway.Dummy' => 'Dummy DE',
                 'Gateway.PaymentExpress_PxPay' => '' // clear
             ],

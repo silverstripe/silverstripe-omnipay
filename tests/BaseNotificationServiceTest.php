@@ -5,6 +5,7 @@ namespace SilverStripe\Omnipay\Tests;
 use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Service\PaymentService;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
@@ -225,7 +226,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -410,7 +411,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -554,7 +555,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
     {
         // disallow the service via config
         $method = 'allow_' . $this->gatewayMethod;
-        Config::modify()->update(GatewayInfo::class, 'Dummy', array(
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', array(
             $method => false
         ));
         $this->payment->setGateway('Dummy')->Status = 'Created';

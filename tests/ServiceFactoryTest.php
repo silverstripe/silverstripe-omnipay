@@ -2,11 +2,14 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Omnipay\Service\CaptureService;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Omnipay\Tests\Extension\ServiceFactoryTestExtensionTwo;
+use SilverStripe\Omnipay\Tests\Extensions\ServiceFactoryTestExtension;
 use SilverStripe\Omnipay\Tests\Service\ServiceFactoryTestService;
 
 class ServiceFactoryTest extends PaymentTest
@@ -38,7 +41,7 @@ class ServiceFactoryTest extends PaymentTest
             'Intent "payment" must return a PurchaseService when gateway doesn\'t use authorize.'
         );
 
-        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'use_authorize' => true
         ));
 
@@ -54,7 +57,7 @@ class ServiceFactoryTest extends PaymentTest
 
     public function testCustomService()
     {
-        Config::modify()->update(ServiceFactory::class, 'services', array(
+        Config::modify()->merge(ServiceFactory::class, 'services', array(
             'purchase' => ServiceFactoryTestService::class
         ));
 

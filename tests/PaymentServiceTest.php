@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use Omnipay\Common\AbstractGateway;
 use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\Omnipay\Service\PaymentService;
@@ -33,7 +34,7 @@ class PaymentServiceTest extends PaymentTest
 
     public function testGateway()
     {
-        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             // set some invalid params
             'parameters' => array(
                 'DummyParameter' => 'DummyValue'
@@ -221,7 +222,7 @@ class PaymentServiceTest extends PaymentTest
 
     protected function buildNotificationService(
         $returnState,
-        $contract = 'Omnipay\Common\Message\NotificationInterface'
+        $contract = NotificationInterface::class
     ) {
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
         $service = $this->factory->getService($payment, ServiceFactory::INTENT_PURCHASE);
@@ -230,7 +231,9 @@ class PaymentServiceTest extends PaymentTest
         // Notification response
 
         $notificationResponse = $this->getMockBuilder($contract)
-            ->disableOriginalConstructor()->getMock();
+            ->disableOriginalConstructor()
+            ->setMethods(['getTransactionStatus', 'getTransactionReference', 'isSuccessful', 'getMessage', 'getData'])
+            ->getMock();
 
         $notificationResponse->expects($this->any())
             ->method('getTransactionStatus')->will($this->returnValue($returnState));
@@ -238,8 +241,8 @@ class PaymentServiceTest extends PaymentTest
         //--------------------------------------------------------------------------------------------------------------
         // Build the gateway
 
-        $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->setMethods(array('acceptNotification', 'getName'))
+        $stubGateway = $this->getMockBuilder(AbstractGateway::class)
+            ->setMethods(['acceptNotification', 'getName'])
             ->getMock();
 
         $stubGateway->expects($this->once())

@@ -136,7 +136,7 @@ class GatewayFieldsFactory
 
     /**
      * Get Credit-Card fields
-     * @return \FieldList
+     * @return FieldList
      */
     public function getCardFields()
     {

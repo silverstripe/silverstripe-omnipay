@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Omnipay\GatewayInfo;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use SilverStripe\Omnipay\Tests\PaymentTest;
 use SilverStripe\Omnipay\Model\Payment;
@@ -332,10 +333,9 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $response = $this->get("paymentendpoint/$this->paymentId/complete");
         //redirect works
         $headers = $response->getHeaders();
-        $this->assertEquals(
-            Director::baseURL() . "shop/incomplete",
-            $headers['Location'],
-            "redirected to shop/incomplete"
+        $this->assertStringEndsWith(
+            '/shop/incomplete',
+            $headers['Location']
         );
         $payment = Payment::get()
             ->filter('Identifier', $this->paymentId)
@@ -465,7 +465,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
     public function testTokenGateway()
     {
-        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPost', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPost', array(
             'token_key' => 'token'
         ));
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
@@ -495,7 +495,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
     public function testTokenGatewayWithAlternateKey()
     {
-        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPost', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPost', array(
             'token_key' => 'my_token'
         ));
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
@@ -525,7 +525,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
     public function testAsyncPaymentConfirmation()
     {
-        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'use_async_notification' => true
         ));
 
@@ -598,7 +598,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
     // Test an async response that comes in before the user returns from the offsite form
     public function testAsyncPaymentConfirmationIncomingFirst()
     {
-        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'use_async_notification' => true
         ));
 
@@ -672,7 +672,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
     // Test via PaymentGatewayController
     public function testPaymentGatewayControllerConfirmationIncomingFirst()
     {
-        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'use_async_notification' => true
         ));
 
@@ -710,7 +710,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $httpResponse = $this->get('paymentendpoint/'. $payment->Identifier .'/complete');
 
         // we should be redirected to the success page
-        $this->assertEquals($httpResponse->getHeader('Location'), BASE_URL . '/my/return/url');
+        $this->assertStringEndsWith('/my/return/url', $httpResponse->getHeader('Location'));
         $this->assertEquals($httpResponse->getStatusCode(), 302);
 
         // reload payment from DB

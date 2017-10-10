@@ -1,6 +1,9 @@
 <?php
 
 namespace SilverStripe\Omnipay;
+use Psr\Log\LoggerInterface;
+use SilverStripe\Control\Director;
+use SilverStripe\Core\Injector\Injector;
 
 /**
  * Helper methods for the SilverStripe Omnipay Module
@@ -14,7 +17,7 @@ class Helper
      *
      * In dev and test environments, exceptions will be thrown!
      *
-     * @param \Object $object the object that should run the extension
+     * @param mixed $object the object that should run the extension
      * @param string $method the extension method to call
      * @param mixed $a1 optional parameter 1
      * @param mixed $a2 optional parameter 2
@@ -37,8 +40,8 @@ class Helper
         &$a6 = null,
         &$a7 = null
     ) {
-        if (!($object instanceof \Object)) {
-            return array();
+        if (!(method_exists($object,'extend'))) {
+            return [];
         }
 
         set_error_handler(function ($severity, $message, $file, $line) {
@@ -49,14 +52,13 @@ class Helper
         try {
             $retVal = $object->extend($method, $a1, $a2, $a3, $a4, $a5, $a6, $a7);
         } catch (\Exception $ex) {
-            \SS_Log::log(
-                'An error occurred when trying to run extension point: '. $object->class . '->' . $method,
-                \SS_Log::WARN
-            );
-            \SS_Log::log($ex, \SS_Log::WARN);
+            self::getLogger()->warn(
+                'An error occurred when trying to run extension point: '. $object->class . '->' . $method);
+
+            self::getLogger()->warn($ex);
 
             // In dev and test environments, throw the exception!
-            if (\Director::isDev() || \Director::isTest()) {
+            if (Director::isDev() || Director::isTest()) {
                 restore_error_handler();
                 throw  $ex;
             }
@@ -84,16 +86,20 @@ class Helper
             restore_error_handler();
             return $retVal;
         } catch (\Exception $ex) {
-            \SS_Log::log($errorMessage, \SS_Log::WARN);
-            \SS_Log::log($ex, \SS_Log::WARN);
+            self::getLogger()->warn($errorMessage);
+            self::getLogger()->warn($ex);
 
             // In dev and test environments, throw the exception!
-            if (\Director::isDev() || \Director::isTest()) {
+            if (Director::isDev() || Director::isTest()) {
                 restore_error_handler();
                 throw  $ex;
             }
         }
 
         restore_error_handler();
+    }
+
+    private static function getLogger(){
+        return Injector::inst()->get(LoggerInterface::class);
     }
 }

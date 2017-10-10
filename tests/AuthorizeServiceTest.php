@@ -3,7 +3,6 @@
 namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Omnipay\Service\AuthorizeService;
-use SilverStripe\Omnipay\Tests\BasePurchaseServiceTest;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 use SilverStripe\Core\Config\Config;
@@ -84,7 +83,7 @@ class AuthorizeServiceTest extends BasePurchaseServiceTest
 
         AuthorizeService::add_extension(PaymentTestServiceExtensionHooks::class);
 
-        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', [
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'use_authorize' => true
         ]);
     }

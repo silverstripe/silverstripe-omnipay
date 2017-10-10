@@ -2,6 +2,9 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Model\Message\NotificationSuccessful;
+use SilverStripe\Omnipay\Model\Message\PartiallyCapturedResponse;
 use SilverStripe\Omnipay\Service\CaptureService;
 use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
@@ -88,7 +91,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         )
     );
 
-    protected $errorMessageClass = 'CaptureError';
+    protected $errorMessageClass = CaptureError::class;
 
     protected $successPaymentExtensionHooks = array(
         'onCaptured'
@@ -274,19 +277,19 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         // check existance of messages
         $this->assertDOSContains(array(
             array(
-                'ClassName' => 'AuthorizedResponse',
+                'ClassName' => AuthorizedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt'
             ),
             array(
-                'ClassName' => 'CaptureRequest',
+                'ClassName' => CaptureRequest::class,
                 'Reference' => 'authorizedPaymentReceipt'
             ),
             array(
-                'ClassName' => 'NotificationSuccessful',
+                'ClassName' => NotificationSuccessful::class,
                 'Reference' => 'authorizedPaymentReceipt'
             ),
             array(
-                'ClassName' => 'CapturedResponse',
+                'ClassName' => CapturedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt'
             )
         ), $payment->Messages());
@@ -332,16 +335,16 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         // check existance of messages and existence of references
         $this->assertDOSContains(array(
             array(
-                'ClassName' => 'AuthorizedResponse',
+                'ClassName' => AuthorizedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt',
             ),
 
             array(
-                'ClassName' => 'CaptureRequest',
+                'ClassName' => CaptureRequest::class,
                 'Reference' => 'authorizedPaymentReceipt',
             ),
             array(
-                'ClassName' => 'PartiallyCapturedResponse',
+                'ClassName' => PartiallyCapturedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt',
             ),
         ), $payment->Messages());
@@ -365,7 +368,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // allow multiple captures
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'can_capture' => 'multiple'
         ));
 
@@ -415,7 +418,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true,
             'can_capture' => 'multiple'
         ));
@@ -473,19 +476,19 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         // check existance of messages
         $this->assertDOSContains(array(
             array(
-                'ClassName' => 'AuthorizedResponse',
+                'ClassName' => AuthorizedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt'
             ),
             array(
-                'ClassName' => 'CaptureRequest',
+                'ClassName' => CaptureRequest::class,
                 'Reference' => 'authorizedPaymentReceipt'
             ),
             array(
-                'ClassName' => 'NotificationSuccessful',
+                'ClassName' => NotificationSuccessful::class,
                 'Reference' => 'authorizedPaymentReceipt'
             ),
             array(
-                'ClassName' => 'PartiallyCapturedResponse',
+                'ClassName' => PartiallyCapturedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt'
             )
         ), $payment->Messages());
@@ -506,7 +509,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -523,7 +526,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         try {
             // the second attempt must throw an exception!
             $service->initiate(array('amount' => '23.75'));
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             $exception = $ex;
         }
 
@@ -540,11 +543,11 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         // check existance of messages
         $this->assertDOSContains(array(
             array(
-                'ClassName' => 'AuthorizedResponse',
+                'ClassName' => AuthorizedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt'
             ),
             array(
-                'ClassName' => 'CaptureRequest',
+                'ClassName' => CaptureRequest::class,
                 'Reference' => 'authorizedPaymentReceipt'
             )
         ), $payment->Messages());
@@ -618,7 +621,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // only allow full capture, thus disabling partial refunds
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'can_capture' => 'full'
         ));
 
@@ -653,7 +656,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 

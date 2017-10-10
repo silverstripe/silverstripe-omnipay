@@ -2,9 +2,9 @@
 
 namespace SilverStripe\Omnipay\Extensions;
 
-use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\Core\Extension;
 use SilverStripe\Control\Director;
+use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\View\ArrayData;
 use SilverStripe\View\SSViewer;
 use SilverStripe\Control\HTTPResponse;
@@ -30,6 +30,9 @@ use SilverStripe\Control\HTTPResponse;
  */
 class WorldPayResponseExtension extends Extension
 {
+    /**
+     * @param ServiceResponse $response
+     */
     public function updateServiceResponse($response)
     {
         $payment = $response->getPayment();

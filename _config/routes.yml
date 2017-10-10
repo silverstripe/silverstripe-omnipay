@@ -2,7 +2,6 @@
 Name: omnipay-routes
 After: framework/routes#coreroutes
 ---
-Director:
+SilverStripe\Control\Director:
   rules:
-    'paymentendpoint/$Identifier/$Status/$ReturnURL' : '\SilverStripe\Omnipay\PaymentGatewayController'
-    'dev/payment' : '\SilverStripe\Omnipay\Admin\PaymentDevelopmentAdmin'
+    'paymentendpoint/$Identifier/$Status/$ReturnURL' : SilverStripe\Omnipay\PaymentGatewayController

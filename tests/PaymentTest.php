@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Service\PaymentService;
 use SilverStripe\Omnipay\Service\ServiceFactory;
@@ -44,7 +45,7 @@ abstract class PaymentTest extends FunctionalTest
         Config::modify()->remove('ServiceFactory', 'services');
 
         // Create the default service map
-        Config::modify()->update(ServiceFactory::class, 'services', array(
+        Config::modify()->set(ServiceFactory::class, 'services', array(
             'authorize' => '\SilverStripe\Omnipay\Service\AuthorizeService',
             'createcard' => '\SilverStripe\Omnipay\Service\CreateCardService',
             'purchase' => '\SilverStripe\Omnipay\Service\PurchaseService',
@@ -77,7 +78,7 @@ abstract class PaymentTest extends FunctionalTest
         PaymentTestPaymentExtensionHooks::ResetAll();
 
         // don't log test payments to file
-        Config::modify()->update(Payment::class, 'file_logging', 0);
+        Config::modify()->set(Payment::class, 'file_logging', 0);
 
         $this->factory = ServiceFactory::create();
 
@@ -90,7 +91,7 @@ abstract class PaymentTest extends FunctionalTest
 
         // clear settings for PaymentExpress_PxPay (don't let user configs bleed into tests)
         Config::inst()->remove(GatewayInfo::class, 'PaymentExpress_PxPay');
-        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', array(
             'parameters' => array(
                 'username' => 'EXAMPLEUSER',
                 'password' => '235llgwxle4tol23l'

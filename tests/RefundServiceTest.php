@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Service\RefundService;
 use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
@@ -223,7 +224,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // allow multiple partial captures
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'can_refund' => 'multiple'
         ));
 
@@ -274,7 +275,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -361,7 +362,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 
@@ -378,11 +379,11 @@ class RefundServiceTest extends BaseNotificationServiceTest
         try {
             // the second attempt must throw an exception!
             $service->initiate(array('amount' => '69.50'));
-        } catch (Exception $ex) {
+        } catch (\Exception $ex) {
             $exception = $ex;
         }
 
-        $this->assertInstanceOf('SilverStripe\Omnipay\Exception\InvalidConfigurationException', $exception);
+        $this->assertInstanceOf(InvalidConfigurationException::class, $exception);
 
         // there must be a partial payment
         $this->assertEquals(1, $payment->getPartialPayments()->count());
@@ -473,7 +474,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // only allow full refunds, thus disabling partial refunds
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
            'can_refund' => 'full'
         ));
 
@@ -508,7 +509,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->update(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
             'use_async_notification' => true
         ));
 

@@ -2,6 +2,10 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Omnipay\Model\Message\CompletePurchaseRequest;
+use SilverStripe\Omnipay\Model\Message\PurchasedResponse;
+use SilverStripe\Omnipay\Model\Message\PurchaseRedirectResponse;
+use SilverStripe\Omnipay\Model\Message\PurchaseRequest;
 use SilverStripe\Omnipay\PaymentGatewayController;
 use SilverStripe\Control\Director;
 use SilverStripe\Omnipay\Model\Payment;
@@ -31,19 +35,18 @@ class PaymentGatewayControllerTest extends PaymentTest
         $response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/complete");
         //redirect works
         $headers = $response->getHeaders();
-        $this->assertEquals(
-            Director::baseURL()."shop/complete",
-            $headers['Location'],
-            "redirected to shop/complete"
+        $this->assertStringEndsWith(
+            '/shop/complete',
+            $headers['Location']
         );
         $payment = Payment::get()
                         ->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
                         ->first();
         $this->assertDOSContains(array(
-            array('ClassName' => 'PurchaseRequest'),
-            array('ClassName' => 'PurchaseRedirectResponse'),
-            array('ClassName' => 'CompletePurchaseRequest'),
-            array('ClassName' => 'PurchasedResponse')
+            array('ClassName' => PurchaseRequest::class),
+            array('ClassName' => PurchaseRedirectResponse::class),
+            array('ClassName' => CompletePurchaseRequest::class),
+            array('ClassName' => PurchasedResponse::class)
         ), $payment->Messages());
     }
 
@@ -62,10 +65,10 @@ class PaymentGatewayControllerTest extends PaymentTest
                         ->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
                         ->first();
         $this->assertDOSContains(array(
-            array('ClassName' => 'PurchaseRequest'),
-            array('ClassName' => 'PurchaseRedirectResponse'),
-            array('ClassName' => 'CompletePurchaseRequest'),
-            array('ClassName' => 'PurchasedResponse')
+            array('ClassName' => PurchaseRequest::class),
+            array('ClassName' => PurchaseRedirectResponse::class),
+            array('ClassName' => CompletePurchaseRequest::class),
+            array('ClassName' => PurchasedResponse::class)
         ), $payment->Messages());
     }
 
@@ -76,10 +79,9 @@ class PaymentGatewayControllerTest extends PaymentTest
 
         // Should redirect to the cancel/failure url which is being loaded from the fixture
         $headers = $response->getHeaders();
-        $this->assertEquals(
-            Director::baseURL()."shop/incomplete",
-            $headers['Location'],
-            "redirected to shop/incomplete"
+        $this->assertStringEndsWith(
+            '/shop/incomplete',
+            $headers['Location']
         );
 
         $payment = Payment::get()
@@ -87,8 +89,8 @@ class PaymentGatewayControllerTest extends PaymentTest
             ->first();
 
         $this->assertDOSContains(array(
-            array('ClassName' => 'PurchaseRequest'),
-            array('ClassName' => 'PurchaseRedirectResponse')
+            array('ClassName' => PurchaseRequest::class),
+            array('ClassName' => PurchaseRedirectResponse::class)
         ), $payment->Messages());
 
         $this->assertEquals($payment->Status, 'Void', 'Payment should be void');

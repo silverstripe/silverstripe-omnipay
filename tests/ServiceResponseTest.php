@@ -130,7 +130,7 @@ class ServiceResponseTest extends SapphireTest
         $response->setTargetUrl('/my/target/url');
 
         $httpResponse = $response->redirectOrRespond();
-        $this->assertEquals($httpResponse->getHeader('Location'), '/my/target/url');
+        $this->assertStringEndsWith('/my/target/url', $httpResponse->getHeader('Location'));
         $this->assertEquals($httpResponse->getStatusCode(), 302);
 
         // explicitly set a response

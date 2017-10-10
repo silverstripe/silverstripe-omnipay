@@ -61,7 +61,7 @@ class ServiceResponse
     protected $isAwaitingNotification = false;
 
     /**
-     * @var \Payment
+     * @var Payment
      */
     protected $payment;
 

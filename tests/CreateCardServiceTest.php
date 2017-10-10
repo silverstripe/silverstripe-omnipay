@@ -22,25 +22,25 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
     );
 
     protected $onsiteFailMessages = array(
-        array('ClassName' => Mesasge\CreateCardRequest::class),
-        array('ClassName' => Mesasge\CreateCardError::class)
+        array('ClassName' => Message\CreateCardRequest::class),
+        array('ClassName' => Message\CreateCardError::class)
     );
 
     protected $failMessages = array(
-        array('ClassName' => Mesasge\CreateCardError::class)
+        array('ClassName' => Message\CreateCardError::class)
     );
 
     protected $offsiteSuccessMessages = array(
-        array('ClassName' => Mesasge\CreateCardRequest::class),
-        array('ClassName' => Mesasge\CreateCardRedirectResponse::class),
-        array('ClassName' => Mesasge\CompleteCreateCardRequest::class),
-        array('ClassName' => Mesasge\CreateCardResponse::class)
+        array('ClassName' => Message\CreateCardRequest::class),
+        array('ClassName' => Message\CreateCardRedirectResponse::class),
+        array('ClassName' => Message\CompleteCreateCardRequest::class),
+        array('ClassName' => Message\CreateCardResponse::class)
     );
 
     protected $offsiteFailMessages = array(
-        array('ClassName' => Mesasge\CreateCardResponse::class),
-        array('ClassName' => Mesasge\CompleteCreateCardRequest::class),
-        array('ClassName' => Mesasge\CompleteCreateCardError::class)
+        array('ClassName' => Message\CreateCardResponse::class),
+        array('ClassName' => Message\CompleteCreateCardRequest::class),
+        array('ClassName' => Message\CompleteCreateCardError::class)
     );
 
     protected $failureMessageClass = Message\CompleteCreateCardError::class;

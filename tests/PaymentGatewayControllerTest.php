@@ -34,10 +34,9 @@ class PaymentGatewayControllerTest extends PaymentTest
         //mimic a redirect or request from offsite gateway
         $response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/complete");
         //redirect works
-        $headers = $response->getHeaders();
         $this->assertStringEndsWith(
             '/shop/complete',
-            $headers['Location']
+            $response->getHeader('Location')
         );
         $payment = Payment::get()
                         ->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
@@ -78,10 +77,9 @@ class PaymentGatewayControllerTest extends PaymentTest
         $response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/cancel");
 
         // Should redirect to the cancel/failure url which is being loaded from the fixture
-        $headers = $response->getHeaders();
         $this->assertStringEndsWith(
             '/shop/incomplete',
-            $headers['Location']
+            $response->getHeader('Location')
         );
 
         $payment = Payment::get()

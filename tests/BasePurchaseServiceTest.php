@@ -332,10 +332,9 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         //mimic a redirect or request from offsite gateway
         $response = $this->get("paymentendpoint/$this->paymentId/complete");
         //redirect works
-        $headers = $response->getHeaders();
         $this->assertStringEndsWith(
             '/shop/incomplete',
-            $headers['Location']
+            $response->getHeader('Location')
         );
         $payment = Payment::get()
             ->filter('Identifier', $this->paymentId)

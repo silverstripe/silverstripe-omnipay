@@ -4,7 +4,10 @@ namespace SilverStripe\Omnipay\Model;
 
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\PaymentMath;
+use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBMoney;
+use SilverStripe\Security\Member;
 use SilverStripe\Security\PermissionProvider;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Security\RandomGenerator;
@@ -237,7 +240,7 @@ final class Payment extends DataObject implements PermissionProvider
      */
     public function setAmount($amount)
     {
-        if ($amount instanceof Money) {
+        if ($amount instanceof DBMoney) {
             $this->setField('Money', $amount);
         } elseif ($this->Status == 'Created' && is_numeric($amount)) {
             $this->MoneyAmount = $amount;

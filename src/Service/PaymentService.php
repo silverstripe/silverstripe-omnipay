@@ -451,7 +451,6 @@ abstract class PaymentService
 
         $this->logToFile($output, $type);
 
-        echo 'creating message of '. $type . ' '. json_encode($output) . PHP_EOL . PHP_EOL;
         $message = Injector::inst()->create($type, $output);
         $message->write();
 

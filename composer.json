@@ -1,7 +1,7 @@
 {
     "name": "silverstripe/silverstripe-omnipay",
     "description": "SilverStripe Omnipay Payment Module",
-    "type": "silverstripe-module",
+    "type": "silverstripe-vendormodule",
     "license": "BSD-3-Clause",
     "keywords": ["silverstripe","payment","omnipay"],
     "require": {
@@ -15,9 +15,6 @@
         "omnipay/paypal": "~2.5",
         "omnipay/dummy": "~2.1",
         "omnipay/paymentexpress": "~2.1"
-    },
-    "extra": {
-        "installer-name": "omnipay"
     },
     "autoload": {
         "psr-4": {

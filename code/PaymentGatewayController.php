@@ -108,27 +108,34 @@ class PaymentGatewayController extends \Controller
      * Get the response from the @Link SilverStripe\Omnipay\Service\PaymentService
      * depending on the payment status provided.
      *
-     * @param PaymentService $service The payment service we are using
+     * @param Payment $payment The payment that the service belongs to
      * @param string $status The string identifier of the ServiceResponse
      * @return void
      */
-    protected function getServiceResponse($service, $status)
+    protected function getServiceResponse($payment, $status)
     {
-        switch ($status) {
-            case "complete":
-                $return = $service->complete();
-                break;
-            case "notify":
-                $return = $service->complete(array(), true);
-                break;
-            case "cancel":
-                $return = $service->cancel();
-                break;
-            default:
-                $return = null;
+        $response = null;
+        $intent = $this->getPaymentIntent($payment->Status);
+
+        if ($intent) {
+            $service = ServiceFactory::create()->getService($payment, $intent);
+
+            switch ($status) {
+                case "complete":
+                    $response = $service->complete();
+                    break;
+                case "notify":
+                    $response = $service->complete(array(), true);
+                    break;
+                case "cancel":
+                    $response = $service->cancel();
+                    break;
+                default:
+                    $response = null;
+            }
         }
 
-        return $return;
+        return $response;
     }
 
     /**
@@ -140,28 +147,22 @@ class PaymentGatewayController extends \Controller
     public function index()
     {
         $response = null;
-        $payment = $this->getPaymentFromIdentifier($this->request->param('Identifier'));
+        $payment = $this->getPaymentFromRequest($this->request);
 
         if (!$payment) {
             return $this->httpError(404, _t('Payment.NotFound', 'Payment could not be found.'));
         }
 
-        $intent = $this->getPaymentIntent($payment->Status);
+        $response = $this->getServiceResponse(
+            $payment,
+            $this->request->param('Status')
+        );
 
-        if (!$intent) {
-            return $this->httpError(403, _t('Payment.InvalidStatus', 'Invalid/unhandled payment status'));
-        }
-
-        $service = ServiceFactory::create()->getService($payment, $intent);
-        $service_response = $this->getServiceResponse($service, $this->request->param('Status'));
-
-        if (!$service_response) {
+        if (!$response) {
             return $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
         }
         
-        $response = $service_response->redirectOrRespond();
-        
-        return $response;
+        return $response->redirectOrRespond();
     }
 
     /**
@@ -173,62 +174,28 @@ class PaymentGatewayController extends \Controller
     {
         $response = null;
         $gateway = $this->request->param("Gateway");
-        $identifier = null;
 
         // Does the selected gateway allow static routes
         if (!GatewayInfo::getConfigSetting($gateway, 'use_static_route')) {
             return $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
         }
 
-        $identifier = $this->getIdentifierFromRequest($this->request,$gateway);
-
-        if (!$identifier) {
-            return $this->httpError(404, _t('Payment.NotFound', 'Payment could not be found.'));
-        }
-
-        $payment = $this->getPaymentFromIdentifier($identifier);
+        $payment = $this->getPaymentFromRequest($this->request, $gateway);
 
         if (!$payment) {
             return $this->httpError(404, _t('Payment.NotFound', 'Payment could not be found.'));
         }
 
-        $intent = $this->getPaymentIntent($payment->Status);
+        $response = $this->getServiceResponse(
+            $payment,
+            $this->request->param('Status')
+        );
 
-        if (!$intent) {
-            return $this->httpError(403, _t('Payment.InvalidStatus', 'Invalid/unhandled payment status'));
-        }
-
-        $service = ServiceFactory::create()->getService($payment, $intent);
-        $service_response = $this->getServiceResponse($service, $this->request->param('Status'));
-
-        if (!$service_response) {
+        if (!$response) {
             return $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
         }
-
-        $response = $service_response->redirectOrRespond();
-
-        return $response;
-    }
-
-    /**
-     * Attempt to get the the payment according to the identifier
-     * provided by the payment gateway.
-     * 
-     * Due to the many possible ways this can be retrieved, it is
-     * up to the implementer to extend this function and write their
-     *  
-     * 
-     * @param SS_HTTPRequest $request A SilverStripe request object
-     * @param string $gateway The identifier of the payment
-     * @return \Payment the payment
-     */
-    private function getIdentifierFromRequest(\SS_HTTPRequest $request, $gateway)
-    {
-        $ident = null;
-
-        $this->extend("updateIdentifierFromRequest", $ident, $request, $gateway);
         
-        return $ident;
+        return $response->redirectOrRespond();
     }
 
     /**
@@ -237,10 +204,21 @@ class PaymentGatewayController extends \Controller
      * @param string $ident The identifier of the payment
      * @return \Payment the payment
      */
-    private function getPaymentFromIdentifier($ident)
+    private function getPaymentFromRequest(\SS_HTTPRequest $request, $gateway = null)
     {
+        $identifier = $request->param("Identifier");
+        $results = $this->extend("updatePaymentFromRequest", $request, $gateway);
+
+        // Look to see if our extension return a payment,
+        // if so, return it.
+        foreach ($results as $result) {
+            if ($result instanceof \Payment) {
+                return $result;
+            }
+        }
+
         return \Payment::get()
-                ->filter('Identifier', $ident)
+                ->filter('Identifier', $identifier)
                 ->filter('Identifier:not', "")
                 ->first();
     }

@@ -14,22 +14,40 @@ use SilverStripe\Omnipay\Service\ServiceFactory;
  */
 class PaymentGatewayController extends \Controller
 {
-
-    private static $allowed_actions = array(
-        'endpoint'
-    );
+    private static $allowed_actions = [
+        'gateway'
+    ];
+    
+    private static $url_handlers = [
+        '$Identifier/$Status/$ReturnURL' => 'index',
+        'gateway/$Gateway!/$Status' => 'gateway'
+    ];
 
     /**
      * Generate an absolute url for gateways to return to, or send requests to.
-     * @param  string $action the intended action of the gateway
+     * @param  string $status the intended action of the gateway
      * @param  string $identifier the unique payment id
      * @return string the resulting redirect url
      */
-    public static function getEndpointUrl($action, $identifier)
-    {
-        return \Director::absoluteURL(
-            \Controller::join_links('paymentendpoint', $identifier, $action)
-        );
+    public static function getEndpointUrl($status, $identifier, $gateway = null)
+    {   
+        // Does the selected gateway allow static routes
+        if ($gateway && GatewayInfo::getConfigSetting($gateway, 'use_static_route')) {
+            $url = \Controller::join_links(
+                'paymentendpoint',
+                'gateway',
+                $gateway,
+                $status
+            );
+        } else {
+            $url = \Controller::join_links(
+                'paymentendpoint',
+                $identifier,
+                $status
+            );
+        }
+
+        return \Director::absoluteURL($url);
     }
 
     /**
@@ -47,21 +65,13 @@ class PaymentGatewayController extends \Controller
     }
 
     /**
-     * The main action for handling all requests.
-     * It will redirect back to the application in all cases,
-     * but will not update the Payment/Transaction models if they are not found,
-     * or allowed to be updated.
+     * Find the intent of the current payment
+     *
+     * @param string $status The status of the payment
+     * @return string | null
      */
-    public function index()
+    protected function getPaymentIntent($status)
     {
-        $response = null;
-        $payment = $this->getPayment();
-
-        if (!$payment) {
-            $this->httpError(404, _t('Payment.NotFound', 'Payment could not be found.'));
-        }
-
-        $intent = null;
         switch ($payment->Status) {
             // We have to check for both states here, since the notification might come in before the gateway returns
             // if that's the case, the status of the payment will already be set to 'Authorized'
@@ -84,40 +94,149 @@ class PaymentGatewayController extends \Controller
                 $intent = ServiceFactory::INTENT_VOID;
                 break;
             default:
-                $this->httpError(403, _t('Payment.InvalidStatus', 'Invalid/unhandled payment status'));
+                $intent = null;
+        }
+
+        return $intent;
+    }
+
+    /**
+     * Get the response from the @Link SilverStripe\Omnipay\Service\PaymentService
+     * depending on the payment status provided.
+     *
+     * @param PaymentService $service The payment service we are using
+     * @param string $status The string identifier of the ServiceResponse
+     * @return void
+     */
+    protected function getServiceResponse($service, $status)
+    {
+        switch ($status) {
+            case "complete":
+                $return = $service->complete();
+                break;
+            case "notify":
+                $return = $service->complete(array(), true);
+                break;
+            case "cancel":
+                $return = $service->cancel();
+                break;
+            default:
+                $return = null;
+        }
+
+        return $return;
+    }
+
+    /**
+     * The main action for handling all requests.
+     * It will redirect back to the application in all cases,
+     * but will not update the Payment/Transaction models if they are not found,
+     * or allowed to be updated.
+     */
+    public function index()
+    {
+        $response = null;
+        $payment = $this->getPaymentFromIdent($this->request->param('Identifier'));
+
+        if (!$payment) {
+            return $this->httpError(404, _t('Payment.NotFound', 'Payment could not be found.'));
+        }
+
+        $intent = $this->getPaymentIntent($payment->Status);
+
+        if (!$intent) {
+            return $this->httpError(403, _t('Payment.InvalidStatus', 'Invalid/unhandled payment status'));
         }
 
         $service = ServiceFactory::create()->getService($payment, $intent);
+        $service_response = $this->getServiceResponse($service, $this->request->param('Status'));
 
-        //do the payment update
-        switch ($this->request->param('Status')) {
-            case "complete":
-                $serviceResponse = $service->complete();
-                $response = $serviceResponse->redirectOrRespond();
-                break;
-            case "notify":
-                $serviceResponse = $service->complete(array(), true);
-                $response = $serviceResponse->redirectOrRespond();
-                break;
-            case "cancel":
-                $serviceResponse = $service->cancel();
-                $response = $serviceResponse->redirectOrRespond();
-                break;
-            default:
-                $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
+        if (!$service_response) {
+            return $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
         }
+        
+        $response = $serviceResponse->redirectOrRespond();
+        
+        return $response;
+    }
+
+    /**
+     * Action used for handling static gateway requests
+     * (use this if your payment gateway doesnt handle
+     * dynamic callback URLs) 
+     */
+    public function gateway()
+    {
+        $response = null;
+        $gateway = $this->request->param("Gateway");
+        $identifier = null;
+
+        // Does the selected gateway allow static routes
+        if (!GatewayInfo::getConfigSetting($gateway, 'use_static_route')) {
+            return $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
+        }
+
+        $identifier = $this->getIdentifierFromRequest($this->request,$gateway);
+
+        if (!$identifier) {
+            return $this->httpError(404, _t('Payment.NotFound', 'Payment could not be found.'));
+        }
+
+        $payment = $this->getPaymentFromIdent($this->request->param('Identifier'));
+
+        if (!$payment) {
+            return $this->httpError(404, _t('Payment.NotFound', 'Payment could not be found.'));
+        }
+
+        $intent = $this->getPaymentIntent($payment->Status);
+
+        if (!$intent) {
+            return $this->httpError(403, _t('Payment.InvalidStatus', 'Invalid/unhandled payment status'));
+        }
+
+        $service = ServiceFactory::create()->getService($payment, $intent);
+        $service_response = $this->getServiceResponse($service, $this->request->param('Status'));
+
+        if (!$service_response) {
+            return $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
+        }
+
+        $response = $serviceResponse->redirectOrRespond();
 
         return $response;
     }
 
     /**
-     * Get the the payment according to the identifer given in the url
+     * Attempt to get the the payment according to the identifier
+     * provided by the payment gateway.
+     * 
+     * Due to the many possible ways this can be retrieved, it is
+     * up to the implementer to extend this function and write their
+     *  
+     * 
+     * @param SS_HTTPRequest $request A SilverStripe request object
+     * @param string $gateway The identifier of the payment
      * @return \Payment the payment
      */
-    private function getPayment()
+    private function getIdentifierFromRequest(\SS_HTTPRequest $request, $gateway)
+    {
+        $ident = null;
+
+        $this->extend("updateIdentifierFromRequest", $ident, $request, $gateway);
+        
+        return $ident;
+    }
+
+    /**
+     * Get the the payment according to the identifer given in the url
+     * 
+     * @param string $ident The identifier of the payment
+     * @return \Payment the payment
+     */
+    private function getPaymentFromIdent($ident)
     {
         return \Payment::get()
-                ->filter('Identifier', $this->request->param('Identifier'))
+                ->filter('Identifier', $ident)
                 ->filter('Identifier:not', "")
                 ->first();
     }

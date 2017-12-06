@@ -19,7 +19,7 @@ class PaymentGatewayController extends \Controller
     ];
     
     private static $url_handlers = [
-        'gateway/$Gateway!/$Status/$Identifier' => 'gateway',
+        'gateway/$Gateway!/$Status' => 'gateway',
         '$Identifier/$Status/$ReturnURL' => 'index',
     ];
 
@@ -37,8 +37,7 @@ class PaymentGatewayController extends \Controller
                 'paymentendpoint',
                 'gateway',
                 $gateway,
-                $status,
-                $identifier
+                $status
             );
         } else {
             $url = \Controller::join_links(
@@ -225,7 +224,7 @@ class PaymentGatewayController extends \Controller
      */
     private function getIdentifierFromRequest(\SS_HTTPRequest $request, $gateway)
     {
-        $ident = $this->request->param('Identifier');
+        $ident = null;
 
         $this->extend("updateIdentifierFromRequest", $ident, $request, $gateway);
         

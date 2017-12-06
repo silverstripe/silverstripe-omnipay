@@ -19,8 +19,8 @@ class PaymentGatewayController extends \Controller
     ];
     
     private static $url_handlers = [
+        'gateway/$Gateway!/$Status/$Identifier' => 'gateway',
         '$Identifier/$Status/$ReturnURL' => 'index',
-        'gateway/$Gateway!/$Status' => 'gateway'
     ];
 
     /**
@@ -37,7 +37,8 @@ class PaymentGatewayController extends \Controller
                 'paymentendpoint',
                 'gateway',
                 $gateway,
-                $status
+                $status,
+                $identifier
             );
         } else {
             $url = \Controller::join_links(
@@ -72,7 +73,7 @@ class PaymentGatewayController extends \Controller
      */
     protected function getPaymentIntent($status)
     {
-        switch ($payment->Status) {
+        switch ($status) {
             // We have to check for both states here, since the notification might come in before the gateway returns
             // if that's the case, the status of the payment will already be set to 'Authorized'
             case 'PendingAuthorization':
@@ -140,7 +141,7 @@ class PaymentGatewayController extends \Controller
     public function index()
     {
         $response = null;
-        $payment = $this->getPaymentFromIdent($this->request->param('Identifier'));
+        $payment = $this->getPaymentFromIdentifier($this->request->param('Identifier'));
 
         if (!$payment) {
             return $this->httpError(404, _t('Payment.NotFound', 'Payment could not be found.'));
@@ -159,7 +160,7 @@ class PaymentGatewayController extends \Controller
             return $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
         }
         
-        $response = $serviceResponse->redirectOrRespond();
+        $response = $service_response->redirectOrRespond();
         
         return $response;
     }
@@ -186,7 +187,7 @@ class PaymentGatewayController extends \Controller
             return $this->httpError(404, _t('Payment.NotFound', 'Payment could not be found.'));
         }
 
-        $payment = $this->getPaymentFromIdent($this->request->param('Identifier'));
+        $payment = $this->getPaymentFromIdentifier($identifier);
 
         if (!$payment) {
             return $this->httpError(404, _t('Payment.NotFound', 'Payment could not be found.'));
@@ -205,7 +206,7 @@ class PaymentGatewayController extends \Controller
             return $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
         }
 
-        $response = $serviceResponse->redirectOrRespond();
+        $response = $service_response->redirectOrRespond();
 
         return $response;
     }
@@ -224,7 +225,7 @@ class PaymentGatewayController extends \Controller
      */
     private function getIdentifierFromRequest(\SS_HTTPRequest $request, $gateway)
     {
-        $ident = null;
+        $ident = $this->request->param('Identifier');
 
         $this->extend("updateIdentifierFromRequest", $ident, $request, $gateway);
         
@@ -237,7 +238,7 @@ class PaymentGatewayController extends \Controller
      * @param string $ident The identifier of the payment
      * @return \Payment the payment
      */
-    private function getPaymentFromIdent($ident)
+    private function getPaymentFromIdentifier($ident)
     {
         return \Payment::get()
                 ->filter('Identifier', $ident)

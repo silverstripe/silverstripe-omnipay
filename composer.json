@@ -22,6 +22,11 @@
             "SilverStripe\\Omnipay\\Tests\\": "tests/"
         }
     },
+    "extra" : {
+        "branch-alias": {
+            "dev-master": "3.x-dev"
+        }
+    },
     "scripts": {
         "lint": "phpcs -s src/ tests/"
     },

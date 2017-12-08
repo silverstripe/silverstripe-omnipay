@@ -31,21 +31,11 @@ class PaymentGatewayController extends \Controller
      */
     public static function getEndpointUrl($status, $identifier, $gateway = null)
     {   
-        // Does the selected gateway allow static routes
-        if ($gateway && GatewayInfo::getConfigSetting($gateway, 'use_static_route')) {
-            $url = \Controller::join_links(
-                'paymentendpoint',
-                'gateway',
-                $gateway,
-                $status
-            );
-        } else {
-            $url = \Controller::join_links(
-                'paymentendpoint',
-                $identifier,
-                $status
-            );
-        }
+        $url = \Controller::join_links(
+            'paymentendpoint',
+            $identifier,
+            $status
+        );
 
         return \Director::absoluteURL($url);
     }

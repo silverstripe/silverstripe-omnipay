@@ -28,6 +28,7 @@ class PaymentModelTest extends PaymentTest
     public function testCMSFields()
     {
         $fields = Payment::create()->getCMSFields();
+        $this->markTestIncomplete('getCMSFields tests');
     }
 
     public function testTitle()

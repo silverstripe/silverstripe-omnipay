@@ -3,6 +3,8 @@
 namespace SilverStripe\Omnipay;
 
 use SilverStripe\Omnipay\Service\ServiceFactory;
+use SilverStripe\Omnipay\Exception\InvalidPaymentIntentException;
+use SilverStripe\Omnipay\Exception\InvalidServiceResponseException;
 
 /**
  * Payment Gateway Controller
@@ -59,9 +61,12 @@ class PaymentGatewayController extends \Controller
      *
      * @param string $status The status of the payment
      * @return string | null
+     * @throws InvalidPaymentIntentException
      */
     protected function getPaymentIntent($status)
     {
+        $intent = null;
+
         switch ($status) {
             // We have to check for both states here, since the notification might come in before the gateway returns
             // if that's the case, the status of the payment will already be set to 'Authorized'
@@ -88,7 +93,11 @@ class PaymentGatewayController extends \Controller
                 $intent = ServiceFactory::INTENT_VOID;
                 break;
             default:
-                $intent = null;
+                throw new InvalidPaymentIntentException(_t(
+                    'Payment.InvalidStatus',
+                    'Invalid/unhandled payment status')
+                );
+                break;
         }
 
         return $intent;
@@ -121,7 +130,11 @@ class PaymentGatewayController extends \Controller
                     $response = $service->cancel();
                     break;
                 default:
-                    $response = null;
+                    throw new InvalidServiceResponseException(_t(
+                        'Payment.InvalidUrl',
+                        'Invalid payment url.'
+                    ));
+                    break;
             }
         }
 
@@ -143,10 +156,16 @@ class PaymentGatewayController extends \Controller
             return $this->httpError(404, _t('Payment.NotFound', 'Payment could not be found.'));
         }
 
-        $response = $this->getServiceResponse(
-            $payment,
-            $this->request->param('Status')
-        );
+        try {
+            $response = $this->getServiceResponse(
+                $payment,
+                $this->request->param('Status')
+            );
+        } catch (InvalidPaymentIntentException $e) {
+            return $this->httpError(403, $e->getMessage());
+        } catch (InvalidServiceResponseException $e) {
+            return $this->httpError(404, $e->getMessage());
+        }
 
         if (!$response) {
             return $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
@@ -176,10 +195,20 @@ class PaymentGatewayController extends \Controller
             return $this->httpError(404, _t('Payment.NotFound', 'Payment could not be found.'));
         }
 
-        $response = $this->getServiceResponse(
-            $payment,
-            $this->request->param('Status')
-        );
+        try {
+            $response = $this->getServiceResponse(
+                $payment,
+                $this->request->param('Status')
+            );
+        } catch (InvalidPaymentIntentException $e) {
+            return $this->httpError(403, $e->getMessage());
+        } catch (InvalidServiceResponseException $e) {
+            return $this->httpError(404, $e->getMessage());
+        }
+
+        if (!$response) {
+            return $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
+        }
 
         if (!$response) {
             return $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));

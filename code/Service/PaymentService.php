@@ -250,7 +250,7 @@ abstract class PaymentService extends \Object
      */
     protected function getEndpointUrl($action)
     {
-        return PaymentGatewayController::getEndpointUrl($action, $this->payment->Identifier);
+        return PaymentGatewayController::getEndpointUrl($action, $this->payment->Identifier, $this->payment->Gateway);
     }
 
     /**

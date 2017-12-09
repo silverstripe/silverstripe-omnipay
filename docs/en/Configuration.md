@@ -14,6 +14,7 @@ Each Gateway can have the following settings:
 | `is_manual`              | *boolean*        | Set this to true if this gateway should be considered a "Manual" gateway (eg. Invoice)
 | `use_authorize`          | *boolean*        | Whether or not this gateway should prefer authorize over purchase
 | `use_async_notification` | *boolean*        | When set to true, this gateway will receive asynchronous notifications from the payment provider to confirm status changes
+| `use_static_route`       | *boolean*        | Enables a static route for payment updates. Only use this, if your payment provider does not accept dynamic return urls and needs a single endpoint for server-to-server communication. (Defaults to *false*). [More information](StaticRoutes.md)
 | `token_key`              | *string*         | Key for the token parameter (for gateways that generate tokens for credit-cards)
 | `required_fields`        | *array*          | An array of required form-fields
 | `parameters`             | *map*            | All gateway parameters that will be passed along to the Omnipay Gateway instance

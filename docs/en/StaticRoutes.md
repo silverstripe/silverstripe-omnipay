@@ -66,6 +66,12 @@ class BarclaysPaymentGatewayControllerExtension extends Extension
 }
 ```
 
+In the example above, the Order-ID was passed along to the payment provider. The payment provider then calls our
+static endpoint with the same order-ID and we look up the order (and the payment) using that information. 
+What information you receive from the payment provider and how it's being transmitted (could be a request-variable, header or something else)
+will vary from one payment provider to the other. That's why you'd have to implement the proper lookup in an extension.
+Ideally, you would send the unique payment ID to the payment provider, if – for example – your order could have multiple payments.
+
 Then add the extension to the `PaymentGatewayController`, like so:
 
 ```yaml

@@ -14,7 +14,12 @@ Here's a list of all hooks available to extensions.
  - `onVoid` called when a payment was successfully voided/cancelled via Omnipay. You'll get the `ServiceResponse` as parameter.
  - `onCancelled` called then a payment was cancelled by the user (eg. user cancelled offsite payment). This is not an action that goes through Omnipay, so there's no parameter here.
  - `updateCMSFields` standard SilverStripe hook to update CMS fields.
+ 
+### PaymentGatewayController
 
+ - `updatePaymentFromRequest` called for every request that goes to the PaymentGatewayController. Can be used to return a Payment object from the request data. Needed for enabling [static routes](StaticRoutes.md)
+ - `updatePaymentActionFromRequest` called for every request to the PaymentGatewayController. Can be used to set the payment action from the incoming request-data. Sometimes needed for [static routes](StaticRoutes.md)
+ 
 ### PaymentService
 
  - `updateServiceResponse` every service response that is being generated from the different services will be passed through this callback. You'll get the `ServiceResponse` as parameter.

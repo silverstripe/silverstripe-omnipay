@@ -30,11 +30,34 @@ class PaymentGatewayController extends \Controller
      * @param  string $identifier the unique payment id
      * @return string the resulting redirect url
      */
-    public static function getEndpointUrl($action, $identifier, $gateway = null)
+    public static function getEndpointUrl($action, $identifier)
     {
         $url = \Controller::join_links(
             'paymentendpoint',
             $identifier,
+            $action
+        );
+
+        return \Director::absoluteURL($url);
+    }
+
+    /**
+     * Get the static endpoint url for a gateway.
+     * Attention: This only returns a URL if the `use_static_route` config is set for the gateway
+     * @param string $gateway the gateway name
+     * @param string $action (optional) the action to use (complete, cancel, notify)
+     * @return string the static gateway route
+     */
+    public static function getStaticEndpointUrl($gateway, $action = null)
+    {
+        if (!GatewayInfo::getConfigSetting($gateway, 'use_static_route')) {
+            return '';
+        }
+
+        $url = \Controller::join_links(
+            'paymentendpoint',
+            'gateway',
+            $gateway,
             $action
         );
 
@@ -53,6 +76,40 @@ class PaymentGatewayController extends \Controller
     {
         \Deprecation::notice('3.0', 'Snake-case methods will be deprecated with 3.0, use getEndpointUrl');
         return self::getEndpointUrl($action, $identifier);
+    }
+
+    /**
+     * The main action for handling all requests.
+     * It will redirect back to the application in all cases,
+     * but will not update the Payment/Transaction models if they are not found,
+     * or allowed to be updated.
+     * @return \SS_HTTPResponse
+     */
+    public function index()
+    {
+        $payment = $this->getPaymentFromRequest($this->request);
+
+        return $this->createPaymentResponse($payment);
+    }
+
+    /**
+     * Action used for handling static gateway requests (use this if your payment gateway doesn't handle
+     * dynamic callback URLs)
+     * @return \SS_HTTPResponse
+     */
+    public function gateway()
+    {
+        $response = null;
+        $gateway = $this->request->param('Gateway');
+
+        // Does the selected gateway allow static routes
+        if (!GatewayInfo::getConfigSetting($gateway, 'use_static_route')) {
+            return $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
+        }
+
+        $payment = $this->getPaymentFromRequest($this->request, $gateway);
+
+        return $this->createPaymentResponse($payment);
     }
 
     /**
@@ -139,40 +196,6 @@ class PaymentGatewayController extends \Controller
     }
 
     /**
-     * The main action for handling all requests.
-     * It will redirect back to the application in all cases,
-     * but will not update the Payment/Transaction models if they are not found,
-     * or allowed to be updated.
-     * @return \SS_HTTPResponse
-     */
-    public function index()
-    {
-        $payment = $this->getPaymentFromRequest($this->request);
-
-        return $this->createPaymentResponse($payment);
-    }
-
-    /**
-     * Action used for handling static gateway requests (use this if your payment gateway doesn't handle
-     * dynamic callback URLs)
-     * @return \SS_HTTPResponse
-     */
-    public function gateway()
-    {
-        $response = null;
-        $gateway = $this->request->param('Gateway');
-
-        // Does the selected gateway allow static routes
-        if (!GatewayInfo::getConfigSetting($gateway, 'use_static_route')) {
-            return $this->httpError(404, _t('Payment.InvalidUrl', 'Invalid payment url.'));
-        }
-
-        $payment = $this->getPaymentFromRequest($this->request, $gateway);
-
-        return $this->createPaymentResponse($payment);
-    }
-
-    /**
      * Get the action/service that should be performed on the payment.
      * Can be "complete", "notify" or "cancel".
      *
@@ -198,7 +221,7 @@ class PaymentGatewayController extends \Controller
      * @param string $gateway the gateway name
      * @return \Payment the payment
      */
-    private function getPaymentFromRequest(\SS_HTTPRequest $request, $gateway = null)
+    protected function getPaymentFromRequest(\SS_HTTPRequest $request, $gateway = null)
     {
         $identifier = $request->param('Identifier');
         $results = $this->extend('updatePaymentFromRequest', $request, $gateway);

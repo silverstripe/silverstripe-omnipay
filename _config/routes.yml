@@ -4,4 +4,5 @@ After: framework/routes#coreroutes
 ---
 SilverStripe\Control\Director:
   rules:
-    'paymentendpoint/$Identifier/$Status/$ReturnURL' : SilverStripe\Omnipay\PaymentGatewayController
+    'paymentendpoint' : '\SilverStripe\Omnipay\PaymentGatewayController'
+    'dev/payment' : '\SilverStripe\Omnipay\Admin\PaymentDevelopmentAdmin'

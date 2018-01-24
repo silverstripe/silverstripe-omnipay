@@ -2,7 +2,6 @@
 
 namespace SilverStripe\Omnipay\Tests\Extensions;
 
-
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Core\Extension;
 use SilverStripe\Dev\TestOnly;

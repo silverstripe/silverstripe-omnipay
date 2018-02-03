@@ -13,7 +13,6 @@ Then in your config file (typically `mysite/_config/config.yml`, or `mysite/_con
 Name: payment
 ---
 Payment:
-  file_logging: 1
   allowed_gateways:
     - 'Manual'
 ```

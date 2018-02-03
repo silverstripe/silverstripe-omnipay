@@ -2,28 +2,29 @@
 
 namespace SilverStripe\Omnipay\Service;
 
-use Omnipay\Common\Message\NotificationInterface;
-use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\Omnipay\Helper;
-use SilverStripe\Omnipay\PaymentGatewayController;
-use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
-use SilverStripe\Omnipay\Exception\InvalidStateException;
 use Guzzle\Http\ClientInterface;
 use Omnipay\Common\AbstractGateway;
-use Omnipay\Common\GatewayFactory;
 use Omnipay\Common\CreditCard;
-use Omnipay\Common\Message\AbstractResponse;
-use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Exception\OmnipayException;
-use Symfony\Component\HttpFoundation\Request;
+use Omnipay\Common\GatewayFactory;
+use Omnipay\Common\Message\AbstractRequest;
+use Omnipay\Common\Message\AbstractResponse;
+use Omnipay\Common\Message\NotificationInterface;
+use SilverStripe\Control\Controller;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Omnipay\Model\Payment;
-use SilverStripe\Control\Controller;
+use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
+use SilverStripe\Omnipay\Exception\InvalidStateException;
+use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Helper;
+use SilverStripe\Omnipay\Model\Message\GatewayErrorMessage;
 use SilverStripe\Omnipay\Model\Message\NotificationError;
 use SilverStripe\Omnipay\Model\Message\NotificationPending;
 use SilverStripe\Omnipay\Model\Message\NotificationSuccessful;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\PaymentGatewayController;
+use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Provides wrapper methods for interacting with the omnipay gateways library.
@@ -39,7 +40,7 @@ abstract class PaymentService
      *
      */
     private static $dependencies = [
-        'logger' => '%$Psr\Log\LoggerInterface',
+        'logger' => '%$SilverStripe\Omnipay\Logger',
     ];
 
     /**
@@ -402,27 +403,27 @@ abstract class PaymentService
         $output = array();
 
         if (is_string($data)) {
-            $output = array(
+            $output = [
                 'Message' => $data
-            );
+            ];
         } elseif (is_array($data)) {
             $output = $data;
         } elseif ($data instanceof OmnipayException) {
-            $output = array(
+            $output = [
                 'Message' => $data->getMessage(),
                 'Code' => $data->getCode(),
                 'Exception' => get_class($data),
                 'Backtrace' => $data->getTraceAsString()
-            );
+            ];
         } elseif ($data instanceof AbstractResponse) {
-            $output = array(
+            $output = [
                 'Message' => $data->getMessage(),
                 'Code' => $data->getCode(),
                 'Reference' => $data->getTransactionReference(),
                 'Data' => $data->getData()
-            );
+            ];
         } elseif ($data instanceof AbstractRequest) {
-            $output = array(
+            $output = [
                 'Token' => $data->getToken(),
                 'CardReference' => $data->getCardReference(),
                 'Amount' => $data->getAmount(),
@@ -435,23 +436,23 @@ abstract class PaymentService
                 'CancelUrl' => $data->getCancelUrl(),
                 'NotifyUrl' => $data->getNotifyUrl(),
                 'Parameters' => $data->getParameters()
-            );
+            ];
         } elseif ($data instanceof NotificationInterface) {
-            $output = array(
+            $output = [
                 'Message' => $data->getMessage(),
                 'Code' => $data->getTransactionStatus(),
                 'Reference' => $data->getTransactionReference(),
                 'Data' => $data->getData()
-            );
+            ];
         }
-        $output = array_merge($output, array(
+        $output = array_merge($output, [
             'PaymentID' => $this->payment->ID,
             'Gateway' => $this->payment->Gateway
-        ));
+        ]);
 
         $this->logToFile($output, $type);
 
-        $message = Injector::inst()->create($type, $output);
+        $message = Injector::inst()->create($type)->update($output);
         $message->write();
 
         $this->payment->Messages()->add($message);
@@ -462,20 +463,16 @@ abstract class PaymentService
     /**
      * Helper function for logging gateway requests
      */
-    protected function logToFile($data, $type = "")
+    protected function logToFile($data, $type = '')
     {
-        if ($logstyle = Payment::config()->file_logging) {
-            $title = $type . " (" . $this->payment->Gateway . ")";
-
-            if ($logstyle === "verbose") {
-                $this->logger->debug($title . "\n\n" . print_r($data, true));
-            } elseif ($logstyle) {
-                $this->logger->debug(implode(", ", array($title,
-                    isset($data['Message']) ? $data['Message'] : " ",
-                    isset($data['Code']) ? $data['Code'] : " ",
-                )));
-            }
-        }
+        $this->logger->log(
+            // Log as error if we get a GatewayErrorMessage
+            is_subclass_of($type, GatewayErrorMessage::class) ? 'error' : 'info',
+            // Log title
+            sprintf('%s (%s)', $type, $this->payment->Gateway),
+            // Log context (just output the data)
+            Helper::prepareForLogging($data)
+        );
     }
 
     /**

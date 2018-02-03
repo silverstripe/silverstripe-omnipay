@@ -182,15 +182,8 @@ return you data for fields originally defined in the form.
 
 ## Debugging payments
 
-A useful way to debug payment issues is to enable file logging:
+Please read the [logging documentation](docs/en/Logging.md) on how to set up logging.
 
-```yaml
----
-Name: payment
----
-SilverStripe\Omnipay\Model\Payment:
-  file_logging: true #or use 'verbose' for more detailed output
-```
 
 ## Renaming gateways and translation
 

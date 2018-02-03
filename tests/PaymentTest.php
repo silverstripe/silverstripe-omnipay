@@ -77,9 +77,6 @@ abstract class PaymentTest extends FunctionalTest
 
         PaymentTestPaymentExtensionHooks::ResetAll();
 
-        // don't log test payments to file
-        Config::modify()->set(Payment::class, 'file_logging', 0);
-
         $this->factory = ServiceFactory::create();
 
         Payment::config()->allowed_gateways = array(

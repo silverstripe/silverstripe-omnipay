@@ -3,9 +3,9 @@
 You can configure gateway settings in your `mysite/_config/payment.yml` file.
 Here you can define a list of allowed gateways, and separately set the gateway-specific settings.
 
-You configure the allowed gateways by setting the `allowed_gateway` config on `Payment`. You can also choose to enable file logging by setting `file_logging` to 1.
+You configure the allowed gateways by setting the `allowed_gateway` config on `Payment`.
 
-To configure the individual gateway parameters, use `GatewayInfo` and add a key for every Gateway you want to configure.
+To configure the individual gateway parameters, use `SilverStripe\Omnipay\GatewayInfo` and add a key for every Gateway you want to configure.
 
 Each Gateway can have the following settings:
 
@@ -28,13 +28,13 @@ Each Gateway can have the following settings:
 ---
 Name: payment
 ---
-Payment:
+SilverStripe\Omnipay\Model\Payment:
   allowed_gateways:
     - 'PayPal_Express'
     - 'PaymentExpress_PxPay'
     - 'Manual'
 
-GatewayInfo:
+SilverStripe\Omnipay\GatewayInfo:
   PayPal_Express:
     parameters:
       username: 'example.username.test'
@@ -49,12 +49,11 @@ GatewayInfo:
 Except:
   environment: 'live'
 ---
-Payment:
-  file_logging: 1
+SilverStripe\Omnipay\Model\Payment:
   allowed_gateways:
     - 'Dummy'
 
-GatewayInfo:
+SilverStripe\Omnipay\GatewayInfo:
   PayPal_Express:
     parameters:
       testMode: true
@@ -62,7 +61,7 @@ GatewayInfo:
 Only:
   environment: 'live'
 ---
-GatewayInfo:
+SilverStripe\Omnipay\GatewayInfo:
   PayPal_Express:
     parameters:
       username: 'liveexample.test'

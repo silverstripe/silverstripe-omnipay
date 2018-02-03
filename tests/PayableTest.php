@@ -28,8 +28,6 @@ class PayableTest extends SapphireTest
     {
         parent::setUp();
 
-        Config::modify()->set(Payment::class, 'file_logging', 0);
-
         $this->order = $this->objFromFixture(TestOrder::class, 'order1');
     }
 

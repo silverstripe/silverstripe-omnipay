@@ -87,13 +87,14 @@ abstract class PaymentTest extends FunctionalTest
         );
 
         // clear settings for PaymentExpress_PxPay (don't let user configs bleed into tests)
-        Config::inst()->remove(GatewayInfo::class, 'PaymentExpress_PxPay');
-        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', array(
-            'parameters' => array(
-                'username' => 'EXAMPLEUSER',
-                'password' => '235llgwxle4tol23l'
-            )
-        ));
+        Config::modify()
+            ->remove(GatewayInfo::class, 'PaymentExpress_PxPay')
+            ->set(GatewayInfo::class, 'PaymentExpress_PxPay', [
+                'parameters' => [
+                    'username' => 'EXAMPLEUSER',
+                    'password' => '235llgwxle4tol23l'
+                ]
+            ]);
 
         //set up a payment here to make tests shorter
         $this->payment = Payment::create()

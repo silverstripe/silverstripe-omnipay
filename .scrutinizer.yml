@@ -1,12 +1,5 @@
 inherit: true
 tools:
-  external_code_coverage:
-    timeout: 600
-  php_analyzer:
-    enabled: true
-    config:
-      phpunit_checks:
-        enabled: true
   php_mess_detector:
     config:
       unused_code_rules:

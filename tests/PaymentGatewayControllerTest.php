@@ -2,14 +2,16 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Model\Message\CompletePurchaseRequest;
 use SilverStripe\Omnipay\Model\Message\PurchasedResponse;
 use SilverStripe\Omnipay\Model\Message\PurchaseRedirectResponse;
 use SilverStripe\Omnipay\Model\Message\PurchaseRequest;
-use SilverStripe\Omnipay\PaymentGatewayController;
-use SilverStripe\Control\Director;
 use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\PaymentGatewayController;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentGatewayControllerTestExtension;
 
 class PaymentGatewayControllerTest extends PaymentTest
@@ -31,7 +33,7 @@ class PaymentGatewayControllerTest extends PaymentTest
         $url = PaymentGatewayController::getStaticEndpointUrl('Dummy', 'complete');
         $this->assertEquals('', $url);
 
-        Config::inst()->update('GatewayInfo', 'Dummy', array('use_static_route' => true));
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', ['use_static_route' => true]);
         $url = PaymentGatewayController::getStaticEndpointUrl('Dummy', 'complete');
         $this->assertEquals(Director::absoluteURL("paymentendpoint/gateway/Dummy/complete"), $url);
 
@@ -138,7 +140,7 @@ class PaymentGatewayControllerTest extends PaymentTest
         $this->assertEquals($response->getStatusCode(), 404);
 
         // Configure gateway to use static route
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array('use_static_route' => true));
+        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', array('use_static_route' => true));
 
         $this->setMockHttpResponse(
             'paymentexpress/tests/Mock/PxPayCompletePurchaseSuccess.txt'
@@ -149,7 +151,7 @@ class PaymentGatewayControllerTest extends PaymentTest
         $this->assertEquals($response->getStatusCode(), 404);
 
         // Add extension that will find the paymeng from the request params
-        PaymentGatewayController::add_extension('PaymentGatewayControllerTest_TestExtension');
+        PaymentGatewayController::add_extension(PaymentGatewayControllerTestExtension::class);
         $this->setMockHttpResponse(
             'paymentexpress/tests/Mock/PxPayCompletePurchaseSuccess.txt'
         );
@@ -158,9 +160,9 @@ class PaymentGatewayControllerTest extends PaymentTest
         // We should get a redirect to the complete url (shop/complete)
         $this->assertEquals($response->getStatusCode(), 302);
         $headers = $response->getHeaders();
-        $this->assertEquals(
-            Director::baseURL()."shop/complete",
-            $headers['Location'],
+        $this->assertStringEndsWith(
+            'shop/complete',
+            $headers['location'],
             "redirected to shop/complete"
         );
         PaymentGatewayController::remove_extension('PaymentGatewayControllerTest_TestExtension');
@@ -170,7 +172,7 @@ class PaymentGatewayControllerTest extends PaymentTest
     {
         PaymentGatewayController::add_extension(PaymentGatewayControllerTestExtension::class);
         // Configure gateway to use static route
-        Config::inst()->update('GatewayInfo', 'PaymentExpress_PxPay', array('use_static_route' => true));
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array('use_static_route' => true));
         $staticUrl = 'paymentendpoint/gateway/PaymentExpress_PxPay?id=62b26e0a8a77f60cce3e9a7994087b0e';
 
         $response = $this->get($staticUrl);
@@ -185,9 +187,9 @@ class PaymentGatewayControllerTest extends PaymentTest
         // We should get a redirect to the cancel url (shop/incomplete)
         $this->assertEquals($response->getStatusCode(), 302);
         $headers = $response->getHeaders();
-        $this->assertEquals(
-            Director::baseURL()."shop/incomplete",
-            $headers['Location'],
+        $this->assertStringEndsWith(
+            'shop/incomplete',
+            $headers['location'],
             "redirected to shop/incomplete"
         );
         PaymentGatewayController::remove_extension(PaymentGatewayControllerTestExtension::class);

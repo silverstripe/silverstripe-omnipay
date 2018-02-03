@@ -272,16 +272,17 @@ class PaymentModelTest extends PaymentTest
         Config::modify()->merge(GatewayInfo::class, 'Dummy', array('max_capture' => '17%'));
         $this->assertEquals('140.40', $payment->getMaxCaptureAmount());
 
-        Config::inst()->remove('GatewayInfo', 'Dummy');
-        Config::modify()->set(GatewayInfo::class, 'Dummy', array('max_capture' => array(
-            'amount' => array(
-                'USD' => 80,
-                'EUR' => 70,
-                'TRY' => 224,
-                'GBP' => -10 // invalid value, should result in no increase
-            ),
-            'percent' => '20%'
-        )));
+        Config::modify()
+            ->remove('GatewayInfo', 'Dummy')
+            ->set(GatewayInfo::class, 'Dummy', ['max_capture' => [
+                'amount' => [
+                    'USD' => 80,
+                    'EUR' => 70,
+                    'TRY' => 224,
+                    'GBP' => -10 // invalid value, should result in no increase
+                ],
+                'percent' => '20%'
+            ]]);
 
         $this->assertEquals('144.00', $payment->getMaxCaptureAmount());
         $payment->Status = 'Created';

@@ -3,12 +3,14 @@
 namespace SilverStripe\Omnipay\Extensions;
 
 use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\ORM\DataExtension;
 use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\ORM\DataExtension;
+use SilverStripe\ORM\HasManyList;
 
 /**
  * An extension for providing payments on a particular data object.
  *
+ * @method Payment[]|HasManyList Payments()
  */
 class Payable extends DataExtension
 {

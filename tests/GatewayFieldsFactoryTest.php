@@ -58,7 +58,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
         parent::setUp();
         // tests can potentially fail if we just update due to settings already defined persisting, so we'll remove
         // it first
-        Config::inst()->remove('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename');
+        Config::modify()->remove('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename');
 
         $this->factory =  new GatewayFieldsFactory(
             null,

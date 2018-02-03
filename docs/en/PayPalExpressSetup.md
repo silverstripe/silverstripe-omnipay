@@ -25,7 +25,6 @@ Configure your yaml file:
 Name: payment
 ---
 Payment:
-  file_logging: 1
   allowed_gateways:
     - 'PayPal_Express'
 GatewayInfo:

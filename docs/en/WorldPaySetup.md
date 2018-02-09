@@ -6,7 +6,7 @@ create an account with [Worldpay](http://www.worldpay.com/).
 next you will need to install the Omnipay WorldPay libraries
 (ideally via composer):
 
-    # composer require "omnipay/worldpay:~2.0"
+    # composer require "omnipay/worldpay:^2.0"
 
 ## Setup WorldPay on your install
 
@@ -17,11 +17,11 @@ to `mysite/_config/payment.yml`
 ---
 Name: payment
 ---
-Payment:
+SilverStripe\Omnipay\Model\Payment:
   allowed_gateways:
     - 'WorldPay'
 
-GatewayInfo:
+SilverStripe\Omnipay\GatewayInfo:
   WorldPay:
     parameters:
       installationId: '1010618'
@@ -30,7 +30,7 @@ GatewayInfo:
 Except:
   environment: 'live'
 ---
-GatewayInfo:
+SilverStripe\Omnipay\GatewayInfo:
   WorldPay:
     parameters:
       testMode: true
@@ -38,7 +38,7 @@ GatewayInfo:
 Only:
   environment: 'live'
 ---
-GatewayInfo:
+SilverStripe\Omnipay\GatewayInfo:
   WorldPay:
     parameters:
       callbackPassword: 'abc'

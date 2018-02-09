@@ -1,28 +1,36 @@
 da:
-  CreditCard:
-    AMEX: 'American Express'
-    DANKORT: Dankort
-    DINERS_CLUB: 'Diners Club'
-    DISCOVER: Discover
-    FORBRUGSFORENINGEN: Forbrugsforeningen
-    JCB: JCB
-    LASER: Laser
-    MAESTRO: Maestro
-    MASTERCARD: Mastercard
-    SOLO: Solo
-    SWITCH: Switch
-    VISA: Visa
-  Gateway:
-    Manual: Faktura
-  GatewayMessage:
-    PLURALNAME: 'Gateway beskeder'
-    SINGULARNAME: 'Gateway besked'
-    db_Code: Kode
+  SilverStripe\Omnipay\Model\Payment:
+    PLURALNAME: Betalinger
+    SINGULARNAME: Betaling
+    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+    InvalidUrl: 'Ugyldig betalings url.'
+    InvalidStatus: 'Ugyldig/ikke håndteret betalingsstatus'
+    NotFound: 'Betalingen kunne ikke findes.'
+    Date: 'Dato'
+    Amount: 'Beløb'
+    STATUS_PENDINGAUTHORIZATION: 'Afventer godkendelse'
+    STATUS_AUTHORIZED: Autoriseret
+    STATUS_PENDINGCAPTURE: 'Afventer hævning'
+    STATUS_PENDINGPURCHASE: 'Afventer køb'
+    STATUS_CAPTURED: Hævet
+    STATUS_CREATED: Oprettet
+    STATUS_PENDINGREFUND: 'Afventer refundering'
+    STATUS_REFUNDED: Refunderet
+    STATUS_PENDINGVOID: 'Afventer annullering'
+    STATUS_VOID: Annulleret
     db_Gateway: Gateway
-    db_Reference: Reference
-  PaymentAdmin:
-    MENUTITLE: Betalinger
-  PaymentForm:
+    db_Identifier: Identifikation
+    db_Money: Penge
+    db_Status: Status
+    has_many_Messages: Beskeder
+    PAYMENT_PERMISSIONS: 'Betalingshandlinger'
+    PERMISSION_REFUND_PAYMENTS: 'Refunderbetalinger'
+    PERMISSION_REFUND_PAYMENTS_HELP: 'Tillad refundering af hævede betalinger'
+    PERMISSION_CAPTURE_PAYMENTS: 'Hæv betalinger'
+    PERMISSION_CAPTURE_PAYMENTS_HELP: 'Tillad hævning af autoriseredebetalinger'
+    PERMISSION_VOID_PAYMENTS: 'Annullerede betalinger'
+    PERMISSION_VOID_PAYMENTS_HELP: 'Tillad annullering af autoriseredebetalinger'
+  SilverStripe\Omnipay\PaymentForm:
     BillingAddress1: Adresse
     BillingAddress2: 'Adresselinie 2'
     BillingCity: By
@@ -30,15 +38,15 @@ da:
     BillingPhone: Telefon
     BillingPostcode: Postnummer
     BillingState: Region
-    CVV: Sikkerhedskode
     Company: Virksomhed
+    CVV: 'Sikkerhedskode'
     Email: Email
     Expiry: Udløb
     ExpiryMonth: Måned
-    ExpiryYear: 'År'
-    IssueNumber: Versionsnummer
+    ExpiryYear: År
+    IssueNumber: 'Versionsnummer'
     Name: 'Navn på kort'
-    Number: Kortnummer
+    Number: 'Kortnummer'
     NumberDescription: 'Ingen bindestreger eller mellemrum'
     ShippingAddress1: 'Forsendelse adresse'
     ShippingAddress2: 'Forsendelse adresse 2'
@@ -49,43 +57,33 @@ da:
     ShippingState: 'Forsendelse region'
     Start: Start
     StartMonth: Måned
-    StartYear: 'År'
+    StartYear: År
     Type: Type
-  SilverStripe\Omnipay\Model\Messaging\PaymentMessage:
-    PLURALNAME: Betalingsbeskeder
-    SINGULARNAME: Betalingsbesked
+  SilverStripe\Omnipay\Model\Message\PaymentMessage:
+    PLURALNAME: 'Betalingsbeskeder'
+    SINGULARNAME: 'Betalingsbesked'
     db_ClientIp: 'Kunde IP'
     db_Message: Besked
     has_one_Payment: Betaling
     has_one_User: Bruger
-  SilverStripe\Omnipay\Model\Payment:
-    Amount: Beløb
-    Date: Dato
-    InvalidStatus: 'Ugyldig/ikke håndteret betalingsstatus'
-    InvalidUrl: 'Ugyldig betalings url.'
-    NotFound: 'Betalingen kunne ikke findes.'
-    PAYMENT_PERMISSIONS: Betalingshandlinger
-    PERMISSION_CAPTURE_PAYMENTS: 'Hæv betalinger'
-    PERMISSION_CAPTURE_PAYMENTS_HELP: 'Tillad hævning af autoriseredebetalinger'
-    PERMISSION_REFUND_PAYMENTS: Refunderbetalinger
-    PERMISSION_REFUND_PAYMENTS_HELP: 'Tillad refundering af hævede betalinger'
-    PERMISSION_VOID_PAYMENTS: 'Annullerede betalinger'
-    PERMISSION_VOID_PAYMENTS_HELP: 'Tillad annullering af autoriseredebetalinger'
-    PLURALNAME: Betalinger
-    SINGULARNAME: Betaling
-    STATUS_AUTHORIZED: Autoriseret
-    STATUS_CAPTURED: Hævet
-    STATUS_CREATED: Oprettet
-    STATUS_PENDINGAUTHORIZATION: 'Afventer godkendelse'
-    STATUS_PENDINGCAPTURE: 'Afventer hævning'
-    STATUS_PENDINGPURCHASE: 'Afventer køb'
-    STATUS_PENDINGREFUND: 'Afventer refundering'
-    STATUS_PENDINGVOID: 'Afventer annullering'
-    STATUS_REFUNDED: Refunderet
-    STATUS_VOID: Annulleret
-    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+  SilverStripe\Omnipay\Model\Message\GatewayMessage:
+    PLURALNAME: 'Gateway beskeder'
+    SINGULARNAME: 'Gateway besked'
+    db_Code: Kode
     db_Gateway: Gateway
-    db_Identifier: Identifikation
-    db_Money: Penge
-    db_Status: Status
-    has_many_Messages: Beskeder
+    db_Reference: Reference
+  CreditCard:
+    VISA: Visa
+    MASTERCARD: Mastercard
+    DISCOVER: Discover
+    AMEX: 'American Express'
+    DINERS_CLUB: 'Diners Club'
+    JCB: JCB
+    SWITCH: Switch
+    SOLO: Solo
+    DANKORT: Dankort
+    MAESTRO: Maestro
+    FORBRUGSFORENINGEN: Forbrugsforeningen
+    LASER: Laser
+  Gateway:
+    Manual: Faktura

@@ -14,7 +14,7 @@ omnipay, see: https://github.com/thephpleague/omnipay
 
 ## Version
 
-3.x (in Development, `master` branch)
+3.0 for SilverStripe 4
 
 For contributions to 2.x (SS 3.x compatible), please use the `2` branch.
 
@@ -48,7 +48,7 @@ It is not too difficult to write your own gateway integration either, if needed.
 [Composer](http://doc.silverstripe.org/framework/en/installation/composer) is currently the only supported way to set up this module:
 
 ```
-composer require silverstripe/silverstripe-omnipay
+composer require silverstripe/silverstripe-omnipay ^3@dev
 ```
 
 As of version 2.0 this module only requires `omnipay/common` so you will also need to pull in your payment adapter of
@@ -201,11 +201,6 @@ en:
 
 This approach can also be used to provide different translations. For further information about module translations,
 please read [docs/en/Translating.md](docs/en/Translating.md)
-
-## Caveats and Troubleshooting
-
-Logs will be saved to `debug.log` in the root of your SilverStripe directory. It's highly recommended that you enable
-general error-logging on production environments.
 
 
 ## Further Documentation

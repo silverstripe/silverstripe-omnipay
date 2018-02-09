@@ -1,0 +1,34 @@
+fr:
+  SilverStripe\Omnipay\Model\Payment:
+    PLURALNAME: Paiement
+    SINGULARNAME: Paiement
+    TitleTemplate: '{Gateway} {Money} %d.%m.%Y'
+    InvalidUrl: 'Page de paiement non valable.'
+    NotFound: 'Paiement pas trouvé'
+    Date: 'Date'
+    Amount: 'Somme'
+    STATUS_AUTHORIZED: Autorisé
+    STATUS_CAPTURED: Finalisé
+    STATUS_CREATED: Crée
+    STATUS_REFUNDED: Remboursé
+    STATUS_VOID: Non valable
+    db_Gateway: Mode de paiement
+    db_Identifier: Identification
+    db_Money: Somme
+    db_Status: Statut
+    has_many_Messages: Messages
+  CreditCard:
+    VISA: Visa
+    MASTERCARD: Mastercard
+    DISCOVER: Discover
+    AMEX: 'American Express'
+    DINERS_CLUB: 'Diners Club'
+    JCB: JCB
+    SWITCH: Switch
+    SOLO: Solo
+    DANKORT: Dankort
+    MAESTRO: Maestro
+    FORBRUGSFORENINGEN: Forbrugsforeningen
+    LASER: Laser
+  Gateway:
+    Manual: Facture

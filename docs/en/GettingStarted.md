@@ -7,9 +7,9 @@ and integrate it into your application.
 custom Controllers and Extensions in order to make use of this module.
 If you need more information then please visit the following:
 
-* https://docs.silverstripe.org/en/3/developer_guides/forms/
-* https://docs.silverstripe.org/en/3/developer_guides/controllers/
-* https://docs.silverstripe.org/en/3/developer_guides/extending/extensions/
+* https://docs.silverstripe.org/en/4/developer_guides/forms/
+* https://docs.silverstripe.org/en/4/developer_guides/controllers/
+* https://docs.silverstripe.org/en/4/developer_guides/extending/extensions/
 
 The basic process you will need to follow will involve the following
 steps:
@@ -22,7 +22,7 @@ steps:
 
 **NOTE** You can also use this module to make more direct payments (for example if you have saved the users card details and want to perform micro transactions). For more info on direct payments, skip to the end.
 
- ## Get user to select their prefered gateway
+## Get user to select their prefered gateway
 
 If your application supports payment via multiple payment gateways
 (for example PayPal and WorldPay), you may wish for the user to select
@@ -80,11 +80,11 @@ A more complete example would be:
 ```php
 use SilverStripe\Omnipay\GatewayFieldsFactory;
 
-class Payment_Controller extends Controller
+class PaymentController extends Controller
 {
     public function Form()
     {
-        $factory = new GatewayFieldsFactory($gateway);
+        $factory = GatewayFieldsFactory::create($gateway);
 
         return Form::create(
             $this,
@@ -109,11 +109,11 @@ Required fields can be configured in the YAML config file, as this information i
 ---
 Name: payment
 ---
-Payment:
+SilverStripe\Omnipay\Model\Payment:
   allowed_gateways:
     - 'PaymentExpress_PxPost'
 
-GatewayInfo:
+SilverStripe\Omnipay\GatewayInfo:
   PaymentExpress_PxPost:
     parameters:
       username: 'EXAMPLEUSER'
@@ -140,6 +140,7 @@ An example (following on from the form above would be)
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\GatewayFieldsFactory;
 use SilverStripe\Omnipay\Service\ServiceFactory;
+use SilverStripe\Omnipay\Model\Payment;
 
 class Payment_Controller extends Controller
 {
@@ -236,6 +237,7 @@ for example:
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\GatewayFieldsFactory;
 use SilverStripe\Omnipay\Service\ServiceFactory;
+use SilverStripe\Omnipay\Model\Payment;
 
 class Payment_Controller extends Controller
 {

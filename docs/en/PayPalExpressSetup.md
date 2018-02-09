@@ -24,10 +24,10 @@ Configure your yaml file:
 ---
 Name: payment
 ---
-Payment:
+SilverStripe\Omnipay\Model\Payment:
   allowed_gateways:
     - 'PayPal_Express'
-GatewayInfo:
+SilverStripe\Omnipay\GatewayInfo:
   PayPal_Express:
     parameters:
       username: 'name-facilitator_api1.yourdomain.com'

@@ -1,0 +1,76 @@
+hr:
+  SilverStripe\Omnipay\Model\Payment:
+    PLURALNAME: Plaćanja
+    SINGULARNAME: Plaćanje
+    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+    InvalidUrl: 'Neispravan link plaćanja.'
+    InvalidStatus: 'Neispravan/nepostojeći status plaćanja'
+    NotFound: 'Plaćanje nije pronađeno.'
+    Date: 'Datum'
+    Amount: 'Iznos'
+    STATUS_PENDINGAUTHORIZATION: 'Odobrenje u tijeku'
+    STATUS_AUTHORIZED: Odobreno
+    STATUS_PENDINGCAPTURE: 'Čeka uplatu'
+    STATUS_PENDINGPURCHASE: 'Čeka kupovinu'
+    STATUS_CAPTURED: Uplaćeno
+    STATUS_CREATED: Kreirano
+    STATUS_PENDINGREFUND: 'Čeka povrat'
+    STATUS_REFUNDED: Vraćeno
+    STATUS_PENDINGVOID: 'Čeka poništenje'
+    STATUS_VOID: Poništeno
+    db_Gateway: Pristupnik
+    db_Money: Novac
+    db_Status: Status
+    has_many_Messages: Poruke
+  SilverStripe\Omnipay\PaymentForm:
+    BillingAddress1: Adresa
+    BillingAddress2: 'Adresa linija 2'
+    BillingCity: Grad
+    BillingCountry: Država
+    BillingPhone: Telefon
+    BillingPostcode: Poštanski broj
+    BillingState: Država
+    Company: Tvrtka
+    CVV: 'Sigurnosni kod'
+    Email: Email
+    Expiry: Istek
+    ExpiryMonth: Mjesec
+    ExpiryYear: Godina
+    IssueNumber: 'Broj izdavanja'
+    Name: 'Ime na kartici'
+    Number: 'Broj kartice'
+    NumberDescription: 'bez crtica ili razmaka'
+    ShippingAddress1: 'Adresa dostave'
+    ShippingAddress2: 'Adresa dostave 2'
+    ShippingCity: 'Grad dostave'
+    ShippingCountry: 'Država dostave'
+    ShippingPhone: 'Telefon dostave'
+    ShippingPostcode: 'Poštanski broj dostave'
+    Start: Početak
+    StartMonth: Mjesec
+    StartYear: Godina
+    Type: Tip
+    StartMonthDefaultText: 'Molimo odaberite...'
+    StartYearDefaultText: 'Molimo odaberite...'
+    ExpiryMonthDefaultText: 'Molimo odaberite...'
+    ExpiryYearDefaultText: 'Molimo odaberite...'
+  SilverStripe\Omnipay\Model\Message\PaymentMessage:
+    PLURALNAME: 'Poruke plaćanja'
+    SINGULARNAME: 'Poruka plaćanja'
+    db_ClientIp: 'Korisnikova IP adresa'
+    db_Message: Poruka
+    has_one_Payment: Plaćanja
+    has_one_User: Korisnik
+  SilverStripe\Omnipay\Model\Message\GatewayMessage:
+    db_Code: Kod
+    db_Gateway: Pristupnik
+    db_Reference: Referenca
+  CreditCard:
+    VISA: Visa
+    MASTERCARD: Mastercard
+    DISCOVER: Discover
+    AMEX: 'American Express'
+    DINERS_CLUB: 'Diners Club'
+    JCB: JCB
+  Gateway:
+    Manual: Račun

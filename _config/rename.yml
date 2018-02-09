@@ -5,12 +5,12 @@ Name: omnipay-rename
 # and then will fall back to any of the global renames defined below (if set). The example below shows how you would rename
 # the default fields for the Stripe payment gateway, and how to rename field names globally
 
-SilverStripe\Omnipay\GatewayFieldsFactory:
-  rename:
-    prefix: '' # e.g "card_"
-    #name: 'myName'
-    #type: 'myType'
-    #number: 'myNumber'
-    Stripe:
-      name: 'name' # e.g change to newName
-      #number: 'myStripeNumber'
+#SilverStripe\Omnipay\GatewayFieldsFactory:
+#  rename:
+#    prefix: '' # e.g "card_"
+#    name: 'myName'
+#    type: 'myType'
+#    number: 'myNumber'
+#    Stripe:
+#      name: 'name' # e.g change to newName
+#      number: 'myStripeNumber'

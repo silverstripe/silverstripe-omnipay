@@ -6,8 +6,10 @@ use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\PaymentMath;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\FieldType\DBEnum;
 use SilverStripe\ORM\FieldType\DBMoney;
 use SilverStripe\ORM\Filters\PartialMatchFilter;
+use SilverStripe\ORM\HasManyList;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\PermissionProvider;
 use SilverStripe\Core\Injector\Injector;
@@ -26,7 +28,16 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
  * This class is used for storing a payment amount, and it's status of being
  * paid or not, and the gateway used to make payment.
  *
- * @package payment
+ * @property string $Gateway
+ * @property DBMoney $Money
+ * @property DBEnum $Status
+ * @property string $Identifier
+ * @property string $TransactionReference
+ * @property string $SuccessUrl
+ * @property string $FailureUrl
+ * @property int $InitialPaymentID
+ * @method Payment InitialPayment()
+ * @method PaymentMessage[]|HasManyList Messages()
  */
 final class Payment extends DataObject implements PermissionProvider
 {
@@ -72,17 +83,18 @@ final class Payment extends DataObject implements PermissionProvider
     private static $default_sort = '"Created" DESC, "ID" DESC';
 
     /**
+     * The allowed payment gateways
      * @config
      *
-     * @var array $allowed_gateways
+     * @var array
      */
     private static $allowed_gateways = [];
 
     public function getCMSFields()
     {
         $fields = new FieldList(
-            TextField::create('MoneyValue', _t('SilverStripe\\Omnipay\\Model\\Payment.db_Money', 'Money'), $this->dbObject('Money')->Nice()),
-            TextField::create('GatewayTitle', _t('SilverStripe\\Omnipay\\Model\\Payment.db_Gateway', 'Gateway'))
+            TextField::create('MoneyValue', $this->fieldLabel('Money'), $this->Money->Nice()),
+            TextField::create('GatewayTitle', $this->fieldLabel('Gateway'), 'Gateway')
         );
 
         $fields = $fields->makeReadonly();
@@ -90,7 +102,7 @@ final class Payment extends DataObject implements PermissionProvider
         $fields->push(
             GridField::create(
                 'Messages',
-                _t('SilverStripe\\Omnipay\\Model\\Payment.has_many_Messages', 'Messages'),
+                $this->fieldLabel('Messages'),
                 $this->Messages(),
                 GridFieldConfig_RecordViewer::create()
             )
@@ -112,21 +124,18 @@ final class Payment extends DataObject implements PermissionProvider
         $fields->removeByName('Gateway');
         $fields->removeByName('Created');
 
-        $fields->insertAfter(DropdownField::create(
+        $fields->insertAfter('Money', DropdownField::create(
             'Gateway',
-            _t('SilverStripe\\Omnipay\\Model\\Payment.db_Gateway', 'Gateway'),
+            $this->fieldLabel('Gateway'),
             GatewayInfo::getSupportedGateways()
-        )->setHasEmptyDefault(true), 'Money');
+        )->setHasEmptyDefault(true));
 
         // create a localized status dropdown for the search-context
-        $fields->insertAfter(DropdownField::create(
+        $fields->insertAfter('Gateway', DropdownField::create(
             'Status',
-            _t('SilverStripe\\Omnipay\\Model\\Payment.db_Status', 'Status'),
+            $this->fieldLabel('Status'),
             $this->getStatusValues()
-        )->setHasEmptyDefault(true), 'Gateway');
-
-        // update "money" to localized title
-        $fields->fieldByName('Money')->setTitle(_t('SilverStripe\\Omnipay\\Model\\Payment.db_Money', 'Money'));
+        )->setHasEmptyDefault(true));
 
         $context->addFilter(new PartialMatchFilter('Gateway'));
 
@@ -189,12 +198,12 @@ final class Payment extends DataObject implements PermissionProvider
     public function getTitle()
     {
         return strftime(_t(
-            'SilverStripe\\Omnipay\\Model\\Payment.TitleTemplate',
+            'SilverStripe\Omnipay\Model\Payment.TitleTemplate',
             '{Gateway} {Money} %d/%m/%Y',
             'A template for the payment title',
             str_replace('%', '%%', array(
                 'Gateway' => $this->getGatewayTitle(),
-                'Money' => $this->dbObject('Money')->Nice()
+                'Money' => $this->Money->Nice()
             ))
         ), strtotime($this->Created));
     }
@@ -223,7 +232,7 @@ final class Payment extends DataObject implements PermissionProvider
      */
     public function getPaymentStatus()
     {
-        return _t('SilverStripe\\Omnipay\\Model\\Payment.STATUS_' . strtoupper($this->Status), $this->Status);
+        return _t('SilverStripe\Omnipay\Model\Payment.STATUS_' . strtoupper($this->Status), $this->Status);
     }
 
     /**
@@ -474,30 +483,30 @@ final class Payment extends DataObject implements PermissionProvider
     {
         return array(
             'REFUND_PAYMENTS' => array(
-                'name' => _t('SilverStripe\\Omnipay\\Model\\Payment.PERMISSION_REFUND_PAYMENTS', 'Refund payments'),
+                'name' => _t('SilverStripe\Omnipay\Model\Payment.PERMISSION_REFUND_PAYMENTS', 'Refund payments'),
                 'help' => _t(
-                    'SilverStripe\\Omnipay\\Model\\Payment.PERMISSION_REFUND_PAYMENTS_HELP',
+                    'SilverStripe\Omnipay\Model\Payment.PERMISSION_REFUND_PAYMENTS_HELP',
                     'Allow refunding of captured payments'
                 ),
-                'category' => _t('SilverStripe\\Omnipay\\Model\\Payment.PAYMENT_PERMISSIONS', 'Payment actions'),
+                'category' => _t('SilverStripe\Omnipay\Model\Payment.PAYMENT_PERMISSIONS', 'Payment actions'),
                 'sort' => 200
             ),
             'CAPTURE_PAYMENTS' => array(
-                'name' => _t('SilverStripe\\Omnipay\\Model\\Payment.PERMISSION_CAPTURE_PAYMENTS', 'Capture payments'),
+                'name' => _t('SilverStripe\Omnipay\Model\Payment.PERMISSION_CAPTURE_PAYMENTS', 'Capture payments'),
                 'help' => _t(
-                    'SilverStripe\\Omnipay\\Model\\Payment.PERMISSION_CAPTURE_PAYMENTS_HELP',
+                    'SilverStripe\Omnipay\Model\Payment.PERMISSION_CAPTURE_PAYMENTS_HELP',
                     'Allow capturing of authorized payments'
                 ),
-                'category' => _t('SilverStripe\\Omnipay\\Model\\Payment.PAYMENT_PERMISSIONS', 'Payment actions'),
+                'category' => _t('SilverStripe\Omnipay\Model\Payment.PAYMENT_PERMISSIONS', 'Payment actions'),
                 'sort' => 200
             ),
             'VOID_PAYMENTS' => array(
-                'name' => _t('SilverStripe\\Omnipay\\Model\\Payment.PERMISSION_VOID_PAYMENTS', 'Void payments'),
+                'name' => _t('SilverStripe\Omnipay\Model\Payment.PERMISSION_VOID_PAYMENTS', 'Void payments'),
                 'help' => _t(
-                    'SilverStripe\\Omnipay\\Model\\Payment.PERMISSION_VOID_PAYMENTS_HELP',
+                    'SilverStripe\Omnipay\Model\Payment.PERMISSION_VOID_PAYMENTS_HELP',
                     'Allow voiding of authorized payments'
                 ),
-                'category' => _t('SilverStripe\\Omnipay\\Model\\Payment.PAYMENT_PERMISSIONS', 'Payment actions'),
+                'category' => _t('SilverStripe\Omnipay\Model\Payment.PAYMENT_PERMISSIONS', 'Payment actions'),
                 'sort' => 200
             )
         );
@@ -543,9 +552,9 @@ final class Payment extends DataObject implements PermissionProvider
         $entities = parent::provideI18nEntities();
 
         // collect all the payment status values
-        foreach ($this->dbObject('Status')->enumValues() as $value) {
+        foreach ($this->Status->enumValues() as $value) {
             $key = strtoupper($value);
-            $entities["Payment.STATUS_$key"] = array(
+            $entities['SilverStripe\Omnipay\Model\Payment.STATUS_' . $key] = array(
                 $value,
                 "Translation of the payment status '$value'"
             );
@@ -562,8 +571,8 @@ final class Payment extends DataObject implements PermissionProvider
     protected function getStatusValues()
     {
         $values = array();
-        foreach ($this->dbObject('Status')->enumValues() as $value) {
-            $values[$value] = _t('SilverStripe\\Omnipay\\Model\\Payment.STATUS_' . strtoupper($value), $value);
+        foreach ($this->Status->enumValues() as $value) {
+            $values[$value] = _t('SilverStripe\Omnipay\Model\Payment.STATUS_' . strtoupper($value), $value);
         }
         return $values;
     }

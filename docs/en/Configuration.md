@@ -3,7 +3,7 @@
 You can configure gateway settings in your `mysite/_config/payment.yml` file.
 Here you can define a list of allowed gateways, and separately set the gateway-specific settings.
 
-You configure the allowed gateways by setting the `allowed_gateway` config on `Payment`.
+You configure the allowed gateways by setting the `allowed_gateway` config on `SilverStripe\Omnipay\Model\Payment`.
 
 To configure the individual gateway parameters, use `SilverStripe\Omnipay\GatewayInfo` and add a key for every Gateway you want to configure.
 
@@ -73,30 +73,33 @@ SilverStripe\Omnipay\GatewayInfo:
       password: 'n23nl2ltwlwjle'
 ```
 
-The [SilverStripe documentation](https://docs.silverstripe.org/en/3.3/developer_guides/configuration/configuration/) explains more about YAML config files.
+The [SilverStripe documentation](https://docs.silverstripe.org/en/4/developer_guides/configuration/configuration/) explains more about YAML config files.
 
 ### The `max_capture` config setting
 
-Some payment providers allow capturing more funds than the ones that were initially authorized. [PayPal](https://developer.paypal.com/docs/classic/paypal-payments-standard/integration-guide/authcapture/) for example allows capturing up to 115% of the authorized amount, capped at USD $75. Eg. if the authorized amount is USD $100, the merchant is allowed to capture $115 at max. If the authorized amount is USD $1000, the max. amount is $1075.
+Some payment providers allow capturing more funds than the ones that were initially authorized. 
+[PayPal](https://developer.paypal.com/docs/classic/paypal-payments-standard/integration-guide/authcapture/) for example 
+allows capturing up to 115% of the authorized amount, capped at USD $75. Eg. if the authorized amount is USD $100, 
+the merchant is allowed to capture $115 at max. If the authorized amount is USD $1000, the max. amount is $1075.
 
 The `max_capture` setting can be used to configure these scenarios. Here are some examples:
 
 ```yaml
-GatewayInfo:
+SilverStripe\Omnipay\GatewayInfo:
   PayPal_Express:
     # configure only a fixed amount. The max. increase for captures is always 80
     max_capture: 80
 ```
 
 ```yaml
-GatewayInfo:
+SilverStripe\Omnipay\GatewayInfo:
   PayPal_Express:
     # configure only a fixed percentage. The max. increase for captures is always 10%
     max_capture: '10%'
 ```
 
 ```yaml
-GatewayInfo:
+SilverStripe\Omnipay\GatewayInfo:
   PayPal_Express:
     # configure both percentage and a fixed max. amount
     max_capture:
@@ -104,10 +107,11 @@ GatewayInfo:
       amount: 75
 ```
 
-The example above models the PayPal example with 115%, capped at USD $75. The amount is unitless and uses the currency of the current payment. If you need to specify different amounts per currency, it can be done as follows:
+The example above models the PayPal example with 115%, capped at USD $75. The amount is unitless and uses the currency of the current payment. 
+If you need to specify different amounts per currency, it can be done as follows:
 
 ```yaml
-GatewayInfo:
+SilverStripe\Omnipay\GatewayInfo:
   PayPal_Express:
     # configure both percentage and a fixed max. amount per currency
     max_capture:

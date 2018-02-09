@@ -1,4 +1,13 @@
 mappings:
+  PaymentForm: SilverStripe\Omnipay\PaymentForm
+
+  Payable: SilverStripe\Omnipay\Extensions\Payable
+  Payment: SilverStripe\Omnipay\Model\Payment
+  PaymentMessage: SilverStripe\Omnipay\Model\Message\PaymentMessage
+  GatewayRequestMessage: SilverStripe\Omnipay\Model\Message\GatewayRequestMessage
+  SagePayExtension: SilverStripe\Omnipay\Extensions\SagePayExtension
+  WorldPayResponseExtension: SilverStripe\Omnipay\Extensions\WorldPayResponseExtension
+
   AuthorizeServiceTest: SilverStripe\Omnipay\Tests
   BaseNotificationServiceTest: SilverStripe\Omnipay\Tests\BaseNotificationServiceTest
   BasePurchaseServiceTest: SilverStripe\Omnipay\TestsBasePurchaseServiceTest
@@ -6,11 +15,9 @@ mappings:
   CreateCardServiceTest: SilverStripe\Omnipay\Tests\CreateCardServiceTest
   GatewayFieldsFactoryTest: SilverStripe\Omnipay\Tests\GatewayFieldsFactoryTest
   GatewayInfoTest: SilverStripe\Omnipay\Tests\GatewayInfoTest
-  GatewayRequestMessage: SilverStripe\Omnipay\Model\Messaging\GatewayRequestMessage
   PayableTest: SilverStripe\Omnipay\Tests\PayableTest
   PaymentGatewayControllerTest: SilverStripe\Omnipay\Tests\PaymentGatewayControllerTest
   PaymentMathTest: SilverStripe\Omnipay\Tests\PaymentMathTest
-  PaymentMessage: SilverStripe\Omnipay\Model\Messaging\PaymentMessage
   PaymentModelTest: SilverStripe\Omnipay\Tests\PaymentModelTest
   PaymentServiceTest: SilverStripe\Omnipay\Tests\PaymentServiceTest
   PaymentTest: SilverStripe\Omnipay\Tests\PaymentTest
@@ -18,10 +25,7 @@ mappings:
   PaymentTest_ServiceExtensionHooks: SilverStripe\Omnipay\Tests\PaymentTestServiceExtensionHooks
   PurchaseServiceTest: SilverStripe\Omnipay\Tests\PurchaseServiceTest
   RefundServiceTest: SilverStripe\Omnipay\Tests\RefundServiceTest
-  SagePayExtension: SilverStripe\Omnipay\Extensions\SagePayExtension
   ServiceFactoryTest: SilverStripe\Omnipay\Tests\ServiceFactoryTest
   ServiceResponseTest: SilverStripe\Omnipay\Tests\ServiceResponseTest
   VoidServiceTest: SilverStripe\Omnipay\Tests\VoidResponseTest
-  Payable: SilverStripe\Omnipay\Extensions\Payable
-  Payment: SilverStripe\Omnipay\Model\Payment
-  WorldPayResponseExtension: SilverStripe\Omnipay\Extensions\WorldPayResponseExtension
+

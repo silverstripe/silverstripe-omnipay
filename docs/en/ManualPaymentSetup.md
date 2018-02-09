@@ -12,7 +12,7 @@ Then in your config file (typically `mysite/_config/config.yml`, or `mysite/_con
 ---
 Name: payment
 ---
-Payment:
+SilverStripe\Omnipay\Model\Payment:
   allowed_gateways:
     - 'Manual'
 ```

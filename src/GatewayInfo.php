@@ -76,6 +76,7 @@ class GatewayInfo
      * @param bool $nice make the array values i18n readable.
      *
      * @return array map of gateway short name to translated long name.
+     * @throws InvalidConfigurationException
      */
     public static function getSupportedGateways($nice = true)
     {
@@ -126,6 +127,7 @@ class GatewayInfo
      * Find out if the given gateway is supported.
      * @param  string $gateway gateway name to check
      * @return boolean
+     * @throws InvalidConfigurationException
      */
     public static function isSupported($gateway)
     {

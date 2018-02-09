@@ -1,28 +1,36 @@
 de:
-  CreditCard:
-    AMEX: 'American Express'
-    DANKORT: Dankort
-    DINERS_CLUB: 'Diners Club'
-    DISCOVER: Discover
-    FORBRUGSFORENINGEN: Forbrugsforeningen
-    JCB: JCB
-    LASER: Laser
-    MAESTRO: Maestro
-    MASTERCARD: Mastercard
-    SOLO: Solo
-    SWITCH: Switch
-    VISA: Visa
-  Gateway:
-    Manual: Rechnung
-  GatewayMessage:
-    PLURALNAME: Zahlungsnachrichten
-    SINGULARNAME: Zahlungsnachricht
-    db_Code: Code
-    db_Gateway: Zahlungsmethode
-    db_Reference: Referenz
-  PaymentAdmin:
-    MENUTITLE: Zahlungen
-  PaymentForm:
+  SilverStripe\Omnipay\Model\Payment:
+    PLURALNAME: Zahlungen
+    SINGULARNAME: Zahlung
+    TitleTemplate: '{Gateway} {Money} %d.%m.%Y'
+    InvalidUrl: 'Ungültige Bezahl-URL'
+    InvalidStatus: 'Ungültiger Zahlungs-Status'
+    NotFound: 'Zahlung konnte nicht gefunden werden.'
+    Date: 'Datum'
+    Amount: 'Betrag'
+    STATUS_PENDINGAUTHORIZATION: 'Autorisierung bevorstehend'
+    STATUS_AUTHORIZED: Autorisiert
+    STATUS_PENDINGCAPTURE: 'Zahlungseingang bevorstehend'
+    STATUS_PENDINGPURCHASE: 'Zahlungseingang bevorstehend'
+    STATUS_CAPTURED: Zahlung eingegangen
+    STATUS_CREATED: Erstellt
+    STATUS_PENDINGREFUND: 'Rückvergütung bevorstehend'
+    STATUS_REFUNDED: Rückvergütet
+    STATUS_PENDINGVOID: 'Ungültigkeit bevorstehend'
+    STATUS_VOID: Ungültig
+    db_Gateway: Bezahlmethode
+    db_Identifier: Identifikation
+    db_Money: Betrag
+    db_Status: Status
+    has_many_Messages: Nachrichten
+    PAYMENT_PERMISSIONS: 'Zahlungs-Aktionen'
+    PERMISSION_REFUND_PAYMENTS: 'Zahlungen rückvergüten'
+    PERMISSION_REFUND_PAYMENTS_HELP: 'Kann Zahlungen rückvergüten'
+    PERMISSION_CAPTURE_PAYMENTS: 'Zahlungen abbuchen'
+    PERMISSION_CAPTURE_PAYMENTS_HELP: 'Kann autorisierte Zahlungen abbuchen'
+    PERMISSION_VOID_PAYMENTS: 'Zahlungen stornieren'
+    PERMISSION_VOID_PAYMENTS_HELP: 'Kann autorisierte Zahlungen stornieren'
+  SilverStripe\Omnipay\PaymentForm:
     BillingAddress1: Adresse
     BillingAddress2: 'Adresslinie 2'
     BillingCity: Stadt
@@ -30,17 +38,15 @@ de:
     BillingPhone: Telefon
     BillingPostcode: Postleitzahl
     BillingState: Staat
-    CVV: Sicherheitscode
     Company: Firma
+    CVV: 'Sicherheitscode'
     Email: E-Mail
     Expiry: Verfalldatum
     ExpiryMonth: Monat
-    ExpiryMonthDefaultText: 'Bitte wählen…'
     ExpiryYear: Jahr
-    ExpiryYearDefaultText: 'Bitte wählen…'
-    IssueNumber: Ausgabenummer
-    Name: Karteninhaber
-    Number: Kreditkartennummer
+    IssueNumber: 'Ausgabenummer'
+    Name: 'Karteninhaber'
+    Number: 'Kreditkartennummer'
     NumberDescription: 'ohne Trennstriche oder Leerzeichen'
     ShippingAddress1: 'Lieferung: Adresse'
     ShippingAddress2: 'Lieferung: Adresszeile 2'
@@ -51,45 +57,37 @@ de:
     ShippingState: 'Lieferung: Staat'
     Start: Start
     StartMonth: Monat
-    StartMonthDefaultText: 'Bitte wählen…'
     StartYear: Jahr
-    StartYearDefaultText: 'Bitte wählen…'
     Type: Typ
-  SilverStripe\Omnipay\Model\Messaging\PaymentMessage:
-    PLURALNAME: Zahlungsnachrichten
-    SINGULARNAME: Zahlungsnachricht
+    StartMonthDefaultText: 'Bitte wählen…'
+    StartYearDefaultText: 'Bitte wählen…'
+    ExpiryMonthDefaultText: 'Bitte wählen…'
+    ExpiryYearDefaultText: 'Bitte wählen…'
+  SilverStripe\Omnipay\Model\Message\PaymentMessage:
+    PLURALNAME: 'Zahlungsnachrichten'
+    SINGULARNAME: 'Zahlungsnachricht'
     db_ClientIp: 'Benutzer IP-Adresse'
     db_Message: Nachricht
     has_one_Payment: Zahlung
     has_one_User: Benutzer
-  SilverStripe\Omnipay\Model\Payment:
-    Amount: Betrag
-    Date: Datum
-    InvalidStatus: 'Ungültiger Zahlungs-Status'
-    InvalidUrl: 'Ungültige Bezahl-URL'
-    NotFound: 'Zahlung konnte nicht gefunden werden.'
-    PAYMENT_PERMISSIONS: Zahlungs-Aktionen
-    PERMISSION_CAPTURE_PAYMENTS: 'Zahlungen abbuchen'
-    PERMISSION_CAPTURE_PAYMENTS_HELP: 'Kann autorisierte Zahlungen abbuchen'
-    PERMISSION_REFUND_PAYMENTS: 'Zahlungen rückvergüten'
-    PERMISSION_REFUND_PAYMENTS_HELP: 'Kann Zahlungen rückvergüten'
-    PERMISSION_VOID_PAYMENTS: 'Zahlungen stornieren'
-    PERMISSION_VOID_PAYMENTS_HELP: 'Kann autorisierte Zahlungen stornieren'
-    PLURALNAME: Zahlungen
-    SINGULARNAME: Zahlung
-    STATUS_AUTHORIZED: Autorisiert
-    STATUS_CAPTURED: 'Zahlung eingegangen'
-    STATUS_CREATED: Erstellt
-    STATUS_PENDINGAUTHORIZATION: 'Autorisierung bevorstehend'
-    STATUS_PENDINGCAPTURE: 'Zahlungseingang bevorstehend'
-    STATUS_PENDINGPURCHASE: 'Zahlungseingang bevorstehend'
-    STATUS_PENDINGREFUND: 'Rückvergütung bevorstehend'
-    STATUS_PENDINGVOID: 'Ungültigkeit bevorstehend'
-    STATUS_REFUNDED: Rückvergütet
-    STATUS_VOID: Ungültig
-    TitleTemplate: '{Gateway} {Money} %d.%m.%Y'
-    db_Gateway: Bezahlmethode
-    db_Identifier: Identifikation
-    db_Money: Betrag
-    db_Status: Status
-    has_many_Messages: Nachrichten
+  SilverStripe\Omnipay\Model\Message\GatewayMessage:
+    PLURALNAME: 'Zahlungsnachrichten'
+    SINGULARNAME: 'Zahlungsnachricht'
+    db_Code: Code
+    db_Gateway: Zahlungsmethode
+    db_Reference: Referenz
+  CreditCard:
+    VISA: Visa
+    MASTERCARD: Mastercard
+    DISCOVER: Discover
+    AMEX: 'American Express'
+    DINERS_CLUB: 'Diners Club'
+    JCB: JCB
+    SWITCH: Switch
+    SOLO: Solo
+    DANKORT: Dankort
+    MAESTRO: Maestro
+    FORBRUGSFORENINGEN: Forbrugsforeningen
+    LASER: Laser
+  Gateway:
+    Manual: Rechnung

@@ -1,43 +1,49 @@
 it:
-  CreditCard:
-    AMEX: 'American Express'
-    DANKORT: Dankort
-    DINERS_CLUB: 'Diners Club'
-    DISCOVER: Discover
-    FORBRUGSFORENINGEN: Forbrugsforeningen
-    JCB: JCB
-    LASER: Laser
-    MAESTRO: Maestro
-    MASTERCARD: Mastercard
-    SOLO: Solo
-    SWITCH: Switch
-    VISA: Visa
-  Gateway:
-    Manual: 'Bonifico bancario'
-  GatewayMessage:
-    PLURALNAME: 'Messaggi del Gateway'
-    SINGULARNAME: 'Messaggio del Gateway'
-    db_Code: Codice
+  SilverStripe\Omnipay\Model\Payment:
+    PLURALNAME: Pagamenti
+    SINGULARNAME: Pagamento
+    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+    InvalidUrl: 'Url di pagamento non valida.'
+    InvalidStatus: 'Status di pagamento non valido/non gestito'
+    NotFound: 'Pagamento non trovato.'
+    Date: 'Data'
+    Amount: 'Ammontare'
+    STATUS_PENDINGAUTHORIZATION: 'In attesa di autorizzazione'
+    STATUS_AUTHORIZED: Autorizzato
+    STATUS_PENDINGCAPTURE: 'In attesa di cattura'
+    STATUS_PENDINGPURCHASE: 'In attesa di acquisto'
+    STATUS_CAPTURED: Catturato
+    STATUS_CREATED: Creato
+    STATUS_PENDINGREFUND: 'In attesa di rimborso'
+    STATUS_REFUNDED: Rimborsato
+    STATUS_PENDINGVOID: 'In attesa di annullamento'
+    STATUS_VOID: Annullato
     db_Gateway: Gateway
-    db_Reference: Riferimento
-  PaymentAdmin:
-    MENUTITLE: Pagamenti
-  PaymentForm:
+    db_Identifier: Identificatore
+    db_Money: Denaro
+    db_Status: Status
+    has_many_Messages: Messaggi
+    PAYMENT_PERMISSIONS: 'Azioni di pagamento'
+    PERMISSION_REFUND_PAYMENTS: 'Rimborsa pagamenti'
+    PERMISSION_REFUND_PAYMENTS_HELP: 'Permette il rimborso dei pagamenti catturati'
+    PERMISSION_CAPTURE_PAYMENTS: 'Cattura pagamenti'
+    PERMISSION_CAPTURE_PAYMENTS_HELP: 'Permette la cattura dei pagamenti autorizzati'
+    PERMISSION_VOID_PAYMENTS: 'Annulla pagamenti'
+    PERMISSION_VOID_PAYMENTS_HELP: 'Permette l''annullamento dei pagamenti autorizzati'
+  SilverStripe\Omnipay\PaymentForm:
     BillingAddress1: Indirizzo
     BillingAddress2: 'Indirizzo linea 2'
-    BillingCity: 'Città'
+    BillingCity: Città
     BillingCountry: Nazione
     BillingPhone: Telefono
-    BillingPostcode: 'Codice postale'
+    BillingPostcode: Codice postale
     BillingState: Stato
-    CVV: 'Codice di sicurezza'
     Company: Azienda
+    CVV: 'Codice di sicurezza'
     Email: E-mail
     Expiry: Scadenza
     ExpiryMonth: Mese
-    ExpiryMonthDefaultText: 'Prego selezionare ...'
     ExpiryYear: Anno
-    ExpiryYearDefaultText: 'Prego selezionare ...'
     IssueNumber: 'Numero di serie britannico'
     Name: 'Nome sulla carta'
     Number: 'Numero di carta'
@@ -51,45 +57,37 @@ it:
     ShippingState: 'Stato di spedizione'
     Start: Inizio
     StartMonth: Mese
-    StartMonthDefaultText: 'Prego selezionare ...'
     StartYear: Anno
-    StartYearDefaultText: 'Prego selezionare ...'
     Type: Tipo
-  SilverStripe\Omnipay\Model\Messaging\PaymentMessage:
+    StartMonthDefaultText: 'Prego selezionare ...'
+    StartYearDefaultText: 'Prego selezionare ...'
+    ExpiryMonthDefaultText: 'Prego selezionare ...'
+    ExpiryYearDefaultText: 'Prego selezionare ...'
+  SilverStripe\Omnipay\Model\Message\PaymentMessage:
     PLURALNAME: 'Messaggi di pagamento'
     SINGULARNAME: 'Messaggio di pagamento'
     db_ClientIp: 'IP Client'
     db_Message: Messaggio
     has_one_Payment: Pagamento
     has_one_User: Utente
-  SilverStripe\Omnipay\Model\Payment:
-    Amount: Ammontare
-    Date: Data
-    InvalidStatus: 'Status di pagamento non valido/non gestito'
-    InvalidUrl: 'Url di pagamento non valida.'
-    NotFound: 'Pagamento non trovato.'
-    PAYMENT_PERMISSIONS: 'Azioni di pagamento'
-    PERMISSION_CAPTURE_PAYMENTS: 'Cattura pagamenti'
-    PERMISSION_CAPTURE_PAYMENTS_HELP: 'Permette la cattura dei pagamenti autorizzati'
-    PERMISSION_REFUND_PAYMENTS: 'Rimborsa pagamenti'
-    PERMISSION_REFUND_PAYMENTS_HELP: 'Permette il rimborso dei pagamenti catturati'
-    PERMISSION_VOID_PAYMENTS: 'Annulla pagamenti'
-    PERMISSION_VOID_PAYMENTS_HELP: 'Permette l''annullamento dei pagamenti autorizzati'
-    PLURALNAME: Pagamenti
-    SINGULARNAME: Pagamento
-    STATUS_AUTHORIZED: Autorizzato
-    STATUS_CAPTURED: Catturato
-    STATUS_CREATED: Creato
-    STATUS_PENDINGAUTHORIZATION: 'In attesa di autorizzazione'
-    STATUS_PENDINGCAPTURE: 'In attesa di cattura'
-    STATUS_PENDINGPURCHASE: 'In attesa di acquisto'
-    STATUS_PENDINGREFUND: 'In attesa di rimborso'
-    STATUS_PENDINGVOID: 'In attesa di annullamento'
-    STATUS_REFUNDED: Rimborsato
-    STATUS_VOID: Annullato
-    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+  SilverStripe\Omnipay\Model\Message\GatewayMessage:
+    PLURALNAME: 'Messaggi del Gateway'
+    SINGULARNAME: 'Messaggio del Gateway'
+    db_Code: Codice
     db_Gateway: Gateway
-    db_Identifier: Identificatore
-    db_Money: Denaro
-    db_Status: Status
-    has_many_Messages: Messaggi
+    db_Reference: Riferimento
+  CreditCard:
+    VISA: Visa
+    MASTERCARD: Mastercard
+    DISCOVER: Discover
+    AMEX: 'American Express'
+    DINERS_CLUB: 'Diners Club'
+    JCB: JCB
+    SWITCH: Switch
+    SOLO: Solo
+    DANKORT: Dankort
+    MAESTRO: Maestro
+    FORBRUGSFORENINGEN: Forbrugsforeningen
+    LASER: Laser
+  Gateway:
+    Manual: Bonifico bancario

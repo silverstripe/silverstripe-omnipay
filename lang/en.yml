@@ -1,28 +1,36 @@
 en:
-  CreditCard:
-    AMEX: 'American Express'
-    DANKORT: Dankort
-    DINERS_CLUB: 'Diners Club'
-    DISCOVER: Discover
-    FORBRUGSFORENINGEN: Forbrugsforeningen
-    JCB: JCB
-    LASER: Laser
-    MAESTRO: Maestro
-    MASTERCARD: Mastercard
-    SOLO: Solo
-    SWITCH: Switch
-    VISA: Visa
-  Gateway:
-    Manual: Invoice
-  GatewayMessage:
-    PLURALNAME: 'Gateway Messages'
-    SINGULARNAME: 'Gateway Message'
-    db_Code: Code
+  SilverStripe\Omnipay\Model\Payment:
+    PLURALNAME: Payments
+    SINGULARNAME: Payment
+    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+    InvalidUrl: 'Invalid payment url.'
+    InvalidStatus: 'Invalid/unhandled payment status'
+    NotFound: 'Payment could not be found.'
+    Date: 'Date'
+    Amount: 'Amount'
+    STATUS_PENDINGAUTHORIZATION: 'Pending authorization'
+    STATUS_AUTHORIZED: Authorized
+    STATUS_PENDINGCAPTURE: 'Pending capture'
+    STATUS_PENDINGPURCHASE: 'Pending purchase'
+    STATUS_CAPTURED: Captured
+    STATUS_CREATED: Created
+    STATUS_PENDINGREFUND: 'Pending refund'
+    STATUS_REFUNDED: Refunded
+    STATUS_PENDINGVOID: 'Pending void'
+    STATUS_VOID: Void
     db_Gateway: Gateway
-    db_Reference: Reference
-  PaymentAdmin:
-    MENUTITLE: Payments
-  PaymentForm:
+    db_Identifier: Identifier
+    db_Money: Money
+    db_Status: Status
+    has_many_Messages: Messages
+    PAYMENT_PERMISSIONS: 'Payment actions'
+    PERMISSION_REFUND_PAYMENTS: 'Refund payments'
+    PERMISSION_REFUND_PAYMENTS_HELP: 'Allow refunding of captured payments'
+    PERMISSION_CAPTURE_PAYMENTS: 'Capture payments'
+    PERMISSION_CAPTURE_PAYMENTS_HELP: 'Allow capturing of authorized payments'
+    PERMISSION_VOID_PAYMENTS: 'Void payments'
+    PERMISSION_VOID_PAYMENTS_HELP: 'Allow voiding of authorized payments'
+  SilverStripe\Omnipay\PaymentForm:
     BillingAddress1: Address
     BillingAddress2: 'Address line 2'
     BillingCity: City
@@ -30,14 +38,12 @@ en:
     BillingPhone: Phone
     BillingPostcode: Postcode
     BillingState: State
-    CVV: 'Security Code'
     Company: Company
+    CVV: 'Security Code'
     Email: Email
     Expiry: Expiry
     ExpiryMonth: Month
-    ExpiryMonthDefaultText: 'Please Select ...'
     ExpiryYear: Year
-    ExpiryYearDefaultText: 'Please Select ...'
     IssueNumber: 'Issue Number'
     Name: 'Name on Card'
     Number: 'Card Number'
@@ -51,45 +57,39 @@ en:
     ShippingState: 'Shipping State'
     Start: Start
     StartMonth: Month
-    StartMonthDefaultText: 'Please Select ...'
     StartYear: Year
-    StartYearDefaultText: 'Please Select ...'
     Type: Type
-  SilverStripe\Omnipay\Model\Messaging\PaymentMessage:
+    StartMonthDefaultText: 'Please Select ...'
+    StartYearDefaultText: 'Please Select ...'
+    ExpiryMonthDefaultText: 'Please Select ...'
+    ExpiryYearDefaultText: 'Please Select ...'
+  # Payment message classes
+  SilverStripe\Omnipay\Model\Message\PaymentMessage:
     PLURALNAME: 'Payment Messages'
     SINGULARNAME: 'Payment Message'
     db_ClientIp: 'Client Ip'
     db_Message: Message
     has_one_Payment: Payment
     has_one_User: User
-  SilverStripe\Omnipay\Model\Payment:
-    Amount: Amount
-    Date: Date
-    InvalidStatus: 'Invalid/unhandled payment status'
-    InvalidUrl: 'Invalid payment url.'
-    NotFound: 'Payment could not be found.'
-    PAYMENT_PERMISSIONS: 'Payment actions'
-    PERMISSION_CAPTURE_PAYMENTS: 'Capture payments'
-    PERMISSION_CAPTURE_PAYMENTS_HELP: 'Allow capturing of authorized payments'
-    PERMISSION_REFUND_PAYMENTS: 'Refund payments'
-    PERMISSION_REFUND_PAYMENTS_HELP: 'Allow refunding of captured payments'
-    PERMISSION_VOID_PAYMENTS: 'Void payments'
-    PERMISSION_VOID_PAYMENTS_HELP: 'Allow voiding of authorized payments'
-    PLURALNAME: Payments
-    SINGULARNAME: Payment
-    STATUS_AUTHORIZED: Authorized
-    STATUS_CAPTURED: Captured
-    STATUS_CREATED: Created
-    STATUS_PENDINGAUTHORIZATION: 'Pending authorization'
-    STATUS_PENDINGCAPTURE: 'Pending capture'
-    STATUS_PENDINGPURCHASE: 'Pending purchase'
-    STATUS_PENDINGREFUND: 'Pending refund'
-    STATUS_PENDINGVOID: 'Pending void'
-    STATUS_REFUNDED: Refunded
-    STATUS_VOID: Void
-    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+  SilverStripe\Omnipay\Model\Message\GatewayMessage:
+    PLURALNAME: 'Gateway Messages'
+    SINGULARNAME: 'Gateway Message'
+    db_Code: Code
     db_Gateway: Gateway
-    db_Identifier: Identifier
-    db_Money: Money
-    db_Status: Status
-    has_many_Messages: Messages
+    db_Reference: Reference
+  # Credit card brands, supplied from Omnipay\Common\CreditCard::getSupportedBrands
+  CreditCard:
+    VISA: Visa
+    MASTERCARD: Mastercard
+    DISCOVER: Discover
+    AMEX: 'American Express'
+    DINERS_CLUB: 'Diners Club'
+    JCB: JCB
+    SWITCH: Switch
+    SOLO: Solo
+    DANKORT: Dankort
+    MAESTRO: Maestro
+    FORBRUGSFORENINGEN: Forbrugsforeningen
+    LASER: Laser
+  Gateway:
+    Manual: Invoice

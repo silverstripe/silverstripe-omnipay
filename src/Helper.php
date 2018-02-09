@@ -124,6 +124,7 @@ class Helper
         }
 
         restore_error_handler();
+        return null;
     }
 
     /**

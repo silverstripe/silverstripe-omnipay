@@ -1,0 +1,83 @@
+nn:
+  SilverStripe\Omnipay\Model\Payment:
+    PLURALNAME: Betalingar
+    SINGULARNAME: Betaling
+    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+    InvalidUrl: 'Ugyldig betaling URL.'
+    InvalidStatus: 'Invalid/ubehandla betalingsstatus'
+    NotFound: 'Betaling kan ikkje bli funne.'
+    Date: 'Dato'
+    Amount: 'Beløp'
+    STATUS_PENDINGAUTHORIZATION: 'Pendlar autorisasjon'
+    STATUS_AUTHORIZED: Autorisert
+    STATUS_PENDINGCAPTURE: 'Pendlar gjennomføring'
+    STATUS_PENDINGPURCHASE: 'Pendlar betaling'
+    STATUS_CAPTURED: Betalt
+    STATUS_CREATED: Laga
+    STATUS_PENDINGREFUND: 'Pendlar tilbakebetaling'
+    STATUS_REFUNDED: Tilbakebetalt
+    STATUS_PENDINGVOID: 'Pendlar ugyldig'
+    STATUS_VOID: Ugyldig
+    db_Gateway: Gateway
+    db_Identifier: Indikator
+    db_Money: Pengar
+    db_Status: Status
+    has_many_Messages: Beskjed
+    PERMISSION_VOID_PAYMENTS: 'Ugyldig betaling'
+  SilverStripe\Omnipay\PaymentForm:
+    BillingAddress1: Adresse
+    BillingAddress2: 'Adresse linje 2'
+    BillingCity: By
+    BillingCountry: Land
+    BillingPhone: Telefonnummer
+    BillingPostcode: Postkode
+    BillingState: Fylke
+    Company: Bedrift
+    CVV: 'Sikkerheitskode'
+    Email: E-post
+    Expiry: 'Utløpsdato '
+    ExpiryMonth: Månad
+    ExpiryYear: År
+    IssueNumber: 'Utstedelsestal'
+    Name: 'Namn på kort'
+    Number: 'Korttal'
+    NumberDescription: 'inga bindestrek eller mellomrom'
+    ShippingAddress1: 'Leveringsadresse'
+    ShippingAddress2: 'Leveringsadresse linje 2'
+    ShippingCity: 'By'
+    ShippingCountry: 'Land'
+    ShippingPhone: 'Telefon'
+    ShippingPostcode: 'Postkode'
+    ShippingState: 'Fylke'
+    Start: Start
+    StartMonth: Månad
+    StartYear: År
+    Type: Type
+  SilverStripe\Omnipay\Model\Message\PaymentMessage:
+    PLURALNAME: 'Betaling-meldingar'
+    SINGULARNAME: 'Betaling-melding'
+    db_ClientIp: 'Brukar ID'
+    db_Message: Melding
+    has_one_Payment: 'Betaling '
+    has_one_User: Brukar
+  SilverStripe\Omnipay\Model\Message\GatewayMessage:
+    PLURALNAME: 'Gateway-meldingar'
+    SINGULARNAME: 'Gateway-melding'
+    db_Code: Kode
+    db_Gateway: Gateway
+    db_Reference: Referanse
+  CreditCard:
+    VISA: Visa
+    MASTERCARD: Mastercard
+    DISCOVER: Discover
+    AMEX: 'American Express'
+    DINERS_CLUB: 'Diners Club'
+    JCB: JCB
+    SWITCH: Switch
+    SOLO: Solo
+    DANKORT: Dankort
+    MAESTRO: Maestro
+    FORBRUGSFORENINGEN: Forbrugsforeningen
+    LASER: Laser
+  Gateway:
+    Manual: Faktura

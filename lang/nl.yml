@@ -1,0 +1,93 @@
+nl:
+  SilverStripe\Omnipay\Model\Payment:
+    PLURALNAME: Betalingen
+    SINGULARNAME: Betaling
+    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+    InvalidUrl: 'Ongeldige betalings url.'
+    InvalidStatus: 'Ongeldige / onverwerkte betaalstatus'
+    NotFound: 'De betaling kon niet worden gevonden.'
+    Date: 'Datum'
+    Amount: 'Bedrag'
+    STATUS_PENDINGAUTHORIZATION: 'In afwachting van autorisatie'
+    STATUS_AUTHORIZED: Geautoriseerd
+    STATUS_PENDINGCAPTURE: 'In afwachting van bevestiging'
+    STATUS_PENDINGPURCHASE: 'In afwachting van de aankoop'
+    STATUS_CAPTURED: Prijsmaken
+    STATUS_CREATED: Aangemaakt
+    STATUS_PENDINGREFUND: 'In afwachting van de terugbetaling'
+    STATUS_REFUNDED: Terugbetaald
+    STATUS_PENDINGVOID: 'In afwachting van verklaring'
+    STATUS_VOID: Verklaring
+    db_Gateway: Betaalmethode
+    db_Identifier: Identifier
+    db_Money: Geld
+    db_Status: Satus
+    has_many_Messages: Berichten
+    PAYMENT_PERMISSIONS: 'Betaal acties'
+    PERMISSION_REFUND_PAYMENTS: 'Terugbetalingen'
+    PERMISSION_REFUND_PAYMENTS_HELP: 'Mag terugbetalingen doen'
+    PERMISSION_CAPTURE_PAYMENTS: 'Betalingen afvangen'
+    PERMISSION_CAPTURE_PAYMENTS_HELP: 'Mag geautoriseerde betalingen afvangen'
+    PERMISSION_VOID_PAYMENTS: 'Betalingen ongeldig maken'
+    PERMISSION_VOID_PAYMENTS_HELP: 'Mag geautoriseerde betalingen ongeldig maken'
+  SilverStripe\Omnipay\PaymentForm:
+    BillingAddress1: Adres
+    BillingAddress2: 'Adres regel 2'
+    BillingCity: Stad
+    BillingCountry: Land
+    BillingPhone: Telefoon
+    BillingPostcode: Postcode
+    BillingState: Staat
+    Company: Bedrijf
+    CVV: 'Veiligheidscode'
+    Email: E-mail
+    Expiry: Verstrijken
+    ExpiryMonth: Maand
+    ExpiryYear: Jaar
+    IssueNumber: 'Uitgave nummer'
+    Name: 'Naam op kaart'
+    Number: 'Kaartnummer'
+    NumberDescription: 'Geen streepjes of spaties'
+    ShippingAddress1: 'Verzendingsadres'
+    ShippingAddress2: 'Verzendingsadres 2'
+    ShippingCity: 'Verzendingsstad'
+    ShippingCountry: 'Verzendingsland'
+    ShippingPhone: 'Verzendingstelefoon'
+    ShippingPostcode: 'Verzendingspostcode'
+    ShippingState: 'Verzendingsstaat'
+    Start: Start
+    StartMonth: Maand
+    StartYear: Jaar
+    Type: Type
+    StartMonthDefaultText: 'Maak een keuze...'
+    StartYearDefaultText: 'Maak een keuze...'
+    ExpiryMonthDefaultText: 'Maak uw keuze...'
+    ExpiryYearDefaultText: 'Maak een keuze...'
+  SilverStripe\Omnipay\Model\Message\PaymentMessage:
+    PLURALNAME: 'Betalingsberichten'
+    SINGULARNAME: 'Betalingsbericht'
+    db_ClientIp: 'Klanten Ip'
+    db_Message: Bericht
+    has_one_Payment: Betaling
+    has_one_User: Gebruiker
+  SilverStripe\Omnipay\Model\Message\GatewayMessage:
+    PLURALNAME: 'Betaalmethode berichten'
+    SINGULARNAME: 'Betaalmethode bericht'
+    db_Code: Code
+    db_Gateway: Betaalmethode
+    db_Reference: Referentie
+  CreditCard:
+    VISA: Visa
+    MASTERCARD: Mastercard
+    DISCOVER: Ontdek
+    AMEX: 'American Express'
+    DINERS_CLUB: 'Diners Club'
+    JCB: JCB
+    SWITCH: Switch
+    SOLO: Solo
+    DANKORT: Dankort
+    MAESTRO: Maestro
+    FORBRUGSFORENINGEN: Forbrugsforeningen
+    LASER: Laser
+  Gateway:
+    Manual: Factuur

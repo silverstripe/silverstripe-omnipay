@@ -4,6 +4,7 @@ namespace SilverStripe\Omnipay;
 
 use Omnipay\Common\CreditCard;
 use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\DropdownField;
@@ -17,6 +18,7 @@ use SilverStripe\Forms\EmailField;
 class GatewayFieldsFactory
 {
     use Configurable;
+    use Injectable;
 
     protected $fieldgroups = [
         'Card',
@@ -154,46 +156,46 @@ class GatewayFieldsFactory
         $fields = array(
             'type' => DropdownField::create(
                 $this->getFieldName('type'),
-                _t('PaymentForm.Type', 'Type'),
+                _t('SilverStripe\Omnipay\PaymentForm.Type', 'Type'),
                 $this->getCardTypes()
             ),
             'name' => TextField::create(
                 $this->getFieldName('name'),
-                _t('PaymentForm.Name', 'Name on Card')
+                _t('SilverStripe\Omnipay\PaymentForm.Name', 'Name on Card')
             ),
             'number' => TextField::create(
                 $this->getFieldName('number'),
-                _t('PaymentForm.Number', 'Card Number')
-            )->setDescription(_t('PaymentForm.NumberDescription', 'no dashes or spaces')),
+                _t('SilverStripe\Omnipay\PaymentForm.Number', 'Card Number')
+            )->setDescription(_t('SilverStripe\Omnipay\PaymentForm.NumberDescription', 'no dashes or spaces')),
             'startMonth' => DropdownField::create(
                 $this->getFieldName('startMonth'),
-                _t('PaymentForm.StartMonth', 'Month'),
+                _t('SilverStripe\Omnipay\PaymentForm.StartMonth', 'Month'),
                 $months
-            )->setHasEmptyDefault(true)->setEmptyString(_t('PaymentForm.StartMonthDefaultText', 'Please Select ...')),
+            )->setHasEmptyDefault(true)->setEmptyString(_t('SilverStripe\Omnipay\PaymentForm.StartMonthDefaultText', 'Please Select ...')),
             'startYear' => DropdownField::create(
                 $this->getFieldName('startYear'),
-                _t('PaymentForm.StartYear', 'Year'),
+                _t('SilverStripe\Omnipay\PaymentForm.StartYear', 'Year'),
                 array_combine($startrange, $startrange),
                 $year
-            )->setHasEmptyDefault(true)->setEmptyString(_t('PaymentForm.StartYearDefaultText', 'Please Select ...')),
+            )->setHasEmptyDefault(true)->setEmptyString(_t('SilverStripe\Omnipay\PaymentForm.StartYearDefaultText', 'Please Select ...')),
             'expiryMonth' => DropdownField::create(
                 $this->getFieldName('expiryMonth'),
-                _t('PaymentForm.ExpiryMonth', 'Month'),
+                _t('SilverStripe\Omnipay\PaymentForm.ExpiryMonth', 'Month'),
                 $months
-            )->setHasEmptyDefault(true)->setEmptyString(_t('PaymentForm.ExpiryMonthDefaultText', 'Please Select ...')),
+            )->setHasEmptyDefault(true)->setEmptyString(_t('SilverStripe\Omnipay\PaymentForm.ExpiryMonthDefaultText', 'Please Select ...')),
             'expiryYear' => DropdownField::create(
                 $this->getFieldName('expiryYear'),
-                _t('PaymentForm.ExpiryYear', 'Year'),
+                _t('SilverStripe\Omnipay\PaymentForm.ExpiryYear', 'Year'),
                 array_combine($expiryrange, $expiryrange),
                 $year
-            )->setHasEmptyDefault(true)->setEmptyString(_t('PaymentForm.ExpiryYearDefaultText', 'Please Select ...')),
+            )->setHasEmptyDefault(true)->setEmptyString(_t('SilverStripe\Omnipay\PaymentForm.ExpiryYearDefaultText', 'Please Select ...')),
             'cvv' => TextField::create(
                 $this->getFieldName('cvv'),
-                _t('PaymentForm.CVV', 'Security Code')
+                _t('SilverStripe\Omnipay\PaymentForm.CVV', 'Security Code')
             )->setMaxLength(5),
             'issueNumber' => TextField::create(
                 $this->getFieldName('issueNumber'),
-                _t('PaymentForm.IssueNumber', 'Issue Number')
+                _t('SilverStripe\Omnipay\PaymentForm.IssueNumber', 'Issue Number')
             )
         );
 
@@ -202,7 +204,7 @@ class GatewayFieldsFactory
         if ($this->groupdatefields) {
             if (isset($fields[ 'startMonth' ]) && isset($fields[ 'startYear' ])) {
                 $fields[ 'startMonth' ] = FieldGroup::create(
-                    _t('PaymentForm.Start', 'Start'),
+                    _t('SilverStripe\Omnipay\PaymentForm.Start', 'Start'),
                     $fields[ 'startMonth' ],
                     $fields[ 'startYear' ]
                 )->addExtraClass('card_startyear');
@@ -210,7 +212,7 @@ class GatewayFieldsFactory
             }
             if (isset($fields[ 'expiryMonth' ]) && isset($fields[ 'expiryYear' ])) {
                 $fields[ 'expiryMonth' ] = FieldGroup::create(
-                    _t('PaymentForm.Expiry', 'Expiry'),
+                    _t('SilverStripe\Omnipay\PaymentForm.Expiry', 'Expiry'),
                     $fields[ 'expiryMonth' ],
                     $fields[ 'expiryYear' ]
                 )->addExtraClass('card_expiry');
@@ -248,31 +250,31 @@ class GatewayFieldsFactory
         $fields = array(
             'billingAddress1' => TextField::create(
                 $this->getFieldName('billingAddress1'),
-                _t('PaymentForm.BillingAddress1', 'Address')
+                _t('SilverStripe\Omnipay\PaymentForm.BillingAddress1', 'Address')
             ),
             'billingAddress2' => TextField::create(
                 $this->getFieldName('billingAddress2'),
-                _t('PaymentForm.BillingAddress2', 'Address line 2')
+                _t('SilverStripe\Omnipay\PaymentForm.BillingAddress2', 'Address line 2')
             ),
             'city' => TextField::create(
                 $this->getFieldName('billingCity'),
-                _t('PaymentForm.BillingCity', 'City')
+                _t('SilverStripe\Omnipay\PaymentForm.BillingCity', 'City')
             ),
             'postcode' => TextField::create(
                 $this->getFieldName('billingPostcode'),
-                _t('PaymentForm.BillingPostcode', 'Postcode')
+                _t('SilverStripe\Omnipay\PaymentForm.BillingPostcode', 'Postcode')
             ),
             'state' => TextField::create(
                 $this->getFieldName('billingState'),
-                _t('PaymentForm.BillingState', 'State')
+                _t('SilverStripe\Omnipay\PaymentForm.BillingState', 'State')
             ),
             'country' => TextField::create(
                 $this->getFieldName('billingCountry'),
-                _t('PaymentForm.BillingCountry', 'Country')
+                _t('SilverStripe\Omnipay\PaymentForm.BillingCountry', 'Country')
             ),
             'phone' => TextField::create(
                 $this->getFieldName('billingPhone'),
-                _t('PaymentForm.BillingPhone', 'Phone')
+                _t('SilverStripe\Omnipay\PaymentForm.BillingPhone', 'Phone')
             )
         );
 
@@ -291,31 +293,31 @@ class GatewayFieldsFactory
         $fields = array(
             'shippingAddress1' => TextField::create(
                 $this->getFieldName('shippingAddress1'),
-                _t('PaymentForm.ShippingAddress1', 'Shipping Address')
+                _t('SilverStripe\Omnipay\PaymentForm.ShippingAddress1', 'Shipping Address')
             ),
             'shippingAddress2' => TextField::create(
                 $this->getFieldName('shippingAddress2'),
-                _t('PaymentForm.ShippingAddress2', 'Shipping Address 2')
+                _t('SilverStripe\Omnipay\PaymentForm.ShippingAddress2', 'Shipping Address 2')
             ),
             'city' => TextField::create(
                 $this->getFieldName('shippingCity'),
-                _t('PaymentForm.ShippingCity', 'Shipping City')
+                _t('SilverStripe\Omnipay\PaymentForm.ShippingCity', 'Shipping City')
             ),
             'postcode' => TextField::create(
                 $this->getFieldName('shippingPostcode'),
-                _t('PaymentForm.ShippingPostcode', 'Shipping Postcode')
+                _t('SilverStripe\Omnipay\PaymentForm.ShippingPostcode', 'Shipping Postcode')
             ),
             'state' => TextField::create(
                 $this->getFieldName('shippingState'),
-                _t('PaymentForm.ShippingState', 'Shipping State')
+                _t('SilverStripe\Omnipay\PaymentForm.ShippingState', 'Shipping State')
             ),
             'country' => TextField::create(
                 $this->getFieldName('shippingCountry'),
-                _t('PaymentForm.ShippingCountry', 'Shipping Country')
+                _t('SilverStripe\Omnipay\PaymentForm.ShippingCountry', 'Shipping Country')
             ),
             'phone' => TextField::create(
                 $this->getFieldName('shippingPhone'),
-                _t('PaymentForm.ShippingPhone', 'Shipping Phone')
+                _t('SilverStripe\Omnipay\PaymentForm.ShippingPhone', 'Shipping Phone')
             )
         );
 
@@ -332,7 +334,7 @@ class GatewayFieldsFactory
     public function getEmailFields()
     {
         $fields = array(
-            'email' => EmailField::create($this->getFieldName('email'), _t('PaymentForm.Email', 'Email'))
+            'email' => EmailField::create($this->getFieldName('email'), _t('SilverStripe\Omnipay\PaymentForm.Email', 'Email'))
         );
 
         $this->cullForGateway($fields);
@@ -348,7 +350,7 @@ class GatewayFieldsFactory
     public function getCompanyFields()
     {
         $fields = array(
-            'company' => TextField::create($this->getFieldName('company'), _t('PaymentForm.Company', 'Company'))
+            'company' => TextField::create($this->getFieldName('company'), _t('SilverStripe\Omnipay\PaymentForm.Company', 'Company'))
         );
 
         $this->cullForGateway($fields);

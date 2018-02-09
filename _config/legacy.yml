@@ -1,0 +1,49 @@
+---
+Name: silverstripe-omnipay-legacy
+---
+# Mapping rules to map old model-classes to new ones.
+SilverStripe\ORM\DatabaseAdmin:
+  classname_value_remapping:
+    Payment: SilverStripe\Omnipay\Model\Payment
+    PaymentMessage: SilverStripe\Omnipay\Model\Message\PaymentMessage
+    GatewayRequestMessage: SilverStripe\Omnipay\Model\Message\GatewayRequestMessage
+    AuthorizedResponse: SilverStripe\Omnipay\Model\Message\AuthorizedResponse
+    AuthorizeError: SilverStripe\Omnipay\Model\Message\AuthorizeError
+    AuthorizeRedirectResponse: SilverStripe\Omnipay\Model\Message\AuthorizeRedirectResponse
+    AuthorizeRequest: SilverStripe\Omnipay\Model\Message\AuthorizeRequest
+    AwaitingAuthorizeResponse: SilverStripe\Omnipay\Model\Message\AwaitingAuthorizeResponse
+    AwaitingCreateCardResponse: SilverStripe\Omnipay\Model\Message\AwaitingCreateCardResponse
+    AwaitingPurchaseResponse: SilverStripe\Omnipay\Model\Message\AwaitingPurchaseResponse
+    CapturedResponse: SilverStripe\Omnipay\Model\Message\CapturedResponse
+    CaptureError: SilverStripe\Omnipay\Model\Message\CaptureError
+    CaptureRequest: SilverStripe\Omnipay\Model\Message\CaptureRequest
+    CompleteAuthorizeError: SilverStripe\Omnipay\Model\Message\CompleteAuthorizeError
+    CompleteAuthorizeRequest: SilverStripe\Omnipay\Model\Message\CompleteAuthorizeRequest
+    CompleteCreateCardError: SilverStripe\Omnipay\Model\Message\CompleteCreateCardError
+    CompleteCreateCardRequest: SilverStripe\Omnipay\Model\Message\CompleteCreateCardRequest
+    CompletePurchaseError: SilverStripe\Omnipay\Model\Message\CompletePurchaseError
+    CompletePurchaseRequest: SilverStripe\Omnipay\Model\Message\CompletePurchaseRequest
+    CreateCardError: SilverStripe\Omnipay\Model\Message\CreateCardError
+    CreateCardRedirectResponse: SilverStripe\Omnipay\Model\Message\CreateCardRedirectResponse
+    CreateCardRequest: SilverStripe\Omnipay\Model\Message\CreateCardRequest
+    CreateCardResponse: SilverStripe\Omnipay\Model\Message\CreateCardResponse
+    GatewayErrorMessage: SilverStripe\Omnipay\Model\Message\GatewayErrorMessage
+    GatewayMessage: SilverStripe\Omnipay\Model\Message\GatewayMessage
+    GatewayRedirectResponseMessage: SilverStripe\Omnipay\Model\Message\GatewayRedirectResponseMessage
+    GatewayRequestMessage: SilverStripe\Omnipay\Model\Message\GatewayRequestMessage
+    GatewayResponseMessage: SilverStripe\Omnipay\Model\Message\GatewayResponseMessage
+    NotificationError: SilverStripe\Omnipay\Model\Message\NotificationError
+    NotificationPending: SilverStripe\Omnipay\Model\Message\NotificationPending
+    NotificationSuccessful: SilverStripe\Omnipay\Model\Message\NotificationSuccessful
+    PartiallyCapturedResponse: SilverStripe\Omnipay\Model\Message\PartiallyCapturedResponse
+    PartiallyRefundedResponse: SilverStripe\Omnipay\Model\Message\PartiallyRefundedResponse
+    PurchasedResponse: SilverStripe\Omnipay\Model\Message\PurchasedResponse
+    PurchaseError: SilverStripe\Omnipay\Model\Message\PurchaseError
+    PurchaseRedirectResponse: SilverStripe\Omnipay\Model\Message\PurchaseRedirectResponse
+    PurchaseRequest: SilverStripe\Omnipay\Model\Message\PurchaseRequest
+    RefundedResponse: SilverStripe\Omnipay\Model\Message\RefundedResponse
+    RefundError: SilverStripe\Omnipay\Model\Message\RefundError
+    RefundRequest: SilverStripe\Omnipay\Model\Message\RefundRequest
+    VoidedResponse: SilverStripe\Omnipay\Model\Message\VoidedResponse
+    VoidError: SilverStripe\Omnipay\Model\Message\VoidError
+    VoidRequest: SilverStripe\Omnipay\Model\Message\VoidRequest

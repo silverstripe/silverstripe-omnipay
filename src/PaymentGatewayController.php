@@ -5,6 +5,7 @@ namespace SilverStripe\Omnipay;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
+use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Service\ServiceFactory;
 
@@ -72,7 +73,10 @@ class PaymentGatewayController extends Controller
      * It will redirect back to the application in all cases,
      * but will not update the Payment/Transaction models if they are not found,
      * or allowed to be updated.
-     * @return \SS_HTTPResponse
+     * @return HTTPResponse
+     * @throws Exception\InvalidConfigurationException
+     * @throws Exception\InvalidStateException
+     * @throws \SilverStripe\Control\HTTPResponse_Exception
      */
     public function index()
     {
@@ -84,7 +88,10 @@ class PaymentGatewayController extends Controller
     /**
      * Action used for handling static gateway requests (use this if your payment gateway doesn't handle
      * dynamic callback URLs)
-     * @return \SS_HTTPResponse
+     * @return HTTPResponse
+     * @throws Exception\InvalidConfigurationException
+     * @throws Exception\InvalidStateException
+     * @throws \SilverStripe\Control\HTTPResponse_Exception
      */
     public function gateway()
     {
@@ -107,7 +114,7 @@ class PaymentGatewayController extends Controller
     /**
      * Find the intent of the current payment
      *
-     * @param \Payment $payment the payment object
+     * @param Payment $payment the payment object
      * @return string|null
      */
     protected function getPaymentIntent($payment)
@@ -147,11 +154,11 @@ class PaymentGatewayController extends Controller
     /**
      * Create the appropriate HTTP response for the given payment.
      *
-     * @param \Payment $payment the payment that should be processed
-     * @return \SS_HTTPResponse
+     * @param Payment $payment the payment that should be processed
+     * @return HTTPResponse
      * @throws Exception\InvalidConfigurationException
      * @throws Exception\InvalidStateException
-     * @throws \SS_HTTPResponse_Exception
+     * @throws \SilverStripe\Control\HTTPResponse_Exception
      */
     protected function createPaymentResponse($payment)
     {
@@ -237,7 +244,7 @@ class PaymentGatewayController extends Controller
 
         return Payment::get()
                 ->filter('Identifier', $identifier)
-                ->filter('Identifier:not', "")
+                ->filter('Identifier:not', '')
                 ->first();
     }
 }

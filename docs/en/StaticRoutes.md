@@ -19,7 +19,7 @@ Use the `use_static_route` flag to enable the static route for your gateway. Onl
 Example:
 
 ```yaml
-GatewayInfo:
+SilverStripe\Omnipay\GatewayInfo:
   BarclaysEpdq_Essential:
     use_static_route: true
     parameters:
@@ -75,7 +75,7 @@ Ideally, you would send the unique payment ID to the payment provider, if – fo
 Then add the extension to the `PaymentGatewayController`, like so:
 
 ```yaml
-PaymentGatewayController:
+SilverStripe\Omnipay\PaymentGatewayController:
   extensions:
     - BarclaysPaymentGatewayControllerExtension
 ```

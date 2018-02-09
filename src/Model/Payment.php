@@ -93,7 +93,7 @@ final class Payment extends DataObject implements PermissionProvider
     public function getCMSFields()
     {
         $fields = new FieldList(
-            TextField::create('MoneyValue', $this->fieldLabel('Money'), $this->Money->Nice()),
+            TextField::create('MoneyValue', $this->fieldLabel('Money'), $this->dbObject('Money')->Nice()),
             TextField::create('GatewayTitle', $this->fieldLabel('Gateway'), 'Gateway')
         );
 
@@ -203,7 +203,7 @@ final class Payment extends DataObject implements PermissionProvider
             'A template for the payment title',
             str_replace('%', '%%', array(
                 'Gateway' => $this->getGatewayTitle(),
-                'Money' => $this->Money->Nice()
+                'Money' => $this->dbObject('Money')->Nice()
             ))
         ), strtotime($this->Created));
     }
@@ -552,7 +552,7 @@ final class Payment extends DataObject implements PermissionProvider
         $entities = parent::provideI18nEntities();
 
         // collect all the payment status values
-        foreach ($this->Status->enumValues() as $value) {
+        foreach ($this->dbObject('Status')->enumValues() as $value) {
             $key = strtoupper($value);
             $entities['SilverStripe\Omnipay\Model\Payment.STATUS_' . $key] = array(
                 $value,
@@ -571,7 +571,7 @@ final class Payment extends DataObject implements PermissionProvider
     protected function getStatusValues()
     {
         $values = array();
-        foreach ($this->Status->enumValues() as $value) {
+        foreach ($this->dbObject('Status')->enumValues() as $value) {
             $values[$value] = _t('SilverStripe\Omnipay\Model\Payment.STATUS_' . strtoupper($value), $value);
         }
         return $values;

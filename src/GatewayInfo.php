@@ -106,6 +106,10 @@ class GatewayInfo
      */
     public static function niceTitle($name)
     {
+        if (empty($name)) {
+            return '';
+        }
+
         $gateway = null;
 
         try {

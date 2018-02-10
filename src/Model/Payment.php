@@ -3,10 +3,9 @@
 namespace SilverStripe\Omnipay\Model;
 
 use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\Omnipay\PaymentMath;
+use SilverStripe\Omnipay\Helper\PaymentMath;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
-use SilverStripe\ORM\FieldType\DBEnum;
 use SilverStripe\ORM\FieldType\DBMoney;
 use SilverStripe\ORM\Filters\PartialMatchFilter;
 use SilverStripe\ORM\HasManyList;
@@ -30,7 +29,7 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
  *
  * @property string $Gateway
  * @property DBMoney $Money
- * @property DBEnum $Status
+ * @property string $Status
  * @property string $Identifier
  * @property string $TransactionReference
  * @property string $SuccessUrl
@@ -221,6 +220,10 @@ final class Payment extends DataObject implements PermissionProvider
         return $this;
     }
 
+    /**
+     * The payment gateway title (localized, if available)
+     * @return string
+     */
     public function getGatewayTitle()
     {
         return GatewayInfo::niceTitle($this->Gateway);
@@ -246,7 +249,7 @@ final class Payment extends DataObject implements PermissionProvider
 
     /**
      * Set the payment amount, but only when the status is 'Created'.
-     * @param float $amt value to set the payment to
+     * @param float $amount value to set the payment to
      * @return  Payment this object for chaining
      */
     public function setAmount($amount)
@@ -523,30 +526,6 @@ final class Payment extends DataObject implements PermissionProvider
         }
     }
 
-    protected function onBeforeWrite()
-    {
-        parent::onBeforeWrite();
-        if (!$this->Identifier) {
-            $this->Identifier = $this->generateUniquePaymentIdentifier();
-        }
-    }
-
-    /**
-     * Generate an internally unique string that identifies a payment,
-     * and can be used in URLs.
-     * @return string Identifier
-     */
-    public function generateUniquePaymentIdentifier()
-    {
-        $generator = Injector::inst()->create(RandomGenerator::class);
-        $id = null;
-        do {
-            $id = substr($generator->randomToken(), 0, 30);
-        } while (!$id && self::get()->filter('Identifier', $id)->exists());
-
-        return $id;
-    }
-
     public function provideI18nEntities()
     {
         $entities = parent::provideI18nEntities();
@@ -561,6 +540,30 @@ final class Payment extends DataObject implements PermissionProvider
         }
 
         return $entities;
+    }
+
+    protected function onBeforeWrite()
+    {
+        parent::onBeforeWrite();
+        if (!$this->Identifier) {
+            $this->Identifier = $this->generateUniquePaymentIdentifier();
+        }
+    }
+
+    /**
+     * Generate an internally unique string that identifies a payment,
+     * and can be used in URLs.
+     * @return string Identifier
+     */
+    protected function generateUniquePaymentIdentifier()
+    {
+        $generator = Injector::inst()->create(RandomGenerator::class);
+        $id = null;
+        do {
+            $id = substr($generator->randomToken(), 0, 30);
+        } while (!$id && self::get()->filter('Identifier', $id)->exists());
+
+        return $id;
     }
 
     /**

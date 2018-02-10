@@ -4,7 +4,7 @@ namespace SilverStripe\Omnipay\Service;
 
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
-use SilverStripe\Omnipay\Helper;
+use SilverStripe\Omnipay\Helper\ErrorHandling;
 use SilverStripe\Omnipay\Model\Message;
 
 class CreateCardService extends PaymentService
@@ -48,7 +48,7 @@ class CreateCardService extends PaymentService
             return $this->generateServiceResponse(ServiceResponse::SERVICE_ERROR);
         }
 
-        Helper::safeExtend($this, 'onAfterSendCreateCard', $request, $response);
+        ErrorHandling::safeExtend($this, 'onAfterSendCreateCard', $request, $response);
 
         $serviceResponse = $this->wrapOmnipayResponse($response);
 
@@ -120,7 +120,7 @@ class CreateCardService extends PaymentService
         if (!$serviceResponse->isAwaitingNotification()) {
             $this->markCompleted('CardCreated', $serviceResponse, $response);
         } else {
-            Helper::safeExtend($this->payment, 'onAwaitingCreateCard', $serviceResponse);
+            ErrorHandling::safeExtend($this->payment, 'onAwaitingCreateCard', $serviceResponse);
         }
 
         return $serviceResponse;
@@ -130,6 +130,6 @@ class CreateCardService extends PaymentService
     {
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
         $this->createMessage(Message\CreateCardResponse::class, $gatewayMessage);
-        Helper::safeExtend($this->payment, 'onCardCreated', $serviceResponse);
+        ErrorHandling::safeExtend($this->payment, 'onCardCreated', $serviceResponse);
     }
 }

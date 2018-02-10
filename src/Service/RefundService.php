@@ -2,13 +2,13 @@
 
 namespace SilverStripe\Omnipay\Service;
 
+use Omnipay\Common\Exception\OmnipayException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Exception\InvalidParameterException;
 use SilverStripe\Omnipay\Exception\MissingParameterException;
-use Omnipay\Common\Exception\OmnipayException;
 use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\Omnipay\Helper;
-use SilverStripe\Omnipay\PaymentMath;
+use SilverStripe\Omnipay\Helper\ErrorHandling;
+use SilverStripe\Omnipay\Helper\PaymentMath;
 use SilverStripe\Omnipay\Model\Message;
 
 class RefundService extends NotificationCompleteService
@@ -122,7 +122,7 @@ class RefundService extends NotificationCompleteService
             return $this->generateServiceResponse(ServiceResponse::SERVICE_ERROR);
         }
 
-        Helper::safeExtend($this, 'onAfterSendRefund', $request, $response);
+        ErrorHandling::safeExtend($this, 'onAfterSendRefund', $request, $response);
 
         $serviceResponse = $this->wrapOmnipayResponse($response);
 
@@ -185,6 +185,6 @@ class RefundService extends NotificationCompleteService
             $this->createMessage(Message\RefundedResponse::class, $gatewayMessage);
         }
 
-        Helper::safeExtend($this->payment, 'onRefunded', $serviceResponse);
+        ErrorHandling::safeExtend($this->payment, 'onRefunded', $serviceResponse);
     }
 }

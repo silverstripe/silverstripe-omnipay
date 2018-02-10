@@ -4,7 +4,7 @@ namespace SilverStripe\Omnipay\Service;
 
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
-use SilverStripe\Omnipay\Helper;
+use SilverStripe\Omnipay\Helper\ErrorHandling;
 use SilverStripe\Omnipay\Model\Message;
 
 class PurchaseService extends PaymentService
@@ -53,7 +53,7 @@ class PurchaseService extends PaymentService
             return $this->generateServiceResponse(ServiceResponse::SERVICE_ERROR);
         }
 
-        Helper::safeExtend($this, 'onAfterSendPurchase', $request, $response);
+        ErrorHandling::safeExtend($this, 'onAfterSendPurchase', $request, $response);
 
         $serviceResponse = $this->wrapOmnipayResponse($response);
 
@@ -124,7 +124,7 @@ class PurchaseService extends PaymentService
         if (!$serviceResponse->isAwaitingNotification()) {
             $this->markCompleted('Captured', $serviceResponse, $response);
         } else {
-            Helper::safeExtend($this->payment, 'onAwaitingCaptured', $serviceResponse);
+            ErrorHandling::safeExtend($this->payment, 'onAwaitingCaptured', $serviceResponse);
         }
 
 
@@ -135,6 +135,6 @@ class PurchaseService extends PaymentService
     {
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
         $this->createMessage(Message\PurchasedResponse::class, $gatewayMessage);
-        Helper::safeExtend($this->payment, 'onCaptured', $serviceResponse);
+        ErrorHandling::safeExtend($this->payment, 'onCaptured', $serviceResponse);
     }
 }

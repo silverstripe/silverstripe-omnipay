@@ -4,7 +4,7 @@ namespace SilverStripe\Omnipay\Service;
 
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
-use SilverStripe\Omnipay\Helper;
+use SilverStripe\Omnipay\Helper\ErrorHandling;
 use SilverStripe\Omnipay\Model\Message\AuthorizeRequest;
 use SilverStripe\Omnipay\Model\Message\AuthorizedResponse;
 use SilverStripe\Omnipay\Model\Message\CompleteAuthorizeError;
@@ -53,7 +53,7 @@ class AuthorizeService extends PaymentService
             return $this->generateServiceResponse(ServiceResponse::SERVICE_ERROR);
         }
 
-        Helper::safeExtend($this, 'onAfterSendAuthorize', $request, $response);
+        ErrorHandling::safeExtend($this, 'onAfterSendAuthorize', $request, $response);
 
         $serviceResponse = $this->wrapOmnipayResponse($response);
 
@@ -126,7 +126,7 @@ class AuthorizeService extends PaymentService
         if (!$serviceResponse->isAwaitingNotification()) {
             $this->markCompleted('Authorized', $serviceResponse, $response);
         } else {
-            Helper::safeExtend($this->payment, 'onAwaitingAuthorized', $serviceResponse);
+            ErrorHandling::safeExtend($this->payment, 'onAwaitingAuthorized', $serviceResponse);
         }
 
         return $serviceResponse;
@@ -136,6 +136,6 @@ class AuthorizeService extends PaymentService
     {
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
         $this->createMessage(AuthorizedResponse::class, $gatewayMessage);
-        Helper::safeExtend($this->payment, 'onAuthorized', $serviceResponse);
+        ErrorHandling::safeExtend($this->payment, 'onAuthorized', $serviceResponse);
     }
 }

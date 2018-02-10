@@ -2,7 +2,6 @@
 
 namespace SilverStripe\Omnipay\Service;
 
-use Guzzle\Http\ClientInterface;
 use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\CreditCard;
 use Omnipay\Common\Exception\OmnipayException;
@@ -10,6 +9,7 @@ use Omnipay\Common\GatewayFactory;
 use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\NotificationInterface;
+use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
@@ -17,19 +17,21 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\Omnipay\Helper;
+use SilverStripe\Omnipay\Helper\ErrorHandling;
+use SilverStripe\Omnipay\Helper\Logging;
 use SilverStripe\Omnipay\Model\Message\GatewayErrorMessage;
 use SilverStripe\Omnipay\Model\Message\NotificationError;
 use SilverStripe\Omnipay\Model\Message\NotificationPending;
 use SilverStripe\Omnipay\Model\Message\NotificationSuccessful;
+use SilverStripe\Omnipay\Model\Message\PaymentMessage;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\PaymentGatewayController;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Provides wrapper methods for interacting with the omnipay gateways library.
  *
  * Interfaces with the omnipay library.
+ * @property LoggerInterface $logger
  */
 abstract class PaymentService
 {
@@ -42,16 +44,6 @@ abstract class PaymentService
     private static $dependencies = [
         'logger' => '%$SilverStripe\Omnipay\Logger',
     ];
-
-    /**
-     * @var \Guzzle\Http\ClientInterface
-     */
-    private static $httpClient;
-
-    /**
-     * @var \Symfony\Component\HttpFoundation\Request
-     */
-    private static $httpRequest;
 
     /**
      * @var Payment
@@ -69,7 +61,7 @@ abstract class PaymentService
     protected $gatewayFactory;
 
     /**
-     * @param Payment
+     * @param Payment $payment the payment instance
      */
     public function __construct(Payment $payment)
     {
@@ -100,6 +92,9 @@ abstract class PaymentService
     /**
      * Cancel a payment
      *
+     * @throws \Exception
+     * @throws \SilverStripe\ORM\ValidationException
+     * @throws \SilverStripe\Omnipay\Exception\ServiceException
      * @return ServiceResponse
      */
     public function cancel()
@@ -107,7 +102,7 @@ abstract class PaymentService
         if (!$this->payment->IsComplete()) {
             $this->payment->Status = 'Void';
             $this->payment->write();
-            Helper::safeExtend($this->payment, 'onCancelled');
+            ErrorHandling::safeExtend($this->payment, 'onCancelled');
         }
 
         return $this->generateServiceResponse(ServiceResponse::SERVICE_CANCELLED);
@@ -134,11 +129,7 @@ abstract class PaymentService
     {
         $gatewayName = $this->payment->Gateway;
 
-        $gateway = $this->getGatewayFactory()->create(
-            $gatewayName,
-            self::$httpClient,
-            self::$httpRequest
-        );
+        $gateway = $this->getGatewayFactory()->create($gatewayName);
 
         $parameters = GatewayInfo::getParameters($gatewayName);
 
@@ -155,8 +146,11 @@ abstract class PaymentService
      * This just invokes `acceptNotification` on the gateway (if available) and wraps the return value in
      * the proper ServiceResponse.
      *
-     * @return ServiceResponse
      * @throws InvalidConfigurationException
+     * @throws \Exception
+     * @throws \Omnipay\Common\Exception\InvalidRequestException
+     * @throws \SilverStripe\Omnipay\Exception\ServiceException
+     * @return ServiceResponse
      */
     public function handleNotification()
     {
@@ -273,6 +267,8 @@ abstract class PaymentService
      * Get a service response from the given Omnipay response
      * @param AbstractResponse $omnipayResponse
      * @param bool $isNotification whether or not this response is a response to a notification
+     * @throws \Exception
+     * @throws \SilverStripe\Omnipay\Exception\ServiceException
      * @return ServiceResponse
      */
     protected function wrapOmnipayResponse(AbstractResponse $omnipayResponse, $isNotification = false)
@@ -308,7 +304,7 @@ abstract class PaymentService
      * @param string $endStatus the end state to set on the payment
      * @param ServiceResponse $serviceResponse the service response
      * @param mixed $gatewayMessage the message from Omnipay
-     * @return void
+     * @throws \SilverStripe\ORM\ValidationException
      */
     protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
     {
@@ -326,11 +322,12 @@ abstract class PaymentService
      * @param float $amount the amount that the partial payment should have
      * @param string $status the desired payment status
      * @param boolean $write whether or not to directly write the new Payment to DB (optional)
+     * @throws \Exception
      * @return Payment the newly created payment (already written to the DB)
      */
     protected function createPartialPayment($amount, $status, $write = true)
     {
-        /** @var \Payment $payment */
+        /** @var Payment $payment */
         $payment = Payment::create(array(
             'Gateway' => $this->payment->Gateway,
             'TransactionReference' => $this->payment->TransactionReference,
@@ -346,10 +343,10 @@ abstract class PaymentService
         $payment->Status = $status;
 
         // allow extensions to update/modify the partial payment
-        Helper::safeExtend($this, 'updatePartialPayment', $payment, $this->payment);
+        ErrorHandling::safeExtend($this, 'updatePartialPayment', $payment, $this->payment);
 
         if ($write) {
-            Helper::safeguard(function () use (&$payment) {
+            ErrorHandling::safeguard(function () use (&$payment) {
                 $payment->write();
             }, 'Unable to write newly created partial Payment!');
         }
@@ -361,6 +358,8 @@ abstract class PaymentService
      * Generate a service response
      * @param int $flags a combination of service flags
      * @param AbstractResponse|NotificationInterface|null $omnipayData the response or notification from the Omnipay gateway
+     * @throws \Exception
+     * @throws \SilverStripe\Omnipay\Exception\ServiceException
      * @return ServiceResponse
      */
     protected function generateServiceResponse(
@@ -383,7 +382,7 @@ abstract class PaymentService
         }
 
         // Hook to update service response via extensions. This can be used to customize the service response
-        Helper::safeExtend($this, 'updateServiceResponse', $response);
+        ErrorHandling::safeExtend($this, 'updateServiceResponse', $response);
 
         return $response;
     }
@@ -396,6 +395,7 @@ abstract class PaymentService
      *
      * @param array|string|AbstractResponse|AbstractRequest|OmnipayException|NotificationInterface $data
      *
+     * @throws \Omnipay\Common\Exception\InvalidRequestException
      * @return PaymentMessage newly created DataObject, saved to database.
      */
     protected function createMessage($type, $data = null)
@@ -408,7 +408,7 @@ abstract class PaymentService
             ];
         } elseif (is_array($data)) {
             $output = $data;
-        } elseif ($data instanceof OmnipayException) {
+        } elseif ($data instanceof \Exception) {
             $output = [
                 'Message' => $data->getMessage(),
                 'Code' => $data->getCode(),
@@ -471,11 +471,12 @@ abstract class PaymentService
             // Log title
             sprintf('%s (%s)', $type, $this->payment->Gateway),
             // Log context (just output the data)
-            Helper::prepareForLogging($data)
+            Logging::prepareForLogging($data)
         );
     }
 
     /**
+     * @throws \Psr\Container\NotFoundExceptionInterface
      * @return GatewayFactory
      */
     public function getGatewayFactory()
@@ -504,35 +505,5 @@ abstract class PaymentService
     protected function getCreditCard($data)
     {
         return new CreditCard($data);
-    }
-
-    /**
-     * Set the guzzle client
-     *
-     * @param \Guzzle\Http\ClientInterface $httpClient guzzle client for testing
-     */
-    public static function setHttpClient(ClientInterface $httpClient)
-    {
-        self::$httpClient = $httpClient;
-    }
-
-    public static function getHttpClient()
-    {
-        return self::$httpClient;
-    }
-
-    /**
-     * Set the symphony http request
-     *
-     * @param \Symfony\Component\HttpFoundation\Request $httpRequest symphony http request for testing
-     */
-    public static function setHttpRequest(Request $httpRequest)
-    {
-        self::$httpRequest = $httpRequest;
-    }
-
-    public static function getHttpRequest()
-    {
-        return self::$httpRequest;
     }
 }

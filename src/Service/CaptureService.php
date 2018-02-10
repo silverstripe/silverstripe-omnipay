@@ -2,17 +2,17 @@
 
 namespace SilverStripe\Omnipay\Service;
 
-use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
-use SilverStripe\Omnipay\Exception\MissingParameterException;
-use SilverStripe\Omnipay\Exception\InvalidParameterException;
 use Omnipay\Common\Exception\OmnipayException;
+use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
+use SilverStripe\Omnipay\Exception\InvalidParameterException;
+use SilverStripe\Omnipay\Exception\MissingParameterException;
 use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\Omnipay\PaymentMath;
-use SilverStripe\Omnipay\Helper;
-use SilverStripe\Omnipay\Model\Message\PartiallyCapturedResponse;
+use SilverStripe\Omnipay\Helper\ErrorHandling;
 use SilverStripe\Omnipay\Model\Message\CapturedResponse;
-use SilverStripe\Omnipay\Model\Message\CaptureRequest;
 use SilverStripe\Omnipay\Model\Message\CaptureError;
+use SilverStripe\Omnipay\Model\Message\CaptureRequest;
+use SilverStripe\Omnipay\Model\Message\PartiallyCapturedResponse;
+use SilverStripe\Omnipay\Helper\PaymentMath;
 
 /**
  * Service used in tandem with AuthorizeService.
@@ -133,7 +133,7 @@ class CaptureService extends NotificationCompleteService
             return $this->generateServiceResponse(ServiceResponse::SERVICE_ERROR);
         }
 
-        Helper::safeExtend($this, 'onAfterSendCapture', $request, $response);
+        ErrorHandling::safeExtend($this, 'onAfterSendCapture', $request, $response);
 
         $serviceResponse = $this->wrapOmnipayResponse($response);
 
@@ -211,6 +211,6 @@ class CaptureService extends NotificationCompleteService
             $this->createMessage(PartiallyCapturedResponse::class, $gatewayMessage);
         }
 
-        Helper::safeExtend($this->payment, 'onCaptured', $serviceResponse);
+        ErrorHandling::safeExtend($this->payment, 'onCaptured', $serviceResponse);
     }
 }

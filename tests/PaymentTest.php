@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Service\PaymentService;
@@ -9,6 +10,7 @@ use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Omnipay\Tests\Service\TestGatewayFactory;
 
 abstract class PaymentTest extends FunctionalTest
 {
@@ -102,8 +104,12 @@ abstract class PaymentTest extends FunctionalTest
             ->setAmount(1222)
             ->setCurrency("GBP");
 
-        PaymentService::setHttpClient($this->getHttpClient());
-        PaymentService::setHttpRequest($this->getHttpRequest());
+        Config::modify()->set(Injector::class, 'Omnipay\Common\GatewayFactory', [
+            'class' => TestGatewayFactory::class
+        ]);
+
+        TestGatewayFactory::$httpClient = $this->getHttpClient();
+        TestGatewayFactory::$httpRequest = $this->getHttpRequest();
     }
 
     protected function getHttpClient()

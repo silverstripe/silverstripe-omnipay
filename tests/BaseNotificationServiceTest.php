@@ -7,7 +7,6 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\Omnipay\Service\PaymentService;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;

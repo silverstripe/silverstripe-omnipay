@@ -43,7 +43,7 @@ SilverStripe\Core\Injector\Injector:
 
 Next to using different handlers to log to different formats, you can also control how much of the Omnipay-Message Data will be logged.
 
-There's a config setting `SilverStripe\Omnipay\Helper.logStyle` that defines how data is being logged. It can take 3 different values:
+There's a config setting `SilverStripe\Omnipay\Helper\Logging.logStyle` that defines how data is being logged. It can take 3 different values:
 
 - `'full'`: Verbose logging, log all information. **Attention**: This will automatically turn into `'verbose'` on a live environment!
 - `'verbose'`: Verbose logging, but strips out sensitive information
@@ -52,10 +52,10 @@ There's a config setting `SilverStripe\Omnipay\Helper.logStyle` that defines how
 There's also a setting that controls which data-fields will be sanitized, so that they don't show up in the logs. If you're logging on 
 a live environment, make sure to NOT log any sensitive information, such as credit-card numbers and CVV numbers!
 
-You can control this "blacklist" via the `SilverStripe\Omnipay\Helper.loggingBlacklist` setting. By default the Helper class is configured like this:
+You can control this "blacklist" via the `SilverStripe\Omnipay\Helper\Logging.loggingBlacklist` setting. By default the Helper class is configured like this:
 
 ```yml
-SilverStripe\Omnipay\Helper:
+SilverStripe\Omnipay\Helper\Logging:
   logStyle: 'verbose'
   loggingBlacklist:
     - 'card'

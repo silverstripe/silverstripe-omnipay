@@ -71,6 +71,8 @@ class VoidService extends NotificationCompleteService
         $gatewayData = array_merge(
             $data,
             array(
+                'amount' => (float)$this->payment->MoneyAmount,
+                'currency' => $this->payment->MoneyCurrency,
                 'transactionReference' => $reference,
                 'notifyUrl' => $this->getEndpointUrl('notify')
             )

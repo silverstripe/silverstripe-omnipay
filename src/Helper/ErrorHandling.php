@@ -55,7 +55,7 @@ class ErrorHandling
                 $logger->warning(
                     'An error occurred when trying to run extension point: '. $object->class . '->' . $method,
                     [
-                        'exception' => (string)$ex
+                        'exception' => $ex
                     ]
                 );
             }
@@ -91,7 +91,7 @@ class ErrorHandling
         } catch (\Exception $ex) {
             if ($logger = Logging::getLogger()) {
                 $logger->warning($errorMessage, [
-                    'exception' => (string)$ex
+                    'exception' => $ex
                 ]);
             }
 

@@ -55,7 +55,7 @@ class BarclaysPaymentGatewayControllerExtension extends Extension
         // Always do this!
         if ($gateway == 'BarclaysEpdq_Essential') {
             // In this example we get an order ID and we use this to look up our payment
-            $order = Order::get()->find('OrderNumber', $request->postVars('orderID'));
+            $order = Order::get()->find('OrderNumber', $request->postVar('orderID'));
 
             if ($order && $order->Payments()->exists()) {
                 // return the found payment

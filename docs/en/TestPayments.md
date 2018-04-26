@@ -16,7 +16,9 @@ card fields and will either complete or fail an order based on the provided card
 
 To start using `omnipay/dummy` ensure you add it via composer:
 
-    composer require omnipay/dummy:^2.0
+    composer require --dev omnipay/dummy:^2.0
+
+**NOTE: This will install the dummy gateway as a dev dependency, if you do not use dev dependencies in your project, remove `--dev`**
 
 Next you will need to configure the dummy gateway to work on dev and ensure it loads the required fields:
 
@@ -44,7 +46,7 @@ SilverStripe\Omnipay\GatewayInfo:
 
 ## Using `testMode` on your payment gateway
 
-**NOTE: Most gateways will require you to host your site on a server that will allow the gateway to send HTTP requests to it.*
+**NOTE: Most gateways will require you to host your site on a server that will allow the gateway to send HTTP requests to it.**
 
 Most payment gateways will support the `testMode` config variable, which when set will use the relevent gateway's sandbox
 gateway.

@@ -112,21 +112,32 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
         //--------------------------------------------------------------------------------------------------------------
         // Payment request and response
 
-        $mockPaymentResponse = $this->getMockBuilder('Omnipay\Dummy\Message\Response')
-            ->disableOriginalConstructor()->getMock();
+        $mockPaymentResponse = $this
+            ->getMockBuilder('Omnipay\Dummy\Message\Response')
+            ->disableOriginalConstructor()
+            ->setMethods(['isSuccessful'])
+            ->getMock();
 
-        $mockPaymentResponse->expects($this->any())
-            ->method('isSuccessful')->will($this->returnValue($successValue));
+        $mockPaymentResponse
+            ->expects($this->any())
+            ->method('isSuccessful')
+            ->will($this->returnValue($successValue));
 
-        $mockPaymentRequest = $this->getMockBuilder('Omnipay\Dummy\Message\AuthorizeRequest')
-            ->disableOriginalConstructor()->getMock();
+        $mockPaymentRequest = $this
+            ->getMockBuilder('Omnipay\Dummy\Message\AbstractRequest')
+            ->setMethods(['send'])
+            ->getMock();
 
-        $mockPaymentRequest->expects($this->any())->method('send')->will($this->returnValue($mockPaymentResponse));
+        $mockPaymentRequest
+            ->expects($this->any())
+            ->method('send')
+            ->will($this->returnValue($mockPaymentResponse));
 
         //--------------------------------------------------------------------------------------------------------------
         // Build the gateway
 
-        $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
+        $stubGateway = $this
+            ->getMockBuilder('Omnipay\Common\AbstractGateway')
             ->setMethods(array('createCard', 'getName'))
             ->getMock();
 

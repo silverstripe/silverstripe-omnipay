@@ -174,37 +174,38 @@ class GatewayFieldsFactoryTest extends SapphireTest
 
     public function testRequiredFields()
     {
-        Config::modify()->merge(GatewayInfo::class, 'Dummy', array(
-            'required_fields' => array(
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', [
+            'required_fields' => [
                 'billingAddress1',
                 'city',
                 'country',
                 'email',
                 'company'
-            )
-        ));
+            ],
+            'is_offsite' => false
+        ]);
 
-        Config::modify()->merge(GatewayInfo::class, 'PayPal_Express', array(
-            'required_fields' => array(
+        Config::modify()->merge(GatewayInfo::class, 'PayPal_Express', [
+            'required_fields' => [
                 'billingAddress1',
                 'city',
                 'country',
                 'email',
                 'company'
-            )
-        ));
+            ]
+        ]);
 
-        $factory = new GatewayFieldsFactory('Dummy', array(
+        $factory = new GatewayFieldsFactory('Dummy', [
             'Card',
             'Billing',
             'Shipping',
             'Company',
             'Email'
-        ));
+        ]);
 
         $fields = $factory->getFields();
 
-        $defaults = array(
+        $defaults = [
             // default required CC fields for gateways that aren't manual and aren't offsite
             'name',
             'number',
@@ -219,23 +220,23 @@ class GatewayFieldsFactoryTest extends SapphireTest
             'shippingCountry',
             'company',
             'email'
-        );
+        ];
 
         $this->assertEquals($this->factory->getFieldName($defaults), array_keys($fields->dataFields()));
 
         // Same procedure with offsite gateway should not return the CC fields
 
-        $factory = new GatewayFieldsFactory('PayPal_Express', array(
+        $factory = new GatewayFieldsFactory('PayPal_Express', [
             'Card',
             'Billing',
             'Shipping',
             'Company',
             'Email'
-        ));
+        ]);
 
         $fields = $factory->getFields();
 
-        $pxDefaults = array(
+        $pxDefaults = [
             'billingAddress1',
             'billingCity',
             'billingCountry',
@@ -243,13 +244,17 @@ class GatewayFieldsFactoryTest extends SapphireTest
             'shippingCountry',
             'company',
             'email'
-        );
+        ];
 
         $this->assertEquals($this->factory->getFieldName($pxDefaults), array_keys($fields->dataFields()));
     }
 
     public function testRenamedFields()
     {
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', [
+            'is_offsite' => false
+        ]);
+
         Config::modify()->merge('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename', array(
             'prefix' => 'prefix_',
             'name' => 'testName',

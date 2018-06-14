@@ -107,13 +107,15 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
         // Payment request and response
 
         $mockPaymentResponse = $this->getMockBuilder('Omnipay\Dummy\Message\Response')
-            ->disableOriginalConstructor()->getMock();
+            ->disableOriginalConstructor()->setMethods(['isSuccessful'])->getMock();
 
         $mockPaymentResponse->expects($this->any())
             ->method('isSuccessful')->will($this->returnValue($successValue));
 
         $mockPaymentRequest = $this->getMockBuilder('Omnipay\Dummy\Message\AuthorizeRequest')
-            ->disableOriginalConstructor()->getMock();
+            ->disableOriginalConstructor()
+            ->setMethods(['send'])
+            ->getMock();
 
         $mockPaymentRequest->expects($this->any())->method('send')->will($this->returnValue($mockPaymentResponse));
 

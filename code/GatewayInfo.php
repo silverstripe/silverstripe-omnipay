@@ -146,8 +146,9 @@ class GatewayInfo
      */
     public static function isOffsite($gateway)
     {
-        if (self::getConfigSetting($gateway, 'is_offsite')) {
-            return true;
+        $configSetting = self::getConfigSetting($gateway, 'is_offsite');
+        if (is_bool($configSetting)) {
+            return $configSetting;
         }
 
         $factory = new GatewayFactory();

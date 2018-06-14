@@ -169,7 +169,8 @@ class GatewayFieldsFactoryTest extends SapphireTest
                 'country',
                 'email',
                 'company'
-            )
+            ),
+            'is_offsite' => false
         ));
 
         Config::inst()->update('GatewayInfo', 'PayPal_Express', array(
@@ -238,6 +239,10 @@ class GatewayFieldsFactoryTest extends SapphireTest
 
     public function testRenamedFields()
     {
+        Config::inst()->update('GatewayInfo', 'Dummy', array(
+            'is_offsite' => false
+        ));
+
         Config::inst()->update('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename', array(
             'prefix' => 'prefix_',
             'name' => 'testName',

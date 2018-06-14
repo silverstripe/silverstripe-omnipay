@@ -13,7 +13,8 @@
 		"omnipay/paypal": "~2.5",
 		"omnipay/dummy": "~2.1",
 		"omnipay/paymentexpress": "~2.1",
-        "omnipay/tests": "^2.0"
+        "omnipay/tests": "^2.0",
+        "phpunit/phpunit": "^3.7"
     },
 	"extra": {
 		"installer-name": "omnipay"

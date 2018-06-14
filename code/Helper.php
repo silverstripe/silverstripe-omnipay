@@ -14,7 +14,7 @@ class Helper
      *
      * In dev and test environments, exceptions will be thrown!
      *
-     * @param \Object $object the object that should run the extension
+     * @param \SS_Object $object the object that should run the extension
      * @param string $method the extension method to call
      * @param mixed $a1 optional parameter 1
      * @param mixed $a2 optional parameter 2
@@ -37,7 +37,7 @@ class Helper
         &$a6=null,
         &$a7=null
     ) {
-        if (!($object instanceof \Object)) {
+        if (!($object instanceof \SS_Object)) {
             return array();
         }
 

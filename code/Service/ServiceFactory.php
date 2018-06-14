@@ -5,7 +5,7 @@ namespace SilverStripe\Omnipay\Service;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\GatewayInfo;
 
-class ServiceFactory extends \Object
+class ServiceFactory extends \SS_Object
 {
     /*
      * Different constants for commonly used intents.

@@ -18,7 +18,7 @@ This module is a complete rewrite of the past Payment module. It is not backward
 
 ## Version
 
-2.2
+2.5 (Compatible with SilverStripe 3.7)
 
 ## Requirements
 

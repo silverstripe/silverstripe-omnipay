@@ -17,8 +17,6 @@ use SilverStripe\i18n\Tests\i18nTestManifest;
 
 class GatewayInfoTest extends SapphireTest
 {
-    use i18nTestManifest;
-
     protected function tearDown()
     {
         $this->tearDownManifest();

@@ -28,6 +28,9 @@ abstract class PaymentTest extends FunctionalTest
 
     protected $httpRequest;
 
+    /** @var \GuzzleHttp\Handler\MockHandler */
+    protected $mockHandler = null;
+
     protected static $factoryExtensions;
 
     public static function setUpBeforeClass()
@@ -115,7 +118,15 @@ abstract class PaymentTest extends FunctionalTest
     protected function getHttpClient()
     {
         if (null === $this->httpClient) {
-            $this->httpClient = new \Guzzle\Http\Client;
+            if ($this->mockHandler === null) {
+                $this->mockHandler = new \GuzzleHttp\Handler\MockHandler();
+            }
+
+            $guzzle = new \GuzzleHttp\Client([
+                'handler' => $this->mockHandler,
+            ]);
+
+            $this->httpClient = new \Omnipay\Common\Http\Client(new \Http\Adapter\Guzzle6\Client($guzzle));
         }
 
         return $this->httpClient;
@@ -132,18 +143,19 @@ abstract class PaymentTest extends FunctionalTest
 
     protected function setMockHttpResponse($paths)
     {
-        $testspath = BASE_PATH . '/vendor/omnipay'; //TODO: improve?
-
-        $mock = new \Guzzle\Plugin\Mock\MockPlugin(null, true);
-
-        $this->getHttpClient()->getEventDispatcher()->removeSubscriber($mock);
-        foreach ((array)$paths as $path) {
-            $mock->addResponse($testspath . '/' . $path);
+        if ($this->mockHandler === null) {
+            throw new \Exception('HTTP client not initialised before adding mock response.');
         }
 
-        $this->getHttpClient()->getEventDispatcher()->addSubscriber($mock);
+        $testspath = BASE_PATH . '/vendor/omnipay'; //TODO: improve?
 
-        return $mock;
+        foreach ((array)$paths as $path) {
+            $this->mockHandler->append(
+                \GuzzleHttp\Psr7\parse_response(file_get_contents("{$testspath}/{$path}"))
+            );
+        }
+
+        return $this->mockHandler;
     }
 
     /**

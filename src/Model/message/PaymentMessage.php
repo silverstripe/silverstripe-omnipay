@@ -9,7 +9,12 @@ use SilverStripe\Omnipay\Model\Payment;
 
 /**
  * Base class for logging messages, transactions etc associated with a payment.
- *
+ * @property string $Message
+ * @property string $ClientIp
+ * @property int $PaymentID
+ * @property int $UserID
+ * @method null|Payment Payment()
+ * @method null|Member Member()
  */
 class PaymentMessage extends DataObject
 {

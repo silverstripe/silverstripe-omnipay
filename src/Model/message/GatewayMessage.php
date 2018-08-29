@@ -2,6 +2,13 @@
 
 namespace SilverStripe\Omnipay\Model\Message;
 
+/**
+ * Class GatewayMessage
+ * @package SilverStripe\Omnipay\Model\Message
+ * @property string $Gateway
+ * @property string $Reference
+ * @property string $Code
+ */
 class GatewayMessage extends PaymentMessage
 {
     private static $db = [

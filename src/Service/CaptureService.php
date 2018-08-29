@@ -13,6 +13,7 @@ use SilverStripe\Omnipay\Model\Message\CaptureError;
 use SilverStripe\Omnipay\Model\Message\CaptureRequest;
 use SilverStripe\Omnipay\Model\Message\PartiallyCapturedResponse;
 use SilverStripe\Omnipay\Helper\PaymentMath;
+use SilverStripe\Omnipay\Model\Payment;
 
 /**
  * Service used in tandem with AuthorizeService.
@@ -169,6 +170,7 @@ class CaptureService extends NotificationCompleteService
         if ($partials->count() > 0) {
             $i = 0;
             $total = $originalTotal = $this->payment->MoneyAmount;
+            /** @var Payment $payment */
             foreach ($partials as $payment) {
                 // only the first, eg. most recent payment should be considered valid. All others should be set to void
                 if ($i === 0) {

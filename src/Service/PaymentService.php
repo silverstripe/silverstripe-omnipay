@@ -6,9 +6,11 @@ use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\CreditCard;
 use Omnipay\Common\Exception\OmnipayException;
 use Omnipay\Common\GatewayFactory;
+use Omnipay\Common\GatewayInterface;
 use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\NotificationInterface;
+use Omnipay\Common\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Controller;
 use SilverStripe\Core\Extensible;
@@ -123,7 +125,7 @@ abstract class PaymentService
      * with configuration applied.
      *
      * @throws \RuntimeException - when gateway doesn't exist.
-     * @return AbstractGateway omnipay gateway class
+     * @return GatewayInterface|AbstractGateway omnipay gateway class
      */
     public function oGateway()
     {
@@ -147,7 +149,6 @@ abstract class PaymentService
      * the proper ServiceResponse.
      *
      * @throws InvalidConfigurationException
-     * @throws \Exception
      * @throws \Omnipay\Common\Exception\InvalidRequestException
      * @throws \SilverStripe\Omnipay\Exception\ServiceException
      * @return ServiceResponse
@@ -166,7 +167,7 @@ abstract class PaymentService
         $notification = null;
         try {
             $notification = $gateway->acceptNotification();
-        } catch (\Omnipay\Common\Exception\OmnipayException $e) {
+        } catch (OmnipayException $e) {
             $this->createMessage(NotificationError::class, $e);
             return $this->generateServiceResponse(
                 ServiceResponse::SERVICE_NOTIFICATION | ServiceResponse::SERVICE_ERROR
@@ -260,18 +261,17 @@ abstract class PaymentService
      */
     protected function getEndpointUrl($action)
     {
-        return PaymentGatewayController::getEndpointUrl($action, $this->payment->Identifier, $this->payment->Gateway);
+        return PaymentGatewayController::getEndpointUrl($action, $this->payment->Identifier);
     }
 
     /**
      * Get a service response from the given Omnipay response
-     * @param AbstractResponse $omnipayResponse
+     * @param ResponseInterface $omnipayResponse
      * @param bool $isNotification whether or not this response is a response to a notification
-     * @throws \Exception
      * @throws \SilverStripe\Omnipay\Exception\ServiceException
      * @return ServiceResponse
      */
-    protected function wrapOmnipayResponse(AbstractResponse $omnipayResponse, $isNotification = false)
+    protected function wrapOmnipayResponse(ResponseInterface $omnipayResponse, $isNotification = false)
     {
         if ($isNotification) {
             $flags = ServiceResponse::SERVICE_NOTIFICATION;
@@ -358,7 +358,6 @@ abstract class PaymentService
      * Generate a service response
      * @param int $flags a combination of service flags
      * @param AbstractResponse|NotificationInterface|null $omnipayData the response or notification from the Omnipay gateway
-     * @throws \Exception
      * @throws \SilverStripe\Omnipay\Exception\ServiceException
      * @return ServiceResponse
      */
@@ -452,6 +451,7 @@ abstract class PaymentService
 
         $this->logToFile($output, $type);
 
+        /** @var PaymentMessage $message */
         $message = Injector::inst()->create($type)->update($output);
         $message->write();
 
@@ -462,6 +462,8 @@ abstract class PaymentService
 
     /**
      * Helper function for logging gateway requests
+     * @param mixed $data Data to log.
+     * @param string $type Error message class.
      */
     protected function logToFile($data, $type = '')
     {
@@ -500,6 +502,7 @@ abstract class PaymentService
     }
 
     /**
+     * @param array $data Credit card initial parameters.
      * @return \Omnipay\Common\CreditCard
      */
     protected function getCreditCard($data)

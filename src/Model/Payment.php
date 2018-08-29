@@ -29,6 +29,8 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
  *
  * @property string $Gateway
  * @property DBMoney $Money
+ * @property string $MoneyCurrency
+ * @property float $MoneyAmount
  * @property string $Status
  * @property string $Identifier
  * @property string $TransactionReference
@@ -178,6 +180,7 @@ final class Payment extends DataObject implements PermissionProvider
     /**
      * Set the url to redirect to after payment is cancelled.
      *
+     * @param string $url URL to redirect to on payment cancellation.
      * @return $this this object for chaining
      */
     public function setFailureUrl($url)
@@ -274,6 +277,7 @@ final class Payment extends DataObject implements PermissionProvider
     /**
      * Set the payment currency, but only when the status is 'Created'.
      * @param string $currency the currency to set
+     * @return $this
      */
     public function setCurrency($currency)
     {

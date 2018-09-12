@@ -87,6 +87,13 @@ final class Payment extends DataObject implements PermissionProvider
     private static $default_sort = '"Created" DESC, "ID" DESC';
 
     /**
+     * Length of payment identifier sent to gateway.
+     * @config
+     * @var int
+     */
+    private static $payment_identifier_length = 30;
+
+    /**
      * The allowed payment gateways
      * @config
      *
@@ -560,16 +567,25 @@ final class Payment extends DataObject implements PermissionProvider
     /**
      * Generate an internally unique string that identifies a payment,
      * and can be used in URLs.
+     * @param string|null $gateway
      * @return string Identifier
      */
-    protected function generateUniquePaymentIdentifier()
+    protected function generateUniquePaymentIdentifier($gateway = null)
     {
+        $gateway = $gateway ?: $this->Gateway;
+        $length = GatewayInfo::getConfigSetting($gateway, 'payment_identifier_length') ?:
+            static::config()->get('payment_identifier_length');
+
+        /** @var RandomGenerator $generator */
         $generator = Injector::inst()->get(RandomGenerator::class);
-        $id = null;
 
         do {
-            $id = substr($generator->randomToken(), 0, 30);
-        } while (empty($id) || self::get()->filter('Identifier', $id)->exists());
+            $id = substr($generator->randomToken(), 0, $length);
+
+            if (empty($id)) {
+                throw new \RuntimeException('Random generator produced empty token');
+            }
+        } while (self::get()->filter('Identifier', $id)->exists());
 
         return $id;
     }

@@ -76,7 +76,10 @@ final class Payment extends DataObject implements PermissionProvider
     ];
 
     private static $indexes = [
-        'Identifier' => true,
+        'Identifier' => [
+            'type' => 'unique',
+            'columns' => ['Identifier'],
+        ],
     ];
 
     private static $table_name = 'Omnipay_Payment';

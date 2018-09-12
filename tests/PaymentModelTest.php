@@ -9,6 +9,8 @@ use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\i18n\i18n;
+use SilverStripe\Omnipay\Tests\Service\TestRandomGenerator;
+use SilverStripe\Security\RandomGenerator;
 
 class PaymentModelTest extends PaymentTest
 {
@@ -306,5 +308,23 @@ class PaymentModelTest extends PaymentTest
         $payment->init('Dummy', '1.19', 'EUR');
         $payment->Status = 'Authorized';
         $this->assertEquals('1.42', $payment->getMaxCaptureAmount());
+    }
+
+    /**
+     *
+     */
+    public function testDuplicateIdentifiers()
+    {
+        $randomGenerator = new TestRandomGenerator();
+        $randomGenerator->addRandomTokens('token1', 'token1', 'token1', 'token2');
+        Injector::inst()->registerService($randomGenerator, RandomGenerator::class);
+
+        $payment1 = Payment::create();
+        $payment1->write();
+        $this->assertSame('token1', $payment1->Identifier);
+
+        $payment2 = Payment::create();
+        $payment2->write();
+        $this->assertSame('token2', $payment2->Identifier);
     }
 }

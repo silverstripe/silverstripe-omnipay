@@ -561,11 +561,12 @@ final class Payment extends DataObject implements PermissionProvider
      */
     protected function generateUniquePaymentIdentifier()
     {
-        $generator = Injector::inst()->create(RandomGenerator::class);
+        $generator = Injector::inst()->get(RandomGenerator::class);
         $id = null;
+
         do {
             $id = substr($generator->randomToken(), 0, 30);
-        } while (!$id && self::get()->filter('Identifier', $id)->exists());
+        } while (empty($id) || self::get()->filter('Identifier', $id)->exists());
 
         return $id;
     }

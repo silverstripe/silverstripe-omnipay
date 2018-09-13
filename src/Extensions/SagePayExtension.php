@@ -3,6 +3,7 @@
 namespace SilverStripe\Omnipay\Extensions;
 
 use Omnipay\SagePay\Message\ServerNotifyResponse;
+use SilverStripe\Omnipay\Model\Message\PurchaseRedirectResponse;
 use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\Core\Extension;
 use SilverStripe\Omnipay\Model\Message;
@@ -84,7 +85,7 @@ class SagePayExtension extends Extension
      */
     private function addTransactionReference(array &$gatewayData, $isAuthorize = false)
     {
-        /** @var \Payment $payment */
+        /** @var Payment $payment */
         $payment = $this->owner->getPayment();
 
         // Only apply the changes if the gateway is SagePay Server

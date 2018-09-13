@@ -2,7 +2,6 @@
 
 namespace SilverStripe\Omnipay\Helper;
 
-use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 
 /**

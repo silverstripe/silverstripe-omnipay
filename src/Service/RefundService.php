@@ -10,6 +10,7 @@ use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
 use SilverStripe\Omnipay\Helper\PaymentMath;
 use SilverStripe\Omnipay\Model\Message;
+use SilverStripe\Omnipay\Model\Payment;
 
 class RefundService extends NotificationCompleteService
 {
@@ -154,6 +155,7 @@ class RefundService extends NotificationCompleteService
         if ($partials->count() > 0) {
             $i = 0;
             $total = $this->payment->MoneyAmount;
+            /** @var Payment $payment */
             foreach ($partials as $payment) {
                 // only the first, eg. most recent payment should be considered valid. All others should be set to void
                 if ($i === 0) {

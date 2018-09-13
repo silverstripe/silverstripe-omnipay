@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Omnipay\Service;
 
+use Omnipay\Common\Message\RequestInterface;
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
@@ -98,6 +99,7 @@ class CreateCardService extends PaymentService
         $gatewayData = $this->gatherGatewayData($data);
 
         $this->extend('onBeforeCompleteCreateCard', $gatewayData);
+        /** @var RequestInterface $request */
         $request = $gateway->completeCreateCard($gatewayData);
         $this->extend('onAfterCompleteCreateCard', $request);
 

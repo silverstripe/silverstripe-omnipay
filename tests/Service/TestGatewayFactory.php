@@ -2,8 +2,8 @@
 
 namespace SilverStripe\Omnipay\Tests\Service;
 
-use Guzzle\Http\ClientInterface;
 use Omnipay\Common\GatewayFactory;
+use Omnipay\Common\Http\ClientInterface;
 use SilverStripe\Dev\TestOnly;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 

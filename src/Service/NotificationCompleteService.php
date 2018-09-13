@@ -4,6 +4,7 @@ namespace SilverStripe\Omnipay\Service;
 
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
+use SilverStripe\Omnipay\Model\Payment;
 
 /**
  * Abstract base class for payment services that operate on an existing transaction. Examples of this are:
@@ -103,6 +104,7 @@ abstract class NotificationCompleteService extends PaymentService
         // void any pending partial payments
         $pending = $this->payment->getPartialPayments()->filter('Status', $this->pendingState);
 
+        /** @var Payment $payment */
         foreach ($pending as $payment) {
             $payment->Status = 'Void';
             $payment->write();

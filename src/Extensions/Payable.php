@@ -5,11 +5,13 @@ namespace SilverStripe\Omnipay\Extensions;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\ORM\DataExtension;
+use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\HasManyList;
 
 /**
  * An extension for providing payments on a particular data object.
  *
+ * @property DataObject|Payable $owner
  * @method Payment[]|HasManyList Payments()
  */
 class Payable extends DataExtension

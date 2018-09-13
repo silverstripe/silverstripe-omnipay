@@ -7,15 +7,15 @@
     "require": {
         "silverstripe/framework": "^4",
         "silverstripe/config": "^1",
-        "omnipay/common": "^2.4"
+        "omnipay/common": "^3"
     },
     "require-dev": {
         "silverstripe/versioned" : "^1.0",
         "phpunit/phpunit": "^5.7",
-        "guzzle/guzzle": "^3.9",
-        "omnipay/paypal": "^2.5",
-        "omnipay/dummy": "^2.1",
-        "omnipay/paymentexpress": "^2.1"
+        "php-http/guzzle6-adapter": "^1.1",
+        "omnipay/paypal": "^3",
+        "omnipay/dummy": "^3",
+        "omnipay/paymentexpress": "^3"
     },
     "autoload": {
         "psr-4": {

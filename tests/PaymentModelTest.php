@@ -2,13 +2,13 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
-use Omnipay\Dummy\Gateway;
-use SilverStripe\Core\Injector\Injector;
-use SilverStripe\i18n\Messages\MessageProvider;
-use SilverStripe\Omnipay\Model\Payment;
-use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\i18n\i18n;
+use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\Tests\Service\TestRandomGenerator;
+use SilverStripe\Security\RandomGenerator;
 
 class PaymentModelTest extends PaymentTest
 {
@@ -306,5 +306,48 @@ class PaymentModelTest extends PaymentTest
         $payment->init('Dummy', '1.19', 'EUR');
         $payment->Status = 'Authorized';
         $this->assertEquals('1.42', $payment->getMaxCaptureAmount());
+    }
+
+    /**
+     *
+     */
+    public function testDuplicateIdentifiers()
+    {
+        $randomGenerator = new TestRandomGenerator();
+        $randomGenerator->addRandomTokens('token1', 'token1', 'token1', 'token2');
+        Injector::inst()->registerService($randomGenerator, RandomGenerator::class);
+
+        $payment1 = Payment::create();
+        $payment1->write();
+        $this->assertSame('token1', $payment1->Identifier);
+
+        $payment2 = Payment::create();
+        $payment2->write();
+        $this->assertSame('token2', $payment2->Identifier);
+    }
+
+    /**
+     *
+     */
+    public function testIdentifierLengthConfig()
+    {
+        Config::modify()->set(Payment::class, 'payment_identifier_length', 20);
+        $payment = Payment::create();
+        $payment->write();
+        $this->assertSame(20, strlen($payment->Identifier));
+
+        Config::modify()->set(Payment::class, 'payment_identifier_length', 30);
+        $payment = Payment::create();
+        $payment->setGateway('Manual');
+        $payment->write();
+        $this->assertSame(30, strlen($payment->Identifier));
+
+        Config::modify()->merge(GatewayInfo::class, 'IdentifierFifteen', [
+            'payment_identifier_length' => 15,
+        ]);
+        $payment = Payment::create();
+        $payment->setGateway('IdentifierFifteen');
+        $payment->write();
+        $this->assertSame(15, strlen($payment->Identifier));
     }
 }

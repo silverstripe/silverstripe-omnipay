@@ -248,7 +248,10 @@ final class Payment extends DataObject implements PermissionProvider
      */
     public function getPaymentStatus()
     {
-        return _t('SilverStripe\Omnipay\Model\Payment.STATUS_' . strtoupper($this->Status), $this->Status);
+        if ($this->Status) {
+            return _t('SilverStripe\Omnipay\Model\Payment.STATUS_' . strtoupper($this->Status), $this->Status);
+        }
+        return null;
     }
 
     /**

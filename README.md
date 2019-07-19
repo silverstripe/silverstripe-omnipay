@@ -14,14 +14,14 @@ omnipay, see: https://github.com/thephpleague/omnipay
 
 ## Version
 
-3.0 for SilverStripe 4
+3.0+ for SilverStripe 4
 
 For contributions to 2.x (SS 3.x compatible), please use the `2` branch.
 
 ## Requirements
 
  * [silverstripe framework](https://github.com/silverstripe/silverstripe-framework) 4+
- * [omnipay](https://github.com/omnipay/common) 2.4 + its dependencies - which include guzzle and some symphony libraries.
+ * [omnipay](https://github.com/omnipay/common) 3 & its dependencies - which include guzzle and some symphony libraries.
 
 ## Features
 
@@ -37,7 +37,6 @@ For contributions to 2.x (SS 3.x compatible), please use the `2` branch.
 ## Compatible Payment Gateways
 
 There are many [gateways](https://github.com/thephpleague/omnipay#payment-gateways) available, which you can install separately.
-Note that currently this module uses version 2.x of the Ominpay library.
 
 Searching packagist is useful: https://packagist.org/search/?q=omnipay
 

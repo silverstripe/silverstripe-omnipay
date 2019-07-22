@@ -145,6 +145,7 @@ class PaymentGatewayController extends \Controller
                 $intent = ServiceFactory::INTENT_REFUND;
                 break;
             case 'PendingVoid':
+            case 'Void':
                 $intent = ServiceFactory::INTENT_VOID;
                 break;
         }

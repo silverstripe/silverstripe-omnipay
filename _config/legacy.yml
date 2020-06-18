@@ -6,7 +6,6 @@ SilverStripe\ORM\DatabaseAdmin:
   classname_value_remapping:
     Payment: SilverStripe\Omnipay\Model\Payment
     PaymentMessage: SilverStripe\Omnipay\Model\Message\PaymentMessage
-    GatewayRequestMessage: SilverStripe\Omnipay\Model\Message\GatewayRequestMessage
     AuthorizedResponse: SilverStripe\Omnipay\Model\Message\AuthorizedResponse
     AuthorizeError: SilverStripe\Omnipay\Model\Message\AuthorizeError
     AuthorizeRedirectResponse: SilverStripe\Omnipay\Model\Message\AuthorizeRedirectResponse

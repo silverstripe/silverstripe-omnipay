@@ -146,7 +146,7 @@ class GatewayFieldsFactory
         //generate list of months
         for ($x = 1; $x <= 12; $x++) {
             // Fixes #145 - Thanks to @digitall-it
-            $months[$x] = str_pad($x, 2, '0', STR_PAD_LEFT) . " - " . strftime('%B', mktime(0, 0, 0, $x));
+            $months[$x] = str_pad($x, 2, '0', STR_PAD_LEFT) . " - " . strftime('%B', mktime(0, 0, 0, $x, 1));
         }
         $year = date('Y');
         $range = 5;

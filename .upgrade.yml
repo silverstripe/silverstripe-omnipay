@@ -1,6 +1,4 @@
 mappings:
-  PaymentForm: SilverStripe\Omnipay\PaymentForm
-
   Payable: SilverStripe\Omnipay\Extensions\Payable
   Payment: SilverStripe\Omnipay\Model\Payment
   PaymentMessage: SilverStripe\Omnipay\Model\Message\PaymentMessage

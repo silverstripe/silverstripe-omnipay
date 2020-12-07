@@ -2,14 +2,13 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
-use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\Omnipay\Service\ServiceFactory;
-use SilverStripe\Omnipay\Service\CaptureService;
-use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
-use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Config\Config;
-use SilverStripe\Omnipay\Tests\Extension\ServiceFactoryTestExtensionTwo;
+use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
+use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Omnipay\Tests\Extensions\ServiceFactoryTestExtension;
+use SilverStripe\Omnipay\Tests\Extensions\ServiceFactoryTestExtensionTwo;
 use SilverStripe\Omnipay\Tests\Service\ServiceFactoryTestService;
 
 class ServiceFactoryTest extends PaymentTest

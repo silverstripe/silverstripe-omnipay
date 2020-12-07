@@ -2,7 +2,7 @@
 
 namespace SilverStripe\Omnipay\Extensions;
 
-use Omnipay\SagePay\Message\ServerNotifyResponse;
+use Omnipay\SagePay\Message\ServerNotifyRequest;
 use SilverStripe\Omnipay\Model\Message\PurchaseRedirectResponse;
 use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\Core\Extension;
@@ -127,12 +127,12 @@ class SagePayExtension extends Extension
             && !$response->isError()
         ) {
             $msg = [
-                'Status=' . ServerNotifyResponse::RESPONSE_STATUS_OK,
+                'Status=' . ServerNotifyRequest::RESPONSE_STATUS_OK,
                 'RedirectUrl=' . Director::absoluteURL($payment->SuccessUrl),
                 'StatusDetail=Accepted payment ' . $payment->Identifier
             ];
 
-            $response->setHttpResponse(new HTTPResponse(implode(ServerNotifyResponse::LINE_SEP, $msg), 200));
+            $response->setHttpResponse(new HTTPResponse(implode(ServerNotifyRequest::LINE_SEP, $msg), 200));
         }
     }
 }

@@ -4,6 +4,7 @@ Name: omnipay-logging
 # Set up a separate logger name for omnipay, but map it to the default implementation
 SilverStripe\Core\Injector\Injector:
   SilverStripe\Omnipay\Logger: '%$Psr\Log\LoggerInterface'
+  SilverStripe\Omnipay\ExceptionLogger: '%$SilverStripe\Omnipay\Logger'
 
 # Example how to set up a logger for omnipay that logs to a separate log-file named "omnipay.log"
 # SilverStripe\Core\Injector\Injector:

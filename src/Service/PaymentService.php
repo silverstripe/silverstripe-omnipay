@@ -34,6 +34,7 @@ use SilverStripe\Omnipay\PaymentGatewayController;
  *
  * Interfaces with the omnipay library.
  * @property LoggerInterface $logger
+ * @property LoggerInterface $exceptionLogger
  */
 abstract class PaymentService
 {
@@ -45,6 +46,7 @@ abstract class PaymentService
      */
     private static $dependencies = [
         'logger' => '%$SilverStripe\Omnipay\Logger',
+        'exceptionLogger' => '%$SilverStripe\Omnipay\ExceptionLogger',
     ];
 
     /**
@@ -449,7 +451,11 @@ abstract class PaymentService
             'Gateway' => $this->payment->Gateway
         ]);
 
-        $this->logToFile($output, $type);
+        if ($data instanceof \Exception) {
+            $this->exceptionLogger->error($e->getMessage(), ['exception' => $e]);
+        } else {
+            $this->logToFile($output, $type);
+        }
 
         /** @var PaymentMessage $message */
         $message = Injector::inst()->create($type)->update($output);

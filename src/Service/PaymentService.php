@@ -452,7 +452,7 @@ abstract class PaymentService
         ]);
 
         if ($data instanceof \Exception) {
-            $this->exceptionLogger->error($e->getMessage(), ['exception' => $e]);
+            $this->exceptionLogger->error($data->getMessage(), ['exception' => $data]);
         } else {
             $this->logToFile($output, $type);
         }

@@ -101,7 +101,29 @@ To see what features are supported, for the installed gateways, visit: `your-sit
 
 ### Changing parameters for live environment
 
-You can define separate properties for different environments. Here's an example of that:
+It is recommended to store your payment credentials in environment variables. These credentials can then be used in config by using backticks (\`) to reference them:
+
+```env
+# E.g. in a .env file
+PAYPAL_USERNAME="live.user.com"
+PAYPAL_PASSWORD="0987654321"
+PAYPAL_SIGNATURE="live-signature"
+```
+
+```yaml
+SilverStripe\Omnipay\GatewayInfo:
+  PayPal_Express:
+    parameters:
+      username: '`PAYPAL_USERNAME`'
+      password: '`PAYPAL_PASSWORD`'
+      signature: '`PAYPAL_SIGNATURE`'
+```
+
+**Note:** backticks can only be used for _values_ (not array keys), and can only be used in the “parameters” array for gateway info.
+
+Using this approach, payment credentials can be unique to each environment and there’s no risk of accidentally committing them to version control.
+
+Some gateways require extra parameters (e.g. "testMode") that you may wish to omit from your environment variables. It is possible to do this entirely in YAML by having separate configuration blocks for test and live modes:
 
 ```yaml
 SilverStripe\Omnipay\GatewayInfo:
@@ -122,7 +144,7 @@ Only:
 SilverStripe\Omnipay\GatewayInfo:
   PayPal_Express:
     parameters:
-      username: 'live.user.ccom'
+      username: 'live.user.com'
       password: '0987654321'
       signature: 'live-signature'
       testMode: false # Make sure to override this to false

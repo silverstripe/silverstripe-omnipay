@@ -1,9 +1,9 @@
 # Static Gateway Endpoints
 
-Most payment providers accept dynamic callback URLs where they send status-updates to. 
+Most payment providers accept dynamic callback URLs where they send status-updates to.
 A dynamic callback URL looks like this: `https://example.com/paymentendpoint/c62f90dc62bdbf4966b58e38d6f767/complete`.
 
-It contains the payment identifier and action and will be sent as callback url with the payment request. 
+It contains the payment identifier and action and will be sent as callback url with the payment request.
 This URL is only valid for one payment. Using this kind of callback is the default behavior and you should not use anything else, if not forced to!
 
 In some rare cases, payment providers *only* allow a single callback URL (which is normally being set in the admin interface of the payment provider).
@@ -18,18 +18,24 @@ Use the `use_static_route` flag to enable the static route for your gateway. Onl
 
 Example:
 
+```env
+# E.g. in a .env file
+BARCLAYS_CLIENT_ID="xxxxxx"
+BARCLAYS_SHA_IN="abc"
+```
+
 ```yaml
 SilverStripe\Omnipay\GatewayInfo:
   BarclaysEpdq_Essential:
     use_static_route: true
     parameters:
-      clientId: xxxxxx
-      shaIn: abcdefghijk
+      clientId: '`BARCLAYS_CLIENT_ID`'
+      shaIn: '`BARCLAYS_SHA_IN`'
 ```
 
 ### Write an Extension that gets a payment from the incoming request data
 
-With static routes we have no payment id to easily look up the payment. You have to implement the lookup yourself. 
+With static routes we have no payment id to easily look up the payment. You have to implement the lookup yourself.
 *If you implement such an extension for a payment provider, please contribute it back to us via pull-request*!
 
 Your extension should implement the following method:
@@ -67,7 +73,7 @@ class BarclaysPaymentGatewayControllerExtension extends Extension
 ```
 
 In the example above, the Order-ID was passed along to the payment provider. The payment provider then calls our
-static endpoint with the same order-ID and we look up the order (and the payment) using that information. 
+static endpoint with the same order-ID and we look up the order (and the payment) using that information.
 What information you receive from the payment provider and how it's being transmitted (could be a request-variable, header or something else)
 will vary from one payment provider to the other. That's why you'd have to implement the proper lookup in an extension.
 Ideally, you would send the unique payment ID to the payment provider, if – for example – your order could have multiple payments.
@@ -82,12 +88,12 @@ SilverStripe\Omnipay\PaymentGatewayController:
 
 ### (optional) implement an extension hook that returns the payment action
 
-In some rare cases, you won't be able to configure multiple endpoints for different actions (eg. a separate endpoint URL for "complete" or "cancel"). 
+In some rare cases, you won't be able to configure multiple endpoints for different actions (eg. a separate endpoint URL for "complete" or "cancel").
 In such a case, your endpoint URL might be: `https://example.com/paymentendpoint/BarclaysEpdq_Essential`
 
 In that case, you'd have to add an extension hook that returns the proper action for the given request.
 To do that, implement the `updatePaymentActionFromRequest` method in your extension, which has the following signature:
- 
+
 `updatePaymentActionFromRequest(&$action, Payment $payment, SS_HTTPRequest $request)`
 
 The `$action` parameter should be passed in by reference and you can assign a new value to it.

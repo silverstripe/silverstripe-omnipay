@@ -7,6 +7,8 @@ You configure the allowed gateways by setting the `allowed_gateway` config on `S
 
 To configure the individual gateway parameters, use `SilverStripe\Omnipay\GatewayInfo` and add a key for every Gateway you want to configure.
 
+**It is recommended to store any payment credentials in environment variables to reduce the risk of these accidentally being committed to version control.**
+
 Each Gateway can have the following settings:
 
 | Setting                  | Type             | Description
@@ -17,12 +19,23 @@ Each Gateway can have the following settings:
 | `use_static_route`       | *boolean*        | Enables a static route for payment updates. Only use this, if your payment provider does not accept dynamic return urls and needs a single endpoint for server-to-server communication. (Defaults to *false*). [More information](StaticRoutes.md)
 | `token_key`              | *string*         | Key for the token parameter (for gateways that generate tokens for credit-cards)
 | `required_fields`        | *array*          | An array of required form-fields
-| `parameters`             | *map*            | All gateway parameters that will be passed along to the Omnipay Gateway instance
+| `parameters`             | *map*            | All gateway parameters that will be passed along to the Omnipay Gateway instance. These parameters can reference environment variables with backticks
 | `is_offsite`             | *boolean*        | You can explicitly mark this gateway as being offsite. Use with caution and only if the system fails to automatically determine this
 | `can_capture`            | *boolean/string* | Set how/if authorized payments can be captured. Defaults to "partial". Valid values are "off" or `false` (capturing disabled), "full" (can only capture full amounts), "partial" or `true` (can capture partially) and "multiple" which allows multiple partial captures.
 | `can_refund`             | *boolean/string* | Set how/if captured payments can be refunded. Defaults to "partial". Valid values are "off" or `false` (refunding disabled), "full" (can only refund full amounts), "partial" or `true` (can refund partially) and "multiple" which allows multiple partial refunds.
 | `can_void`               | *boolean*        | Whether or not voiding of authorized payments should be allowed. Defaults to *true*
 | `max_capture`            | *mixed*          | Configuration for excess capturing of authorized amounts. See the **max_capture** section further below.
+
+
+```env
+# E.g. in a .env file
+PAYPAL_EXPRESS_USERNAME="example.username.test"
+PAYPAL_EXPRESS_PASSWORD="txjjllae802325"
+PAYPAL_EXPRESS_SIGNATURE="wk32hkimhacsdfa"
+
+PXPOST_USERNAME="EXAMPLEUSER"
+PXPOST_PASSWORD="235llgwxle4tol23l"
+```
 
 ```yaml
 ---
@@ -37,14 +50,15 @@ SilverStripe\Omnipay\Model\Payment:
 SilverStripe\Omnipay\GatewayInfo:
   PayPal_Express:
     parameters:
-      username: 'example.username.test'
-      password: 'txjjllae802325'
-      signature: 'wk32hkimhacsdfa'
+      username: '`PAYPAL_EXPRESS_USERNAME`'
+      password: '`PAYPAL_EXPRESS_PASSWORD`'
+      signature: '`PAYPAL_EXPRESS_SIGNATURE`'
+      testMode: true
   PaymentExpress_PxPost:
     use_authorize: true
     parameters:
-      username: 'EXAMPLEUSER'
-      password: '235llgwxle4tol23l'
+      username: '`PXPOST_USERNAME`'
+      password: '`PXPOST_PASSWORD`'
 ---
 Except:
   environment: 'live'
@@ -52,7 +66,6 @@ Except:
 SilverStripe\Omnipay\Model\Payment:
   allowed_gateways:
     - 'Dummy'
-
 SilverStripe\Omnipay\GatewayInfo:
   PayPal_Express:
     parameters:
@@ -64,22 +77,17 @@ Only:
 SilverStripe\Omnipay\GatewayInfo:
   PayPal_Express:
     parameters:
-      username: 'liveexample.test'
-      password: 'livepassawe23'
-      signature: 'laivfe23235235'
-  PaymentExpress_PxPost:
-    parameters:
-      username: 'LIVEUSER'
-      password: 'n23nl2ltwlwjle'
+      testMode: false # Override testMode to set it false for live environment
+      # Other parameters are inherited from above
 ```
 
 The [SilverStripe documentation](https://docs.silverstripe.org/en/4/developer_guides/configuration/configuration/) explains more about YAML config files.
 
 ### The `max_capture` config setting
 
-Some payment providers allow capturing more funds than the ones that were initially authorized. 
-[PayPal](https://developer.paypal.com/docs/classic/paypal-payments-standard/integration-guide/authcapture/) for example 
-allows capturing up to 115% of the authorized amount, capped at USD $75. Eg. if the authorized amount is USD $100, 
+Some payment providers allow capturing more funds than the ones that were initially authorized.
+[PayPal](https://developer.paypal.com/docs/classic/paypal-payments-standard/integration-guide/authcapture/) for example
+allows capturing up to 115% of the authorized amount, capped at USD $75. Eg. if the authorized amount is USD $100,
 the merchant is allowed to capture $115 at max. If the authorized amount is USD $1000, the max. amount is $1075.
 
 The `max_capture` setting can be used to configure these scenarios. Here are some examples:
@@ -107,7 +115,7 @@ SilverStripe\Omnipay\GatewayInfo:
       amount: 75
 ```
 
-The example above models the PayPal example with 115%, capped at USD $75. The amount is unitless and uses the currency of the current payment. 
+The example above models the PayPal example with 115%, capped at USD $75. The amount is unitless and uses the currency of the current payment.
 If you need to specify different amounts per currency, it can be done as follows:
 
 ```yaml

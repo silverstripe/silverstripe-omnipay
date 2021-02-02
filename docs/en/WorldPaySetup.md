@@ -13,19 +13,24 @@ next you will need to install the Omnipay WorldPay libraries
 Once you have the WorldPay module installed, add the following
 to `mysite/_config/payment.yml`
 
-````
+```env
+# E.g. in a .env file
+WORLDPAY_INSTALLATION_ID="1010618"
+WORLDPAY_CALLBACK_PASSWORD="abc"
+```
+
+```yml
 ---
 Name: payment
 ---
 SilverStripe\Omnipay\Model\Payment:
   allowed_gateways:
     - 'WorldPay'
-
 SilverStripe\Omnipay\GatewayInfo:
   WorldPay:
     parameters:
-      installationId: '1010618'
-      callbackPassword: 'xyz'
+      installationId: '`WORLDPAY_INSTALLATION_ID`'
+      callbackPassword: '`WORLDPAY_CALLBACK_PASSWORD`'
 ---
 Except:
   environment: 'live'
@@ -34,15 +39,7 @@ SilverStripe\Omnipay\GatewayInfo:
   WorldPay:
     parameters:
       testMode: true
----
-Only:
-  environment: 'live'
----
-SilverStripe\Omnipay\GatewayInfo:
-  WorldPay:
-    parameters:
-      callbackPassword: 'abc'
-````
+```
 
 The `installationId` will be provided by WorldPay when your account is
 setup or can be retrieved from the "Installations" screen of the [WorldPay Admin](https://secure.worldpay.com/sso/public/auth/login.html).
@@ -70,11 +67,11 @@ will need to enable the `WorldPayResponseExtension`.
 
 You can add the following to your `config.yml` to achieve this:
 
-````
+```yml
 SilverStripe\Omnipay\Service\PaymentService:
   extensions:
     - WorldPayResponseExtension
-````
+```
 
 If you want to customise the apperance of the response page, just copy
 the `WorldPayCallback.ss` template from this module and add it to your

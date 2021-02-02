@@ -20,6 +20,13 @@ This is where you should see your "Classic TEST API credentials", it is a Userna
 
 Configure your yaml file:
 
+```env
+# E.g. in a .env file
+PAYPAL_USERNAME="name-facilitator_api1.yourdomain.com"
+PAYPAL_PASSWORD="327593262995"
+PAYPAL_SIGNATURE="ABACEFAFASVAEVAWEVAEVAWEAEDASDFSAFasdf.ASVawevawevasdva"
+```
+
 ```yaml
 ---
 Name: payment
@@ -30,9 +37,9 @@ SilverStripe\Omnipay\Model\Payment:
 SilverStripe\Omnipay\GatewayInfo:
   PayPal_Express:
     parameters:
-      username: 'name-facilitator_api1.yourdomain.com'
-      password: '327593262995'
-      signature: 'ABACEFAFASVAEVAWEVAEVAWEAEDASDFSAFasdf.ASVawevawevasdva'
+      username: '`PAYPAL_USERNAME`'
+      password: '`PAYPAL_PASSWORD`'
+      signature: '`PAYPAL_SIGNATURE`'
       testMode: true
 ```
 

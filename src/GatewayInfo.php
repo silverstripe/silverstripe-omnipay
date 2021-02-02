@@ -437,8 +437,34 @@ class GatewayInfo
     public static function getParameters($gateway)
     {
         $params = self::getConfigSetting($gateway, 'parameters');
+        if (!is_array($params)) {
+            return null;
+        }
 
-        return is_array($params) ? $params : null;
+        $convertConstants = function(&$config) {
+            foreach ($config as $key => &$value) {
+                if (is_array($value)) {
+                    $convertConstants($config);
+                    continue;
+                }
+
+                // Evaluate constants surrounded by back ticks
+                // Logic copied from Injector::convertServiceProperty()
+                if (preg_match('/^`(?<name>[^`]+)`$/', $value, $matches)) {
+                    $envValue = Environment::getEnv($matches['name']);
+                    if ($envValue !== false) {
+                        $value = $envValue;
+                    } elseif (defined($matches['name'])) {
+                        $value = constant($matches['name']);
+                    } else {
+                        $value = null;
+                    }
+                }
+            }
+        };
+
+        $convertConstants($params);
+        return $params;
     }
 
     /**

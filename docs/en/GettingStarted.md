@@ -17,7 +17,7 @@ steps:
 * Get the user to select the prefered payment gateway
 * Generate a payment form that will contain this modules scaffolded form fields.
 * Add a function to your form or controller to process the submitted form and redirect as required.
-* *If Required* Add an extension to the Payment class to handle payment responses (such as Captured, Failed, ETC). 
+* *If Required* Add an extension to the Payment class to handle payment responses (such as Captured, Failed, ETC).
 * *If Required* Make a model (EG an Order) "Payable" (allowing it to be marked as paid).
 
 **NOTE** You can also use this module to make more direct payments (for example if you have saved the users card details and want to perform micro transactions). For more info on direct payments, skip to the end.
@@ -105,6 +105,12 @@ Fields have been appropriately grouped, in case you only want to retrieve the cr
 
 Required fields can be configured in the YAML config file, as this information is unfortunately not provided by Omnipay:
 
+```env
+# E.g. in a .env file
+PXPOST_USERNAME="EXAMPLEUSER"
+PXPOST_PASSWORD="235llgwxle4tol23l"
+```
+
 ```yaml
 ---
 Name: payment
@@ -116,8 +122,8 @@ SilverStripe\Omnipay\Model\Payment:
 SilverStripe\Omnipay\GatewayInfo:
   PaymentExpress_PxPost:
     parameters:
-      username: 'EXAMPLEUSER'
-      password: '235llgwxle4tol23l'
+      username: '`PXPOST_USERNAME`'
+      password: '`PXPOST_PASSWORD`'
     required_fields:
       - 'issueNumber'
       - 'startMonth'
@@ -127,7 +133,7 @@ SilverStripe\Omnipay\GatewayInfo:
 ## Process Payment Form/Make a purchase
 
 Once we have submitted the payment form, we need to process the data and
-submit it to the payment gateway. Depending on the gateway, this could mean 
+submit it to the payment gateway. Depending on the gateway, this could mean
 redirecting to another site, or submiting payment data to their API.
 
 Using function chaining, we can create and configure a new payment object, and submit a request to the chosen gateway.
@@ -154,7 +160,7 @@ class Payment_Controller extends Controller
             ->init("PxPayGateway", 100, "NZD")
             ->setSuccessUrl($this->Link('complete')."/".$donation->ID)
             ->setFailureUrl($this->Link()."?message=payment cancelled");
-            
+
         // Save it to the database to generate an ID
         $payment->write();
 
@@ -253,7 +259,7 @@ class Payment_Controller extends Controller
             ->init("PxPayGateway", 100, "NZD")
             ->setSuccessUrl($this->Link('complete')."/".$donation->ID)
             ->setFailureUrl($this->Link()."?message=payment cancelled");
-            
+
         // Save it to the database to generate an ID
         $payment->write();
 
@@ -269,5 +275,5 @@ class Payment_Controller extends Controller
 }
 ```
 
-**NOTE** In order for this to work you would need to provide the fields 
+**NOTE** In order for this to work you would need to provide the fields
 required by your payment gateway manually.

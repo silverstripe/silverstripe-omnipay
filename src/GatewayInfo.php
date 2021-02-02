@@ -4,6 +4,7 @@ namespace SilverStripe\Omnipay;
 
 use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\GatewayFactory;
+use SilverStripe\Core\Environment;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Config\Configurable;

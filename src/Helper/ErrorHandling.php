@@ -51,7 +51,7 @@ class ErrorHandling
         try {
             $retVal = $object->extend($method, $a1, $a2, $a3, $a4, $a5, $a6, $a7);
         } catch (\Exception $ex) {
-            if ($logger = Logging::getLogger()) {
+            if ($logger = Logging::getExceptionLogger()) {
                 $logger->warning(
                     'An error occurred when trying to run extension point: '. $object->class . '->' . $method,
                     [
@@ -89,7 +89,7 @@ class ErrorHandling
             restore_error_handler();
             return $retVal;
         } catch (\Exception $ex) {
-            if ($logger = Logging::getLogger()) {
+            if ($logger = Logging::getExceptionLogger()) {
                 $logger->warning($errorMessage, [
                     'exception' => $ex
                 ]);

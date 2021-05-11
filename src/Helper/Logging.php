@@ -50,6 +50,20 @@ class Logging
     }
 
     /**
+     * @return \Psr\Log\LoggerInterface
+     */
+    public static function getExceptionLogger()
+    {
+        $logger = null;
+        try {
+            $logger = Injector::inst()->get('SilverStripe\Omnipay\ExceptionLogger');
+        } catch (NotFoundExceptionInterface $e) {
+            /* no op */
+        }
+        return $logger;
+    }
+
+    /**
      * Prepare data for logging by cleaning up the data or simplify it.
      * @param mixed $data the incoming data to log
      * @return array processed data for logging

@@ -77,7 +77,7 @@ class AuthorizeServiceTest extends BasePurchaseServiceTest
         'updateServiceResponse'
     ];
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -88,7 +88,7 @@ class AuthorizeServiceTest extends BasePurchaseServiceTest
         ]);
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
 

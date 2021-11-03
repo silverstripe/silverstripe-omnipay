@@ -2,17 +2,18 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use Omnipay\Common\Message\NotificationInterface;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
-use SilverStripe\Omnipay\Service\RefundService;
-use Omnipay\Common\Message\NotificationInterface;
-use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
-use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
-use SilverStripe\Omnipay\Model\Payment;
-use SilverStripe\Omnipay\Model\Message;
-use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Core\Config\Config;
+use SilverStripe\Omnipay\Exception\InvalidParameterException;
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Model\Message;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\Service\RefundService;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 
 /**
  * Test the refund service
@@ -106,14 +107,14 @@ class RefundServiceTest extends BaseNotificationServiceTest
         'updateServiceResponse'
     );
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->logInWithPermission('REFUND_PAYMENTS');
         RefundService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         RefundService::remove_extension(PaymentTestServiceExtensionHooks::class);
@@ -407,11 +408,10 @@ class RefundServiceTest extends BaseNotificationServiceTest
         ), $payment->Messages());
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidParameterException
-     */
     public function testLargerAmount()
     {
+        $this->expectException(InvalidParameterException::class);
+
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
@@ -425,11 +425,10 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $service->initiate(array('amount' => '1000000.00'));
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidParameterException
-     */
     public function testInvalidAmount()
     {
+        $this->expectException(InvalidParameterException::class);
+
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
@@ -443,11 +442,10 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $service->initiate(array('amount' => 'test'));
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidParameterException
-     */
     public function testNegativeAmount()
     {
+        $this->expectException(InvalidParameterException::class);
+
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
@@ -461,11 +459,10 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $service->initiate(array('amount' => '-100'));
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidParameterException
-     */
     public function testPartialRefundUnsupported()
     {
+        $this->expectException(InvalidParameterException::class);
+
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');

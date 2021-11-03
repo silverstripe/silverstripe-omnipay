@@ -53,7 +53,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
     /** @var GatewayFieldsFactory */
     protected $factory;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         // tests can potentially fail if we just update due to settings already defined persisting, so we'll remove
@@ -165,7 +165,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
     {
         $types = $this->factory->getCardTypes();
 
-        $this->assertInternalType('array', $types);
+        $this->assertIsArray( $types);
 
         $card = new \Omnipay\Common\CreditCard();
 

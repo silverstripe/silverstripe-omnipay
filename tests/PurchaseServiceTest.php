@@ -74,14 +74,14 @@ class PurchaseServiceTest extends BasePurchaseServiceTest
         'updateServiceResponse'
     );
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
         PurchaseService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
 

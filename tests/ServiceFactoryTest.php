@@ -17,17 +17,15 @@ class ServiceFactoryTest extends PaymentTest
         ServiceFactoryTestTestService::class
     );
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
-     */
     public function testDefaultServices()
     {
+        $this->expectException(InvalidConfigurationException::class);
+
         $payment = Payment::create()
             ->setGateway("PaymentExpress_PxPay")
             ->setAmount(123)
             ->setCurrency("GBP");
 
-        //$this->setExpectException(InvalidConfigurationException::class);
         $this->assertInstanceOf(
             'SilverStripe\Omnipay\Service\AuthorizeService',
             $this->factory->getService($payment, ServiceFactory::INTENT_AUTHORIZE),

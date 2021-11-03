@@ -24,7 +24,7 @@ class PayableTest extends SapphireTest
         ]
     ];
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

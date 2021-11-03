@@ -4,6 +4,7 @@ namespace SilverStripe\Omnipay\Tests;
 
 use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\GatewayFactory;
+use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Core\Config\Config;
@@ -19,14 +20,14 @@ class GatewayInfoTest extends SapphireTest
 {
     use i18nTestManifest;
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->tearDownManifest();
         parent::tearDown();
     }
 
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->setupManifest();
@@ -80,10 +81,11 @@ class GatewayInfoTest extends SapphireTest
 
     /**
      * Test the allowed_gateways config
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
      */
     public function testAllowedGateways()
     {
+        $this->expectException(InvalidConfigurationException::class);
+
         $this->assertFalse(GatewayInfo::isSupported('Manual'), 'Manual isn\'t in the list of allowed gateways');
 
         $this->assertTrue(GatewayInfo::isSupported('PayPal_Express'), 'PayPal_Express is in the list of allowed gateways');
@@ -319,8 +321,7 @@ class GatewayInfoTest extends SapphireTest
         );
 
         // test with a gateway that doesn't have required fields
-        $this->assertInternalType(
-            'array',
+        $this->assertIsArray(
             GatewayInfo::requiredFields('Dummy'),
             'Required fields should always return at least an array'
         );

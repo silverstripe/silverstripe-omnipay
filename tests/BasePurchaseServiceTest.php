@@ -2,15 +2,18 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
-use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Omnipay\GatewayInfo;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use SilverStripe\Omnipay\Model\Payment;
-use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Core\Config\Config;
-use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
-use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use Closure;
+use Omnipay\Common\Exception\RuntimeException;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
+use SilverStripe\Omnipay\Exception\InvalidStateException;
+use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 
 /**
  * Abstract base-class that implements common tests for "authorize" and "purchase".
@@ -346,11 +349,10 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         );
     }
 
-    /**
-     * @expectedException \Omnipay\Common\Exception\RuntimeException
-     */
     public function testNonExistantGateway()
     {
+        $this->expectException(RuntimeException::class);
+
         //exception when trying to run functions that require a gateway
         $payment = $this->payment;
         $service = $this->getService(
@@ -361,11 +363,10 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $service->initiate();
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidStateException
-     */
     public function testPaymentInvalidStatus()
     {
+        $this->expectException(InvalidStateException::class);
+
         $payment = $this->payment;
         $payment->Status = 'Void';
         $service = $this->getService($payment);
@@ -373,11 +374,10 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $service->initiate();
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidStateException
-     */
     public function testCompletePaymentInvalidStatus()
     {
+        $this->expectException(InvalidStateException::class);
+
         $payment = $this->payment;
         $payment->Status = 'Void';
         $service = $this->getService($payment);
@@ -385,11 +385,10 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $service->complete();
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
-     */
     public function testGatewayDoesntSupportMethod()
     {
+        $this->expectException(InvalidConfigurationException::class);
+
         // Build the dummy gateway
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
             ->setMethods(array('getName'))
@@ -404,11 +403,10 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $service->initiate();
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
-     */
     public function testGatewayDoesntSupportCompleteMethod()
     {
+        $this->expectException(InvalidConfigurationException::class);
+
         // Build the dummy gateway
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
             ->setMethods(array('getName'))

@@ -3,6 +3,7 @@
 namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Omnipay\Exception\InvalidParameterException;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Model\Message\NotificationSuccessful;
 use SilverStripe\Omnipay\Model\Message\PartiallyCapturedResponse;
@@ -111,14 +112,14 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         'updateServiceResponse'
     );
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         $this->logInWithPermission('CAPTURE_PAYMENTS');
         CaptureService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         CaptureService::remove_extension(PaymentTestServiceExtensionHooks::class);
@@ -554,11 +555,10 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         ), $payment->Messages());
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidParameterException
-     */
     public function testLargerAmount()
     {
+        $this->expectException(InvalidParameterException::class);
+
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
@@ -572,11 +572,10 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $service->initiate(array('amount' => '1000000.00'));
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidParameterException
-     */
     public function testInvalidAmount()
     {
+        $this->expectException(InvalidParameterException::class);
+
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
@@ -590,11 +589,10 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $service->initiate(array('amount' => 'test'));
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidParameterException
-     */
     public function testNegativeAmount()
     {
+        $this->expectException(InvalidParameterException::class);
+
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
@@ -608,11 +606,10 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $service->initiate(array('amount' => '-1'));
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidParameterException
-     */
     public function testPartialCaptureUnsupported()
     {
+        $this->expectException(InvalidParameterException::class);
+
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
         Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');

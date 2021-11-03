@@ -12,7 +12,7 @@ use SilverStripe\Security\RandomGenerator;
 
 class PaymentModelTest extends PaymentTest
 {
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         Config::modify()->merge(GatewayInfo::class, 'Manual', array(

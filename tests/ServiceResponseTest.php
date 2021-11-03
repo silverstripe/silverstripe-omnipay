@@ -2,7 +2,9 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use InvalidArgumentException;
 use SilverStripe\Dev\FunctionalTest;
+use SilverStripe\Omnipay\Exception\ServiceException;
 use SilverStripe\Omnipay\Service\ServiceResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use SilverStripe\Omnipay\Model\Payment;
@@ -13,7 +15,7 @@ class ServiceResponseTest extends FunctionalTest
     /** @var Payment */
     protected $payment;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -96,29 +98,23 @@ class ServiceResponseTest extends FunctionalTest
         $this->assertFalse($response->hasFlag(ServiceResponse::SERVICE_NOTIFICATION));
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testInvalidAddFlag()
     {
+        $this->expectException(InvalidArgumentException::class);
         $response = new ServiceResponse($this->payment);
         $response->addFlag("Test");
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testInvalidHasFlag()
     {
+        $this->expectException(InvalidArgumentException::class);
         $response = new ServiceResponse($this->payment);
         $response->hasFlag("Test");
     }
 
-    /**
-     * @expectedException \InvalidArgumentException
-     */
     public function testInvalidRemoveFlag()
     {
+        $this->expectException(InvalidArgumentException::class);
         $response = new ServiceResponse($this->payment);
         $response->removeFlag("Test");
     }
@@ -142,11 +138,10 @@ class ServiceResponseTest extends FunctionalTest
         $this->assertEquals($httpResponse->getStatusCode(), 200);
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\ServiceException
-     */
     public function testRedirectResponse()
     {
+        $this->expectException(ServiceException::class);
+
         $response = new ServiceResponse($this->payment);
         $response->setTargetUrl('/my/target/url');
 
@@ -180,12 +175,13 @@ class ServiceResponseTest extends FunctionalTest
         $response->setTargetUrl('/my/endpoint');
     }
 
-    // Omnipay can also return a response that contains a self-submitting form
     /**
-     * @expectedException \SilverStripe\Omnipay\Exception\ServiceException
+     * Omnipay can also return a response that contains a self-submitting form
      */
     public function testPostRedirectResponse()
     {
+        $this->expectException(ServiceException::class);
+
         $response = new ServiceResponse($this->payment);
         $response->setTargetUrl('/my/target/url');
 

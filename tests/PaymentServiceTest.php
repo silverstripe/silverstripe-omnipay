@@ -3,6 +3,7 @@
 namespace SilverStripe\Omnipay\Tests;
 
 use Omnipay\Common\AbstractGateway;
+use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\Omnipay\Service\PaymentService;
@@ -17,7 +18,7 @@ class PaymentServiceTest extends PaymentTest
     /** @var \SilverStripe\Omnipay\Service\PurchaseService */
     protected $service;
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -202,10 +203,11 @@ class PaymentServiceTest extends PaymentTest
 
     /**
      * Test with a gateway that doesn't implement `acceptNotification`.
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
      */
     public function testHandleNotificationWithIncompatibleGateway()
     {
+        $this->expectException(InvalidConfigurationException::class);
+
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
         $service = $this->factory->getService($payment, ServiceFactory::INTENT_PURCHASE);
 

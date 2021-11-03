@@ -33,7 +33,7 @@ abstract class PaymentTest extends FunctionalTest
 
     protected static $factoryExtensions;
 
-    public static function setUpBeforeClass()
+    public static function setUpBeforeClass(): void
     {
         parent::setUpBeforeClass();
 
@@ -62,7 +62,7 @@ abstract class PaymentTest extends FunctionalTest
         Payment::add_extension(PaymentTestPaymentExtensionHooks::class);
     }
 
-    public static function tearDownAfterClass()
+    public static function tearDownAfterClass(): void
     {
         parent::tearDownAfterClass();
 
@@ -76,7 +76,7 @@ abstract class PaymentTest extends FunctionalTest
         Payment::remove_extension(PaymentTestPaymentExtensionHooks::class);
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

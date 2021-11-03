@@ -6,6 +6,9 @@ use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
+use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
+use SilverStripe\Omnipay\Exception\InvalidStateException;
+use SilverStripe\Omnipay\Exception\MissingParameterException;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
@@ -386,11 +389,10 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         );
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
-     */
     public function testUnsupportedGatewayMethod()
     {
+        $this->expectException(InvalidConfigurationException::class);
+
         // Build the dummy gateway that doesn't contain the requested method (eg. void, capture or refund)
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
             ->setMethods(array('getName'))
@@ -506,11 +508,10 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $this->assertEquals($payment->Status, $this->pendingStatus, 'Payment status should be unchanged');
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
-     */
     public function testInvalidStatus()
     {
+        $this->expectException(InvalidConfigurationException::class);
+
         $this->payment->Status = 'Created';
 
         // create a service with a payment that is created
@@ -520,11 +521,10 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $service->initiate();
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidStateException
-     */
     public function testInvalidCompleteStatus()
     {
+        $this->expectException(InvalidStateException::class);
+
         $this->payment->Status = 'Created';
 
         // create a service with a payment that is created
@@ -534,11 +534,10 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $service->complete();
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\MissingParameterException
-     */
     public function testMissingTransactionReference()
     {
+        $this->expectException(MissingParameterException::class);
+
         $this->payment->Status = $this->startStatus;
 
         // create a service with a payment that has the correct status
@@ -549,11 +548,10 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $service->initiate();
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
-     */
     public function testMethodDisabled()
     {
+        $this->expectException(InvalidConfigurationException::class);
+
         // disallow the service via config
         $method = 'allow_' . $this->gatewayMethod;
         Config::modify()->merge(GatewayInfo::class, 'Dummy', array(

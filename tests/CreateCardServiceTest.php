@@ -74,13 +74,13 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
         'updateServiceResponse'
     );
 
-    public function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
         CreateCardService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    public function tearDown()
+    protected function tearDown(): void
     {
         parent::tearDown();
         CreateCardService::remove_extension(PaymentTestServiceExtensionHooks::class);

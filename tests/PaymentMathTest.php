@@ -48,6 +48,7 @@ class PaymentMathTest extends SapphireTest
 
     public function testPrecisionFloat()
     {
+        $this->expectWarning();
         Config::modify()->set(PaymentMath::class, 'useBcMath', false);
 
         Config::modify()->set(PaymentMath::class, 'precision', -1);
@@ -66,9 +67,9 @@ class PaymentMathTest extends SapphireTest
         $this->assertEquals('99.90', PaymentMath::subtract('100.00', '0.1'));
         $this->assertEquals('0.49', PaymentMath::add('0.273', '0.226'));
 
-        Config::modify()->set(PaymentMath::class, 'precision', 15);
-        $this->assertEquals('99.900000000000000', PaymentMath::subtract('100.00', '0.1'));
-        $this->assertEquals('0.499000000000000', PaymentMath::add('0.273', '0.226'));
+        Config::modify()->set(PaymentMath::class, 'precision', 12);
+        $this->assertEquals('99.900000000000', PaymentMath::subtract('100.00', '0.1'));
+        $this->assertEquals('0.499000000000', PaymentMath::add('0.273', '0.226'));
     }
 
     public function testSubtraction()
@@ -95,6 +96,7 @@ class PaymentMathTest extends SapphireTest
 
     public function testSubtractionFloat()
     {
+        $this->expectWarning();
         Config::modify()->set(PaymentMath::class, 'useBcMath', false);
 
         $result = PaymentMath::subtract('100.00', '3.6');
@@ -136,6 +138,7 @@ class PaymentMathTest extends SapphireTest
 
     public function testAdditionFloat()
     {
+        $this->expectWarning();
         Config::modify()->set(PaymentMath::class, 'useBcMath', false);
 
         $result = PaymentMath::add('3.6', '80.40');
@@ -174,6 +177,7 @@ class PaymentMathTest extends SapphireTest
 
     public function testMultiplyFloat()
     {
+        $this->expectWarning();
         Config::modify()->set(PaymentMath::class, 'useBcMath', false);
 
         $this->assertEquals('0.00', PaymentMath::multiply('0.0001', '10'));
@@ -224,6 +228,7 @@ class PaymentMathTest extends SapphireTest
 
     public function testCompareFloat()
     {
+        $this->expectWarning();
         Config::modify()->set(PaymentMath::class, 'useBcMath', false);
 
         $this->assertEquals(1, PaymentMath::compare('10', '0'));

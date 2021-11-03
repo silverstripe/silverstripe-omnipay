@@ -165,7 +165,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
     {
         $types = $this->factory->getCardTypes();
 
-        $this->assertIsArray( $types);
+        $this->assertIsArray($types);
 
         $card = new \Omnipay\Common\CreditCard();
 

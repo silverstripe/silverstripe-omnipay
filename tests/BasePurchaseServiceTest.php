@@ -473,7 +473,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
             ->with(
                 $this->logicalAnd(
                     $this->arrayHasKey('token'),
-                    $this->contains('ABC123'),
+                    $this->containsEqual('ABC123'),
                     $this->logicalNot($this->arrayHasKey('card'))
                 )
             )
@@ -503,7 +503,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
             ->with(
                 $this->logicalAnd(
                     $this->arrayHasKey('token'), // my_token should get normalized to this
-                    $this->contains('ABC123'),
+                    $this->containsEqual('ABC123'),
                     $this->logicalNot($this->arrayHasKey('card'))
                 )
             )

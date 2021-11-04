@@ -1,45 +1,33 @@
-language: php
-sudo: false
-dist: trusty
+version: ~> 1.0
 
-env:
-  global:
-    - COMPOSER_ROOT_VERSION=3.0.x-dev
-    - SS_ENVIRONMENT_TYPE="dev"
+import:
+  - silverstripe/silverstripe-travis-shared:config/provision/standard.yml
 
-matrix:
+jobs:
+  fast_finish: true
   include:
-    - php: 5.6
+    - php: 7.3
       env:
         - DB=MYSQL
-        - PHPCS_TEST=1
+        - REQUIRE_INSTALLER="$REQUIRE_RECIPE 4.7.x-dev"
         - PHPUNIT_TEST=1
-    - php: 7.0
+        - PHPCS_TEST=1
+        - PHPSTAN_TEST=1
+    - php: 7.3
       env:
         - DB=PGSQL
+        - REQUIRE_INSTALLER="$REQUIRE_RECIPE 4.8.x-dev"
         - PHPUNIT_TEST=1
-    - php: 7.1
+        - COW_TEST=1
+    - php: 7.4
       env:
         - DB=MYSQL
+        - PDO=1
+        - REQUIRE_INSTALLER="$REQUIRE_RECIPE 4.9.x-dev"
         - PHPUNIT_COVERAGE_TEST=1
-
-before_script:
-  # Init PHP
-  - composer self-update || true
-  - phpenv rehash
-  - phpenv config-rm xdebug.ini || true
-
-  # Install composer dependencies
-  - export PATH=~/.composer/vendor/bin:$PATH
-  - composer validate
-  - if [[ $DB == PGSQL ]]; then composer require silverstripe/postgresql:^2.0 --no-update; fi
-  - composer install --prefer-source --no-interaction --no-progress --no-suggest --optimize-autoloader --verbose --profile
-  - if [[ $PHPCS_TEST ]]; then composer global require squizlabs/php_codesniffer:^3 --prefer-dist --no-interaction --no-progress --no-suggest -o; fi
-
-script:
-  - if [[ $PHPUNIT_TEST ]]; then vendor/bin/phpunit; fi
-  - if [[ $PHPUNIT_COVERAGE_TEST ]]; then phpdbg -qrr vendor/bin/phpunit --coverage-clover=coverage.xml; fi
-  - if [[ $PHPCS_TEST ]]; then composer run-script lint; fi
-
-after_success:
-  - if [[ $PHPUNIT_COVERAGE_TEST ]]; then bash <(curl -s https://codecov.io/bash) -f coverage.xml; fi
+    - php: 7.4
+      env:
+        - DB=MYSQL
+        - REQUIRE_INSTALLER="$REQUIRE_RECIPE 4.x-dev"
+        - PHPUNIT_TEST=1
+        - REQUIRE_GRAPHQL="^3@dev || 4.x-dev"

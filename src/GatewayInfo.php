@@ -442,8 +442,8 @@ class GatewayInfo
             return null;
         }
 
-        $convertConstants = function(&$config) use (&$convertConstants){
-            foreach ($config as $key => &$value) {
+        $convertConstants = function (&$config) use (&$convertConstants) {
+            foreach ($config as &$value) {
                 if (is_array($value)) {
                     $convertConstants($value);
                     continue;

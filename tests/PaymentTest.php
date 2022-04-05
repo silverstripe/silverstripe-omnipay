@@ -2,14 +2,15 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
-use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
-use SilverStripe\Omnipay\Service\PaymentService;
-use SilverStripe\Omnipay\Service\ServiceFactory;
-use SilverStripe\Omnipay\Model\Payment;
-use SilverStripe\Dev\FunctionalTest;
+use GuzzleHttp\Psr7\Message;
+use Psr\Log\NullLogger;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Dev\FunctionalTest;
+use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\Service\ServiceFactory;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Tests\Service\TestGatewayFactory;
 
 abstract class PaymentTest extends FunctionalTest
@@ -46,8 +47,12 @@ abstract class PaymentTest extends FunctionalTest
             }
         }
 
+        // Stop the default loggers flooding the test output with payment messages
+        Injector::inst()->registerService(new NullLogger(), 'SilverStripe\Omnipay\Logger');
+        Injector::inst()->registerService(new NullLogger(), 'SilverStripe\Omnipay\ExceptionLogger');
+
         // clear existing config for the factory (clear user defined settings)
-        Config::modify()->remove('ServiceFactory', 'services');
+        Config::modify()->remove(ServiceFactory::class, 'services');
 
         // Create the default service map
         Config::modify()->set(ServiceFactory::class, 'services', array(
@@ -126,7 +131,7 @@ abstract class PaymentTest extends FunctionalTest
                 'handler' => $this->mockHandler,
             ]);
 
-            $this->httpClient = new \Omnipay\Common\Http\Client(new \Http\Adapter\Guzzle6\Client($guzzle));
+            $this->httpClient = new \Omnipay\Common\Http\Client(new \Http\Adapter\Guzzle7\Client($guzzle));
         }
 
         return $this->httpClient;
@@ -151,7 +156,7 @@ abstract class PaymentTest extends FunctionalTest
 
         foreach ((array)$paths as $path) {
             $this->mockHandler->append(
-                \GuzzleHttp\Psr7\parse_response(file_get_contents("{$testspath}/{$path}"))
+                Message::parseResponse(file_get_contents("{$testspath}/{$path}"))
             );
         }
 

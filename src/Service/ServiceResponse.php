@@ -98,6 +98,22 @@ class ServiceResponse
     }
 
     /**
+     * Whether the response is marked as successful by Omnipay.
+     *
+     * @return bool
+     */
+    public function isSuccessful()
+    {
+        if ($this->omnipayResponse instanceof NotificationInterface) {
+            return $this->omnipayResponse->getTransactionStatus() === NotificationInterface::STATUS_COMPLETED;
+        } elseif ($this->omnipayResponse instanceof AbstractResponse) {
+            return $this->omnipayResponse->isSuccessful();
+        }
+
+        return false;
+    }
+
+    /**
      * Whether or not this is an *offsite* redirect.
      * This is only the case when there's an Omnipay response present that *is* a redirect.
      *

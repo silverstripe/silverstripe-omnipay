@@ -79,7 +79,10 @@ abstract class NotificationCompleteService extends PaymentService
         }
 
         // check if we're done
-        if (!$serviceResponse->isError() && !$serviceResponse->isAwaitingNotification()) {
+        if (!$serviceResponse->isError()
+            && !$serviceResponse->isAwaitingNotification()
+            && $serviceResponse->isSuccessful()
+        ) {
             $this->markCompleted($this->endState, $serviceResponse, $serviceResponse->getOmnipayResponse());
         }
 

@@ -9,7 +9,10 @@ use SilverStripe\Omnipay\Exception\MissingParameterException;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
 use SilverStripe\Omnipay\Helper\PaymentMath;
-use SilverStripe\Omnipay\Model\Message;
+use SilverStripe\Omnipay\Model\Message\PartiallyRefundedResponse;
+use SilverStripe\Omnipay\Model\Message\RefundedResponse;
+use SilverStripe\Omnipay\Model\Message\RefundError;
+use SilverStripe\Omnipay\Model\Message\RefundRequest;
 use SilverStripe\Omnipay\Model\Payment;
 
 class RefundService extends NotificationCompleteService
@@ -20,9 +23,9 @@ class RefundService extends NotificationCompleteService
 
     protected $pendingState = 'PendingRefund';
 
-    protected $requestMessageType = Message\RefundRequest::class;
+    protected $requestMessageType = RefundRequest::class;
 
-    protected $errorMessageType = Message\RefundError::class;
+    protected $errorMessageType = RefundError::class;
 
     /**
      * Return money to the previously charged credit card.
@@ -127,21 +130,20 @@ class RefundService extends NotificationCompleteService
 
         $serviceResponse = $this->wrapOmnipayResponse($response);
 
-        if ($serviceResponse->isAwaitingNotification()) {
+        if ($serviceResponse->isError()) {
+            $this->createMessage($this->errorMessageType, $response);
+        } elseif ($serviceResponse->isRedirect() || $serviceResponse->isAwaitingNotification()) {
             if ($isPartial) {
                 $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
             }
             $this->payment->Status = $this->pendingState;
             $this->payment->write();
-        } else {
-            if ($serviceResponse->isError()) {
-                $this->createMessage($this->errorMessageType, $response);
-            } else {
-                if ($isPartial) {
-                    $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
-                }
-                $this->markCompleted($this->endState, $serviceResponse, $response);
+        } elseif ($serviceResponse->isSuccessful()) {
+            if ($isPartial) {
+                $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
             }
+
+            $this->markCompleted($this->endState, $serviceResponse, $response);
         }
 
         return $serviceResponse;
@@ -182,9 +184,9 @@ class RefundService extends NotificationCompleteService
 
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
         if ($endStatus === 'Captured') {
-            $this->createMessage(Message\PartiallyRefundedResponse::class, $gatewayMessage);
+            $this->createMessage(PartiallyRefundedResponse::class, $gatewayMessage);
         } else {
-            $this->createMessage(Message\RefundedResponse::class, $gatewayMessage);
+            $this->createMessage(RefundedResponse::class, $gatewayMessage);
         }
 
         ErrorHandling::safeExtend($this->payment, 'onRefunded', $serviceResponse);

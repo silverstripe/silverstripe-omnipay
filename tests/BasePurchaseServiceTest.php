@@ -2,8 +2,10 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use Psr\Log\NullLogger;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Service\ServiceResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Injector\Injector;
@@ -344,6 +346,79 @@ abstract class BasePurchaseServiceTest extends PaymentTest
             [],
             $payment->getExtensionInstance(PaymentTestPaymentExtensionHooks::class)->getCalledMethods()
         );
+    }
+
+    public function testOffSiteCompletePaymentStuckInRedirect()
+    {
+        $payment = $this->payment->setGateway('PaymentExpress_PxPay');
+
+        $mockRedirectServiceResponse = $this->getMockBuilder(ServiceResponse::class)
+            ->setMethods(['isError', 'isRedirect'])
+            ->setConstructorArgs([$payment])
+            ->getMock();
+        $mockRedirectServiceResponse->expects($this->any())
+            ->method('isError')
+            ->will($this->returnValue(false));
+        $mockRedirectServiceResponse->expects($this->any())
+            ->method('isRedirect')
+            ->will($this->returnValue(true));
+
+        $mockSuccessfulServiceResponse = $this->getMockBuilder(ServiceResponse::class)
+            ->setMethods(['isError', 'isSuccessful'])
+            ->setConstructorArgs([$payment])
+            ->getMock();
+        $mockSuccessfulServiceResponse->expects($this->any())
+            ->method('isError')
+            ->will($this->returnValue(false));
+        $mockSuccessfulServiceResponse->expects($this->any())
+            ->method('isSuccessful')
+            ->will($this->returnValue(true));
+
+        $service = $this->getService($payment);
+        $mockService = $this->getMockBuilder(get_class($service))
+            ->setMethods(['wrapOmnipayResponse'])
+            ->setConstructorArgs([$payment])
+            ->getMock();
+        $mockService->expects($this->at(0))
+            ->method('wrapOmnipayResponse')
+            ->withAnyParameters()
+            ->will($this->returnValue($mockRedirectServiceResponse));
+        $mockService->expects($this->at(1))
+            ->method('wrapOmnipayResponse')
+            ->withAnyParameters()
+            ->will($this->returnValue($mockRedirectServiceResponse));
+        $mockService->expects($this->at(2))
+            ->method('wrapOmnipayResponse')
+            ->withAnyParameters()
+            ->will($this->returnValue($mockSuccessfulServiceResponse));
+
+        // Inject loggers - normally Injector handles this, but can't as we're using mock objects
+        $mockService->logger = new NullLogger();
+        $mockService->exceptionLogger = new NullLogger();
+
+        $this->setMockHttpResponse('paymentexpress/tests/Mock/PxPayPurchaseSuccess.txt'); // Add success mock response from file
+        $mockService->initiate();
+
+        // Status should be set to pending
+        $this->assertSame($this->pendingStatus, $payment->Status);
+
+        // User would be redirected to the off-site gateway at this stage
+
+        // User is redirected back to the payment complete endpoint
+        $this->setMockHttpResponse('paymentexpress/tests/Mock/PxPayPurchaseSuccess.txt'); // Add success mock response from file
+        $this->getHttpRequest()->query->replace(array('result' => 'abc123'));
+        $mockService->complete();
+
+        // Ensure status is still pending
+        $this->assertSame($this->pendingStatus, $payment->Status);
+
+        // User is redirected back to the payment complete endpoint, this time the payment was successful
+        $this->setMockHttpResponse('paymentexpress/tests/Mock/PxPayPurchaseSuccess.txt'); // Add success mock response from file
+        $this->getHttpRequest()->query->replace(array('result' => 'abc123')); // Add mock params PxPay expects
+        $mockService->complete();
+
+        // Ensure status is updated now that payment has succeeded
+        $this->assertSame($this->completeStatus, $payment->Status);
     }
 
     /**

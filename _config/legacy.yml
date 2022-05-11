@@ -29,7 +29,6 @@ SilverStripe\ORM\DatabaseAdmin:
     GatewayErrorMessage: SilverStripe\Omnipay\Model\Message\GatewayErrorMessage
     GatewayMessage: SilverStripe\Omnipay\Model\Message\GatewayMessage
     GatewayRedirectResponseMessage: SilverStripe\Omnipay\Model\Message\GatewayRedirectResponseMessage
-    GatewayRequestMessage: SilverStripe\Omnipay\Model\Message\GatewayRequestMessage
     GatewayResponseMessage: SilverStripe\Omnipay\Model\Message\GatewayResponseMessage
     NotificationError: SilverStripe\Omnipay\Model\Message\NotificationError
     NotificationPending: SilverStripe\Omnipay\Model\Message\NotificationPending

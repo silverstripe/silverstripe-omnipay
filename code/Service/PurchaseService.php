@@ -66,7 +66,7 @@ class PurchaseService extends PaymentService
             );
         } elseif ($serviceResponse->isError()) {
             $this->createMessage('PurchaseError', $response);
-        } else {
+        } elseif ($serviceResponse->isSuccessful()) {
             $this->markCompleted('Captured', $serviceResponse, $response);
         }
 
@@ -114,18 +114,14 @@ class PurchaseService extends PaymentService
         }
 
         $serviceResponse = $this->wrapOmnipayResponse($response, $isNotification);
-        if ($serviceResponse->isError()) {
-            $this->createMessage('CompletePurchaseError', $response);
-            return $serviceResponse;
-        }
 
-        // only update payment status if we're not waiting for a notification
-        if (!$serviceResponse->isAwaitingNotification()) {
-            $this->markCompleted('Captured', $serviceResponse, $response);
-        } else {
+        if ($serviceResponse->isAwaitingNotification()) {
             Helper::safeExtend($this->payment, 'onAwaitingCaptured', $serviceResponse);
+        } elseif ($serviceResponse->isError()) {
+            $this->createMessage('CompletePurchaseError', $response);
+        } elseif ($serviceResponse->isSuccessful()) {
+            $this->markCompleted('Captured', $serviceResponse, $response);
         }
-
 
         return $serviceResponse;
     }

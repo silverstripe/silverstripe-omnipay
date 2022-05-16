@@ -88,15 +88,13 @@ class VoidService extends NotificationCompleteService
 
         $serviceResponse = $this->wrapOmnipayResponse($response);
 
-        if ($serviceResponse->isAwaitingNotification()) {
+        if ($serviceResponse->isError()) {
+            $this->createMessage($this->errorMessageType, $response);
+        } elseif ($serviceResponse->isRedirect() || $serviceResponse->isAwaitingNotification()) {
             $this->payment->Status = $this->pendingState;
             $this->payment->write();
-        } else {
-            if ($serviceResponse->isError()) {
-                $this->createMessage($this->errorMessageType, $response);
-            } else {
-                $this->markCompleted($this->endState, $serviceResponse, $response);
-            }
+        } elseif ($serviceResponse->isSuccessful()) {
+            $this->markCompleted($this->endState, $serviceResponse, $response);
         }
 
         return $serviceResponse;

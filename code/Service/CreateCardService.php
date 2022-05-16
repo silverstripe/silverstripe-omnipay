@@ -60,7 +60,7 @@ class CreateCardService extends PaymentService
             );
         } elseif ($serviceResponse->isError()) {
             $this->createMessage('CreateCardError', $response);
-        } else {
+        } elseif ($serviceResponse->isSuccessful()) {
             $this->markCompleted('CardCreated', $serviceResponse, $response);
         }
 
@@ -110,15 +110,12 @@ class CreateCardService extends PaymentService
 
         $serviceResponse = $this->wrapOmnipayResponse($response, $isNotification);
 
-        if ($serviceResponse->isError()) {
-            $this->createMessage('CompleteCreateCardError', $response);
-            return $serviceResponse;
-        }
-
-        if (!$serviceResponse->isAwaitingNotification()) {
-            $this->markCompleted('CardCreated', $serviceResponse, $response);
-        } else {
+        if ($serviceResponse->isAwaitingNotification()) {
             Helper::safeExtend($this->payment, 'onAwaitingCreateCard', $serviceResponse);
+        } elseif ($serviceResponse->isError()) {
+            $this->createMessage('CompleteCreateCardError', $response);
+        } elseif ($serviceResponse->isSuccessful()) {
+            $this->markCompleted('CardCreated', $serviceResponse, $response);
         }
 
         return $serviceResponse;

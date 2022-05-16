@@ -60,7 +60,7 @@ class AuthorizeService extends PaymentService
             );
         } elseif ($serviceResponse->isError()) {
             $this->createMessage('AuthorizeError', $response);
-        } else {
+        } elseif ($serviceResponse->isSuccessful()) {
             $this->markCompleted('Authorized', $serviceResponse, $response);
         }
 
@@ -110,15 +110,12 @@ class AuthorizeService extends PaymentService
 
         $serviceResponse = $this->wrapOmnipayResponse($response, $isNotification);
 
-        if ($serviceResponse->isError()) {
-            $this->createMessage('CompleteAuthorizeError', $response);
-            return $serviceResponse;
-        }
-
-        if (!$serviceResponse->isAwaitingNotification()) {
-            $this->markCompleted('Authorized', $serviceResponse, $response);
-        } else {
+        if ($serviceResponse->isAwaitingNotification()) {
             Helper::safeExtend($this->payment, 'onAwaitingAuthorized', $serviceResponse);
+        } elseif ($serviceResponse->isError()) {
+            $this->createMessage('CompleteAuthorizeError', $response);
+        } elseif ($serviceResponse->isSuccessful()) {
+            $this->markCompleted('Authorized', $serviceResponse, $response);
         }
 
         return $serviceResponse;

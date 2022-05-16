@@ -121,21 +121,20 @@ class RefundService extends NotificationCompleteService
 
         $serviceResponse = $this->wrapOmnipayResponse($response);
 
-        if ($serviceResponse->isAwaitingNotification()) {
+        if ($serviceResponse->isError()) {
+            $this->createMessage($this->errorMessageType, $response);
+        } elseif ($serviceResponse->isRedirect() || $serviceResponse->isAwaitingNotification()) {
             if ($isPartial) {
                 $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
             }
             $this->payment->Status = $this->pendingState;
             $this->payment->write();
-        } else {
-            if ($serviceResponse->isError()) {
-                $this->createMessage($this->errorMessageType, $response);
-            } else {
-                if ($isPartial) {
-                    $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
-                }
-                $this->markCompleted($this->endState, $serviceResponse, $response);
+        } elseif ($serviceResponse->isSuccessful()) {
+            if ($isPartial) {
+                $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
             }
+
+            $this->markCompleted($this->endState, $serviceResponse, $response);
         }
 
         return $serviceResponse;

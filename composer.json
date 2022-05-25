@@ -13,7 +13,7 @@
         "omnipay/dummy": "^3",
         "omnipay/paymentexpress": "^3",
         "omnipay/paypal": "^3",
-        "php-http/guzzle6-adapter": "^1.1",
+        "php-http/guzzle7-adapter": "^1",
         "sminnee/phpunit": "^5.7.29",
         "sminnee/phpunit-mock-objects": "^3.4.9",
         "squizlabs/php_codesniffer": "^3"

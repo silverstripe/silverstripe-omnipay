@@ -145,8 +145,11 @@ class GatewayFieldsFactory
         $months = array();
         //generate list of months
         for ($x = 1; $x <= 12; $x++) {
+            $date = new \DateTime();
+            $date->setTimestamp(mktime(0, 0, 0, $x, 1));
+            
             // Fixes #145 - Thanks to @digitall-it
-            $months[$x] = str_pad($x, 2, '0', STR_PAD_LEFT) . " - " . strftime('%B', mktime(0, 0, 0, $x, 1));
+            $months[$x] = str_pad($x, 2, '0', STR_PAD_LEFT) . " - " . $date->format('F');
         }
         $year = date('Y');
         $range = 5;

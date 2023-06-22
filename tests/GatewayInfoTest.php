@@ -19,7 +19,7 @@ class GatewayInfoTest extends SapphireTest
 {
     use i18nTestManifest;
 
-    protected function tearDown()
+    protected function tearDown(): void
     {
         $this->tearDownManifest();
         parent::tearDown();

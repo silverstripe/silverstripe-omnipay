@@ -113,7 +113,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         RefundService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         RefundService::remove_extension(PaymentTestServiceExtensionHooks::class);

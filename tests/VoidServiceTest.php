@@ -107,7 +107,7 @@ class VoidServiceTest extends BaseNotificationServiceTest
         VoidService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         VoidService::remove_extension(PaymentTestServiceExtensionHooks::class);

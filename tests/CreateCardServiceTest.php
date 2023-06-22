@@ -80,7 +80,7 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
         CreateCardService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         CreateCardService::remove_extension(PaymentTestServiceExtensionHooks::class);

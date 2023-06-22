@@ -81,7 +81,7 @@ class PurchaseServiceTest extends BasePurchaseServiceTest
         PurchaseService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
 

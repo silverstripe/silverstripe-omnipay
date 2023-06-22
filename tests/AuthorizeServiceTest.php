@@ -88,7 +88,7 @@ class AuthorizeServiceTest extends BasePurchaseServiceTest
         ]);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
 

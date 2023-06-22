@@ -118,7 +118,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         CaptureService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         CaptureService::remove_extension(PaymentTestServiceExtensionHooks::class);

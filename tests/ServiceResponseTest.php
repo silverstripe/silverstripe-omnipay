@@ -13,7 +13,7 @@ class ServiceResponseTest extends FunctionalTest
     /** @var Payment */
     protected $payment;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

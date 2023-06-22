@@ -76,7 +76,7 @@ abstract class PaymentTest extends FunctionalTest
         Payment::remove_extension(PaymentTestPaymentExtensionHooks::class);
     }
 
-    protected function setUp()
+    protected function setUp(): void
     {
         parent::setUp();
 

@@ -17,7 +17,7 @@ class PaymentServiceTest extends PaymentTest
     /** @var \SilverStripe\Omnipay\Service\PurchaseService */
     protected $service;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

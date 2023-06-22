@@ -53,7 +53,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
     /** @var GatewayFieldsFactory */
     protected $factory;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         // tests can potentially fail if we just update due to settings already defined persisting, so we'll remove

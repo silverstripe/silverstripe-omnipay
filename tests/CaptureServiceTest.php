@@ -111,7 +111,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         'updateServiceResponse'
     );
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->logInWithPermission('CAPTURE_PAYMENTS');

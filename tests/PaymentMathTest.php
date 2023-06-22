@@ -11,7 +11,7 @@ use SilverStripe\Core\Config\Config;
  */
 class PaymentMathTest extends SapphireTest
 {
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         Config::modify()->set(PaymentMath::class, 'precision', 2);

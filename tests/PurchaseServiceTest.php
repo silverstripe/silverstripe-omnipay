@@ -74,7 +74,7 @@ class PurchaseServiceTest extends BasePurchaseServiceTest
         'updateServiceResponse'
     );
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 

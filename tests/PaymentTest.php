@@ -126,7 +126,7 @@ abstract class PaymentTest extends FunctionalTest
                 'handler' => $this->mockHandler,
             ]);
 
-            $this->httpClient = new \Omnipay\Common\Http\Client(new \Http\Adapter\Guzzle6\Client($guzzle));
+            $this->httpClient = new \Omnipay\Common\Http\Client(new \Http\Adapter\Guzzle7\Client($guzzle));
         }
 
         return $this->httpClient;

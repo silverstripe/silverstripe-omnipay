@@ -33,6 +33,9 @@ class PaymentModelTest extends PaymentTest
         $this->assertEquals("Manual", $payment->Gateway);
     }
 
+    /**
+      * @doesNotPerformAssertions
+      */
     public function testCMSFields()
     {
         $fields = Payment::create()->getCMSFields();

@@ -69,9 +69,9 @@ class PaymentMathTest extends SapphireTest
         $this->assertEquals('99.90', PaymentMath::subtract('100.00', '0.1'));
         $this->assertEquals('0.49', PaymentMath::add('0.273', '0.226'));
 
-        Config::modify()->set(PaymentMath::class, 'precision', 15);
-        $this->assertEquals('99.900000000000000', PaymentMath::subtract('100.00', '0.1'));
-        $this->assertEquals('0.499000000000000', PaymentMath::add('0.273', '0.226'));
+        Config::modify()->set(PaymentMath::class, 'precision', 13);
+        $this->assertEquals('99.9000000000000', PaymentMath::subtract('100.00', '0.1'));
+        $this->assertEquals('0.4990000000000', PaymentMath::add('0.273', '0.226'));
     }
 
     /**

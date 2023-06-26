@@ -10,6 +10,7 @@
         "omnipay/common": "^3"
     },
     "require-dev": {
+        "guzzlehttp/psr7": "^2.5",
         "silverstripe/versioned" : "^1.0",
         "phpunit/phpunit": "^9.5",
         "php-http/guzzle7-adapter": "^1",

@@ -217,6 +217,7 @@ class PaymentServiceTest extends PaymentTest
         $service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
 
         // this should throw an exception
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
         $service->handleNotification();
     }
 

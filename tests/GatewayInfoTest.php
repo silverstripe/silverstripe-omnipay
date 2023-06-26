@@ -91,6 +91,7 @@ class GatewayInfoTest extends SapphireTest
         Config::modify()->remove(Payment::class, 'allowed_gateways');
 
         // this should throw an InvalidConfigurationException (no gateways configured)
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
         GatewayInfo::getSupportedGateways();
     }
 

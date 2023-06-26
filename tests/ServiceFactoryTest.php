@@ -51,6 +51,7 @@ class ServiceFactoryTest extends PaymentTest
         );
 
         // This will throw an exception, because there's no service for the intent "undefined"
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
         $this->factory->getService($this->payment, 'undefined');
     }
 

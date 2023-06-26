@@ -569,6 +569,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // We supply the amount, but specify an amount that is way over what was authorized
         // This will throw an InvalidParameterException
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
         $service->initiate(array('amount' => '1000000.00'));
     }
 
@@ -587,6 +588,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // We supply the amount, but specify an amount that is not a number
         // This will throw an InvalidParameterException
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
         $service->initiate(array('amount' => 'test'));
     }
 
@@ -605,6 +607,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // We supply the amount, but specify an amount that is not a positive number
         // This will throw an InvalidParameterException
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
         $service->initiate(array('amount' => '-1'));
     }
 
@@ -628,6 +631,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // We supply a partial amount
         // This will throw an InvalidParameterException
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
         $service->initiate(array('amount' => '10.00'));
     }
 

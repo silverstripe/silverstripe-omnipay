@@ -358,6 +358,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         );
 
         // Will throw an exception since the gateway doesn't exist
+        $this->expectException(\Omnipay\Common\Exception\RuntimeException::class);
         $service->initiate();
     }
 
@@ -369,7 +370,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $payment = $this->payment;
         $payment->Status = 'Void';
         $service = $this->getService($payment);
-
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidStateException');
         $service->initiate();
     }
 
@@ -381,7 +382,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $payment = $this->payment;
         $payment->Status = 'Void';
         $service = $this->getService($payment);
-
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidStateException');
         $service->complete();
     }
 
@@ -401,6 +402,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $this->payment->Status = 'Created';
         $service = $this->getService($this->payment);
         // this should throw an exception, because the gateway doesn't support the payment method
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
         $service->initiate();
     }
 
@@ -420,6 +422,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $this->payment->Status = $this->pendingStatus;
         $service = $this->getService($this->payment);
         // this should throw an exception, because the gateway doesn't support the complete method
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
         $service->complete();
     }
 

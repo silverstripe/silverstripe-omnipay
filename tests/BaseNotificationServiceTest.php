@@ -403,6 +403,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $service = $this->getService($this->payment);
 
         // this should throw an exception, because the gateway doesn't support the method
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
         $service->initiate(array('receipt' => 'testThisRecipe123'));
     }
 
@@ -517,6 +518,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $service = $this->getService($this->payment);
 
         // this should throw an exception
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
         $service->initiate();
     }
 
@@ -531,6 +533,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $service = $this->getService($this->payment);
 
         // this should throw an exception
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidStateException');
         $service->complete();
     }
 
@@ -546,6 +549,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $service = $this->getService($this->payment);
 
         // this should throw an exception
+        $this->expectException('\SilverStripe\Omnipay\Exception\MissingParameterException');
         $service->initiate();
     }
 
@@ -565,6 +569,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $service = $this->getService($this->payment);
 
         // this should throw an exception
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
         $service->initiate();
     }
 

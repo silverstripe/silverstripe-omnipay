@@ -320,8 +320,7 @@ class GatewayInfoTest extends SapphireTest
         );
 
         // test with a gateway that doesn't have required fields
-        $this->assertInternalType(
-            'array',
+        $this->assertIsArray(
             GatewayInfo::requiredFields('Dummy'),
             'Required fields should always return at least an array'
         );

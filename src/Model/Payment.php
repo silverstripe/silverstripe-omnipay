@@ -209,15 +209,23 @@ final class Payment extends DataObject implements PermissionProvider
      */
     public function getTitle()
     {
-        return strftime(_t(
+        return _t(
             'SilverStripe\Omnipay\Model\Payment.TitleTemplate',
-            '{Gateway} {Money} %d/%m/%Y',
+            '{Gateway} {Money}',
             'A template for the payment title',
-            str_replace('%', '%%', array(
+            [
                 'Gateway' => $this->getGatewayTitle(),
                 'Money' => $this->dbObject('Money')->Nice()
-            ))
-        ), strtotime($this->Created));
+            ]
+        ) . date_format(
+            date_create($this->Created),
+            _t(
+                'SilverStripe\Omnipay\Model\Payment.TitleTemplateDateFormat',
+                'd/m/Y',
+                'Localised date for payment title'
+            )
+        );
+
     }
 
     /**

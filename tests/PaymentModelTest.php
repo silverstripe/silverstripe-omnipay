@@ -51,26 +51,9 @@ class PaymentModelTest extends PaymentTest
         $provider = i18n::getMessageProvider();
         $catalogue = $provider->getTranslator()->getCatalogue('en_US');
         $catalogue->set('Gateway.Manual', 'Manual');
-        $catalogue->set(Payment::class .'.TitleTemplate', '{Gateway} {Money} %d/%m/%Y');
 
         $this->assertEquals(
             'Manual NZ$20.23 10/10/2013',
-            $payment->getTitle()
-        );
-
-        $catalogue->set('Gateway.Manual', 'Invoice');
-        $catalogue->set(Payment::class .'.TitleTemplate', '{Money} via {Gateway} on %Y-%m-%d');
-
-        $this->assertEquals(
-            'NZ$20.23 via Invoice on 2013-10-10',
-            $payment->getTitle()
-        );
-
-        $catalogue->set('Gateway.Manual', 'Rechnung');
-        $catalogue->set(Payment::class .'.TitleTemplate', '{Money} per {Gateway} am %d.%m.%Y');
-
-        $this->assertEquals(
-            'NZ$20.23 per Rechnung am 10.10.2013',
             $payment->getTitle()
         );
 
@@ -78,7 +61,7 @@ class PaymentModelTest extends PaymentTest
         $payment->Money->setCurrency('EUR');
 
         $this->assertEquals(
-            '€20.23 per My%Strange%Gatewayname am 10.10.2013',
+            'My%Strange%Gatewayname €20.23 10/10/2013',
             $payment->getTitle()
         );
 

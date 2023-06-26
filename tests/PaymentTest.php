@@ -151,7 +151,7 @@ abstract class PaymentTest extends FunctionalTest
 
         foreach ((array)$paths as $path) {
             $this->mockHandler->append(
-                \GuzzleHttp\Psr7\parse_response(file_get_contents("{$testspath}/{$path}"))
+                \GuzzleHttp\Psr7\Message::parseResponse(file_get_contents("{$testspath}/{$path}"))
             );
         }
 

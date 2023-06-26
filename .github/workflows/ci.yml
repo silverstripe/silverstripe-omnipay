@@ -12,3 +12,4 @@ jobs:
     with:
       composer_require_extra:
         php-http/discovery:^1.18.1
+        squizlabs/php_codesniffer:^3.7.2

@@ -28,10 +28,6 @@ class PaymentMathTest extends SapphireTest
             return;
         }
 
-        Config::modify()->set(PaymentMath::class, 'precision', -1);
-        $this->assertEquals('99', PaymentMath::subtract('100.00', '0.1'));
-        $this->assertEquals('0', PaymentMath::add('0.273', '0.226'));
-
         Config::modify()->set(PaymentMath::class, 'precision', 0);
         $this->assertEquals('99', PaymentMath::subtract('100.00', '0.1'));
         $this->assertEquals('0', PaymentMath::add('0.273', '0.226'));

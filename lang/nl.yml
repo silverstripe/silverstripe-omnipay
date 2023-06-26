@@ -2,7 +2,8 @@ nl:
   SilverStripe\Omnipay\Model\Payment:
     PLURALNAME: Betalingen
     SINGULARNAME: Betaling
-    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+    TitleTemplate: '{Gateway} {Money} '
+    TitleTemplateDateFormat: 'd/m/Y'
     InvalidUrl: 'Ongeldige betalings url.'
     InvalidStatus: 'Ongeldige / onverwerkte betaalstatus'
     NotFound: 'De betaling kon niet worden gevonden.'

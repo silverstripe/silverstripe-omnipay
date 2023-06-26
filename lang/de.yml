@@ -2,7 +2,8 @@ de:
   SilverStripe\Omnipay\Model\Payment:
     PLURALNAME: Zahlungen
     SINGULARNAME: Zahlung
-    TitleTemplate: '{Gateway} {Money} %d.%m.%Y'
+    TitleTemplate: '{Gateway} {Money} '
+    TitleTemplateDateFormat: 'd.m.Y'
     InvalidUrl: 'Ungültige Bezahl-URL'
     InvalidStatus: 'Ungültiger Zahlungs-Status'
     NotFound: 'Zahlung konnte nicht gefunden werden.'

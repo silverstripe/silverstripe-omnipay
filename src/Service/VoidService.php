@@ -35,7 +35,7 @@ class VoidService extends NotificationCompleteService
      * @inheritdoc
      * @throws MissingParameterException if no transaction reference can be found from messages or parameters
      */
-    public function initiate($data = array())
+    public function initiate($data = [])
     {
         if (!$this->payment->canVoid()) {
             throw new InvalidConfigurationException('Voiding of this payment not allowed.');
@@ -72,12 +72,12 @@ class VoidService extends NotificationCompleteService
 
         $gatewayData = array_merge(
             $data,
-            array(
+            [
                 'amount' => (float)$this->payment->MoneyAmount,
                 'currency' => $this->payment->MoneyCurrency,
                 'transactionReference' => $reference,
                 'notifyUrl' => $this->getEndpointUrl('notify')
-            )
+            ]
         );
 
         $this->extend('onBeforeVoid', $gatewayData);

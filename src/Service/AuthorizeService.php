@@ -20,7 +20,7 @@ class AuthorizeService extends PaymentService
      *
      * @inheritdoc
      */
-    public function initiate($data = array())
+    public function initiate($data = [])
     {
         if ($this->payment->Status !== 'Created') {
             throw new InvalidStateException('Cannot authorize this payment. Status is not "Created"');
@@ -79,7 +79,7 @@ class AuthorizeService extends PaymentService
      * This is usually only called by PaymentGatewayController.
      * @inheritdoc
      */
-    public function complete($data = array(), $isNotification = false)
+    public function complete($data = [], $isNotification = false)
     {
         $flags = $isNotification ? ServiceResponse::SERVICE_NOTIFICATION : 0;
 

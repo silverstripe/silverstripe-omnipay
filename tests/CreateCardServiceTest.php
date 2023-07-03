@@ -16,63 +16,63 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
     protected $omnipayMethod = 'createCard';
     protected $omnipayCompleteMethod = 'completeCreateCard';
 
-    protected $onsiteSuccessMessages = array(
-        array('ClassName' => Message\CreateCardRequest::class),
-        array('ClassName' => Message\CreateCardResponse::class)
-    );
+    protected $onsiteSuccessMessages = [
+        ['ClassName' => Message\CreateCardRequest::class],
+        ['ClassName' => Message\CreateCardResponse::class]
+    ];
 
-    protected $onsiteFailMessages = array(
-        array('ClassName' => Message\CreateCardRequest::class),
-        array('ClassName' => Message\CreateCardError::class)
-    );
+    protected $onsiteFailMessages = [
+        ['ClassName' => Message\CreateCardRequest::class],
+        ['ClassName' => Message\CreateCardError::class]
+    ];
 
-    protected $failMessages = array(
-        array('ClassName' => Message\CreateCardError::class)
-    );
+    protected $failMessages = [
+        ['ClassName' => Message\CreateCardError::class]
+    ];
 
-    protected $offsiteSuccessMessages = array(
-        array('ClassName' => Message\CreateCardRequest::class),
-        array('ClassName' => Message\CreateCardRedirectResponse::class),
-        array('ClassName' => Message\CompleteCreateCardRequest::class),
-        array('ClassName' => Message\CreateCardResponse::class)
-    );
+    protected $offsiteSuccessMessages = [
+        ['ClassName' => Message\CreateCardRequest::class],
+        ['ClassName' => Message\CreateCardRedirectResponse::class],
+        ['ClassName' => Message\CompleteCreateCardRequest::class],
+        ['ClassName' => Message\CreateCardResponse::class]
+    ];
 
-    protected $offsiteFailMessages = array(
-        array('ClassName' => Message\CreateCardResponse::class),
-        array('ClassName' => Message\CompleteCreateCardRequest::class),
-        array('ClassName' => Message\CompleteCreateCardError::class)
-    );
+    protected $offsiteFailMessages = [
+        ['ClassName' => Message\CreateCardResponse::class],
+        ['ClassName' => Message\CompleteCreateCardRequest::class],
+        ['ClassName' => Message\CompleteCreateCardError::class]
+    ];
 
     protected $failureMessageClass = Message\CompleteCreateCardError::class;
 
     protected $paymentId = '18f2fcac2b8f7549fd0295b251d9e9db';
 
-    protected $successPaymentExtensionHooks = array(
+    protected $successPaymentExtensionHooks = [
         'onCardCreated'
-    );
+    ];
 
-    protected $notifyPaymentExtensionHooks = array(
+    protected $notifyPaymentExtensionHooks = [
         'onAwaitingCreateCard'
-    );
+    ];
 
-    protected $initiateServiceExtensionHooks = array(
+    protected $initiateServiceExtensionHooks = [
         'onBeforeCreateCard',
         'onAfterCreateCard',
         'onAfterSendCreateCard',
         'updateServiceResponse'
-    );
+    ];
 
-    protected $initiateFailedServiceExtensionHooks = array(
+    protected $initiateFailedServiceExtensionHooks = [
         'onBeforeCreateCard',
         'onAfterCreateCard',
         'updateServiceResponse'
-    );
+    ];
 
-    protected $completeServiceExtensionHooks = array(
+    protected $completeServiceExtensionHooks = [
         'onBeforeCompleteCreateCard',
         'onAfterCompleteCreateCard',
         'updateServiceResponse'
-    );
+    ];
 
     public function setUp(): void
     {
@@ -138,7 +138,7 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
 
         $stubGateway = $this
             ->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->setMethods(array('createCard', 'getName'))
+            ->setMethods(['createCard', 'getName'])
             ->getMock();
 
         $stubGateway->expects($this->once())

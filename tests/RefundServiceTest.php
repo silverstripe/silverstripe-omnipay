@@ -31,80 +31,80 @@ class RefundServiceTest extends BaseNotificationServiceTest
 
     protected $endStatus = 'Refunded';
 
-    protected $successFromFixtureMessages = array(
-        array( // response that was loaded from the fixture
+    protected $successFromFixtureMessages = [
+        [ // response that was loaded from the fixture
             'ClassName' => Message\PurchasedResponse::class,
             'Reference' => 'paymentReceipt'
-        ),
-        array( // the generated refund request
+        ],
+        [ // the generated refund request
             'ClassName' => Message\RefundRequest::class,
             'Reference' => 'paymentReceipt'
-        ),
-        array( // the generated refund response
+        ],
+        [ // the generated refund response
             'ClassName' => Message\RefundedResponse::class,
             'Reference' => 'paymentReceipt'
-        )
-    );
+        ]
+    ];
 
-    protected $successMessages = array(
-        array( // the generated refund request
+    protected $successMessages = [
+        [ // the generated refund request
             'ClassName' => Message\RefundRequest::class,
             'Reference' => 'testThisRecipe123'
-        ),
-        array( // the generated refund response
+        ],
+        [ // the generated refund response
             'ClassName' => Message\RefundedResponse::class,
             'Reference' => 'testThisRecipe123'
-        )
-    );
+        ]
+    ];
 
-    protected $failureMessages = array(
-        array( // response that was loaded from the fixture
+    protected $failureMessages = [
+        [ // response that was loaded from the fixture
             'ClassName' => Message\PurchasedResponse::class,
             'Reference' => 'paymentReceipt'
-        ),
-        array( // the generated refund request
+        ],
+        [ // the generated refund request
             'ClassName' => Message\RefundRequest::class,
             'Reference' => 'paymentReceipt'
-        ),
-        array( // the generated refund response
+        ],
+        [ // the generated refund response
             'ClassName' => Message\RefundError::class,
             'Reference' => 'paymentReceipt'
-        )
-    );
+        ]
+    ];
 
-    protected $notificationFailureMessages = array(
-        array(
+    protected $notificationFailureMessages = [
+        [
             'ClassName' => Message\PurchasedResponse::class,
             'Reference' => 'paymentReceipt'
-        ),
-        array(
+        ],
+        [
             'ClassName' => Message\RefundRequest::class,
             'Reference' => 'paymentReceipt'
-        ),
-        array(
+        ],
+        [
             'ClassName' => Message\NotificationError::class,
             'Reference' => 'paymentReceipt'
-        )
-    );
+        ]
+    ];
 
     protected $errorMessageClass = Message\RefundError::class;
 
-    protected $successPaymentExtensionHooks = array(
+    protected $successPaymentExtensionHooks = [
         'onRefunded'
-    );
+    ];
 
-    protected $initiateServiceExtensionHooks = array(
+    protected $initiateServiceExtensionHooks = [
         'onBeforeRefund',
         'onAfterRefund',
         'onAfterSendRefund',
         'updateServiceResponse'
-    );
+    ];
 
-    protected $initiateFailedServiceExtensionHooks = array(
+    protected $initiateFailedServiceExtensionHooks = [
         'onBeforeRefund',
         'onAfterRefund',
         'updateServiceResponse'
-    );
+    ];
 
     public function setUp(): void
     {
@@ -136,7 +136,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // We supply the amount, but specify the full amount here. So this should be equal to a full refund
-        $service->initiate(array('amount' => '769.50'));
+        $service->initiate(['amount' => '769.50']);
 
         // there should be NO partial payments
         $this->assertEquals(0, $payment->getPartialPayments()->count());
@@ -173,7 +173,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // We do a partial refund
-        $service->initiate(array('amount' => '100.50'));
+        $service->initiate(['amount' => '100.50']);
 
         // there should be a new partial payment
         $this->assertEquals(1, $payment->getPartialPayments()->count());
@@ -190,21 +190,21 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $this->assertFalse($payment->canRefund(null, true));
 
         // check existance of messages and existence of references
-        SapphireTest::assertListContains(array(
-            array(
+        SapphireTest::assertListContains([
+            [
                 'ClassName' => Message\PurchasedResponse::class,
                 'Reference' => 'paymentReceipt',
-            ),
+            ],
 
-            array(
+            [
                 'ClassName' => Message\RefundRequest::class,
                 'Reference' => 'paymentReceipt',
-            ),
-            array(
+            ],
+            [
                 'ClassName' => Message\PartiallyRefundedResponse::class,
                 'Reference' => 'paymentReceipt',
-            ),
-        ), $payment->Messages());
+            ],
+        ], $payment->Messages());
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -214,7 +214,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
 
         // ensure the correct service hooks were called
         $this->assertEquals(
-            array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment')),
+            array_merge($this->initiateServiceExtensionHooks, ['updatePartialPayment']),
             $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
@@ -225,9 +225,9 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // allow multiple partial captures
-        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
             'can_refund' => 'multiple'
-        ));
+        ]);
 
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
@@ -236,7 +236,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // We do a partial refund
-        $service->initiate(array('amount' => '100.50'));
+        $service->initiate(['amount' => '100.50']);
 
         // there should be a new partial payment
         $this->assertEquals(1, $payment->getPartialPayments()->count());
@@ -253,7 +253,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $this->assertTrue($payment->canRefund(null, true));
 
         // refund some more
-        $service->initiate(array('amount' => '569'));
+        $service->initiate(['amount' => '569']);
 
         $partialPayment = $payment->getPartialPayments()->first();
         $this->assertEquals('Refunded', $partialPayment->Status);
@@ -264,7 +264,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $this->assertTrue($payment->canRefund(null, true));
 
         // refund the rest
-        $service->initiate(array('amount' => '100.00'));
+        $service->initiate(['amount' => '100.00']);
         $this->assertEquals('Refunded', $payment->Status);
         $this->assertEquals('100.00', $payment->MoneyAmount);
         $this->assertFalse($payment->canRefund(null, true));
@@ -276,9 +276,9 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
             'use_async_notification' => true
-        ));
+        ]);
 
         $stubGateway = $this->buildPaymentGatewayStub(false, $this->fixtureReceipt);
         // register our mock gateway factory as injection
@@ -286,7 +286,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
 
         $service = $this->getService($payment);
         $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->Reset();
-        $service->initiate(array('amount' => '669.50'));
+        $service->initiate(['amount' => '669.50']);
 
         // payment amount should still be the full amount!
         $this->assertEquals('769.50', $payment->MoneyAmount);
@@ -300,7 +300,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('-669.50', $partialPayment->MoneyAmount);
 
         // Now a notification comes in
-        $this->get('paymentendpoint/'. $payment->Identifier .'/notify');
+        $this->get('paymentendpoint/' . $payment->Identifier . '/notify');
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -310,7 +310,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
 
         // ensure the correct service hooks were called
         $this->assertEquals(
-            array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment', 'updateServiceResponse')),
+            array_merge($this->initiateServiceExtensionHooks, ['updatePartialPayment', 'updateServiceResponse']),
             $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
 
@@ -328,24 +328,24 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('669.50', $partialPayment->MoneyAmount);
 
         // check existance of messages
-        SapphireTest::assertListContains(array(
-            array(
+        SapphireTest::assertListContains([
+            [
                 'ClassName' => Message\PurchasedResponse::class,
                 'Reference' => 'paymentReceipt'
-            ),
-            array(
+            ],
+            [
                 'ClassName' => Message\RefundRequest::class,
                 'Reference' => 'paymentReceipt'
-            ),
-            array(
+            ],
+            [
                 'ClassName' => Message\NotificationSuccessful::class,
                 'Reference' => 'paymentReceipt'
-            ),
-            array(
+            ],
+            [
                 'ClassName' => Message\PartiallyRefundedResponse::class,
                 'Reference' => 'paymentReceipt'
-            )
-        ), $payment->Messages());
+            ]
+        ], $payment->Messages());
 
         // try to complete a second time
         $service = $this->getService($payment);
@@ -363,9 +363,9 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
             'use_async_notification' => true
-        ));
+        ]);
 
         $stubGateway = $this->buildPaymentGatewayStub(false, $this->fixtureReceipt);
         // register our mock gateway factory as injection
@@ -374,12 +374,12 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // try to initiate two refunds without waiting for one to complete
-        $service->initiate(array('amount' => '100.00'));
+        $service->initiate(['amount' => '100.00']);
 
         $exception = null;
         try {
             // the second attempt must throw an exception!
-            $service->initiate(array('amount' => '69.50'));
+            $service->initiate(['amount' => '69.50']);
         } catch (\Exception $ex) {
             $exception = $ex;
         }
@@ -395,16 +395,16 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('-100.00', $partialPayment->MoneyAmount);
 
         // check existance of messages
-        SapphireTest::assertListContains(array(
-            array(
+        SapphireTest::assertListContains([
+            [
                 'ClassName' => Message\PurchasedResponse::class,
                 'Reference' => 'paymentReceipt'
-            ),
-            array(
+            ],
+            [
                 'ClassName' => Message\RefundRequest::class,
                 'Reference' => 'paymentReceipt'
-            )
-        ), $payment->Messages());
+            ]
+        ], $payment->Messages());
     }
 
     /**
@@ -423,7 +423,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         // We supply the amount, but specify an amount that is way over what was captured
         // This will throw an InvalidParameterException
         $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
-        $service->initiate(array('amount' => '1000000.00'));
+        $service->initiate(['amount' => '1000000.00']);
     }
 
     /**
@@ -442,7 +442,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         // We supply the amount, but specify an amount that is not a number
         // This will throw an InvalidParameterException
         $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
-        $service->initiate(array('amount' => 'test'));
+        $service->initiate(['amount' => 'test']);
     }
 
     /**
@@ -461,7 +461,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         // We supply the amount, but specify an amount that is not a positive number
         // This will throw an InvalidParameterException
         $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
-        $service->initiate(array('amount' => '-100'));
+        $service->initiate(['amount' => '-100']);
     }
 
     /**
@@ -478,14 +478,14 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // only allow full refunds, thus disabling partial refunds
-        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
            'can_refund' => 'full'
-        ));
+        ]);
 
         // We supply a partial amount
         // This will throw an InvalidParameterException
         $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
-        $service->initiate(array('amount' => '10.00'));
+        $service->initiate(['amount' => '10.00']);
     }
 
     public function testPartialRefundFailed()
@@ -498,7 +498,7 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
         $service = $this->getService($payment);
 
-        $service->initiate(array('amount' => '100.00'));
+        $service->initiate(['amount' => '100.00']);
 
         // there should be NO partial payments
         $this->assertEquals(0, $payment->getPartialPayments()->count());
@@ -514,9 +514,9 @@ class RefundServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
             'use_async_notification' => true
-        ));
+        ]);
 
         $stubGateway = $this->buildPaymentGatewayStub(
             false,
@@ -529,10 +529,10 @@ class RefundServiceTest extends BaseNotificationServiceTest
 
         $service = $this->getService($payment);
 
-        $service->initiate(array('amount' => '669.50'));
+        $service->initiate(['amount' => '669.50']);
 
         // Now a notification comes in (will fail)
-        $this->get('paymentendpoint/'. $payment->Identifier .'/notify');
+        $this->get('paymentendpoint/' . $payment->Identifier . '/notify');
 
         // we'll have to "reload" the payment from the DB now
         $payment = Payment::get()->byID($payment->ID);

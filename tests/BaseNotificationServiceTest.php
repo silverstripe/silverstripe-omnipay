@@ -156,7 +156,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $service = $this->getService($this->payment);
 
         // pass transaction reference as parameter
-        $serviceResponse = $service->initiate(array('transactionReference' => 'testThisRecipe123'));
+        $serviceResponse = $service->initiate(['transactionReference' => 'testThisRecipe123']);
 
         // the service should not respond with an error
         $this->assertFalse($serviceResponse->isError());
@@ -194,7 +194,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $service = $this->getService($this->payment);
 
         // pass transaction reference as parameter
-        $serviceResponse = $service->initiate(array('receipt' => 'testThisRecipe123'));
+        $serviceResponse = $service->initiate(['receipt' => 'testThisRecipe123']);
 
         // the service should not respond with an error
         $this->assertFalse($serviceResponse->isError());
@@ -226,9 +226,9 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
             'use_async_notification' => true
-        ));
+        ]);
 
         $stubGateway = $this->buildPaymentGatewayStub(false, $this->fixtureReceipt);
         // register our mock gateway factory as injection
@@ -258,7 +258,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         SapphireTest::assertListContains(array_slice($this->successFromFixtureMessages, 0, -1), $payment->Messages());
 
         // Now a notification comes in
-        $response = $this->get('paymentendpoint/'. $payment->Identifier .'/notify');
+        $response = $this->get('paymentendpoint/' . $payment->Identifier . '/notify');
 
         $this->assertEquals($response->getStatusCode(), 200);
         $this->assertEquals($response->getBody(), "OK");
@@ -298,7 +298,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
 
         // only a service response will be generated, as omnipay is no longer involved at this stage
         $this->assertEquals(
-            array('updateServiceResponse'),
+            ['updateServiceResponse'],
             $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
@@ -393,7 +393,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
     {
         // Build the dummy gateway that doesn't contain the requested method (eg. void, capture or refund)
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->setMethods(array('getName'))
+            ->setMethods(['getName'])
             ->getMock();
 
         // register our mock gateway factory as injection
@@ -404,7 +404,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
 
         // this should throw an exception, because the gateway doesn't support the method
         $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
-        $service->initiate(array('receipt' => 'testThisRecipe123'));
+        $service->initiate(['receipt' => 'testThisRecipe123']);
     }
 
     public function testFailureViaNotification()
@@ -413,9 +413,9 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
             'use_async_notification' => true
-        ));
+        ]);
 
         $stubGateway = $this->buildPaymentGatewayStub(
             false,
@@ -430,7 +430,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         $service->initiate();
 
         // Now a notification comes in (will fail)
-        $this->get('paymentendpoint/'. $payment->Identifier .'/notify');
+        $this->get('paymentendpoint/' . $payment->Identifier . '/notify');
 
         // we'll have to "reload" the payment from the DB now
         $payment = Payment::get()->byID($payment->ID);
@@ -475,7 +475,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
 
         // only a service response will be generated with the notification
         $this->assertEquals(
-            array('updateServiceResponse'),
+            ['updateServiceResponse'],
             $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
@@ -560,9 +560,9 @@ abstract class BaseNotificationServiceTest extends PaymentTest
     {
         // disallow the service via config
         $method = 'allow_' . $this->gatewayMethod;
-        Config::modify()->merge(GatewayInfo::class, 'Dummy', array(
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', [
             $method => false
-        ));
+        ]);
         $this->payment->setGateway('Dummy')->Status = 'Created';
 
         // create a service with a payment that is created
@@ -624,7 +624,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         // Build the gateway
 
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->setMethods(array($this->gatewayMethod, 'acceptNotification', 'getName'))
+            ->setMethods([$this->gatewayMethod, 'acceptNotification', 'getName'])
             ->getMock();
 
         $stubGateway->expects($this->any())

@@ -33,11 +33,11 @@ class GatewayInfoTest extends SapphireTest
         Config::modify()->remove(Payment::class, 'allowed_gateways');
         Config::modify()->remove(GatewayInfo::class, 'PaymentExpress_PxPay');
 
-        Config::modify()->set(Payment::class, 'allowed_gateways', array(
+        Config::modify()->set(Payment::class, 'allowed_gateways', [
             'PayPal_Express',
             'PaymentExpress_PxPay',
             'Dummy'
-        ));
+        ]);
 
         $provider = Injector::inst()->get(MessageProvider::class);
         $provider->getTranslator()->addResource(
@@ -59,23 +59,23 @@ class GatewayInfoTest extends SapphireTest
             'de_DE'
         );
 
-        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', array(
-            'parameters' => array(
+        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', [
+            'parameters' => [
                 'username' => 'EXAMPLEUSER',
                 'password' => '235llgwxle4tol23l'
-            ),
-            'required_fields' => array(
+            ],
+            'required_fields' => [
                 'name', 'number'
-            ),
+            ],
             'is_offsite' => true,
             'can_capture' => true,
             'can_refund' => 'full',
             'can_void' => false,
-            'max_capture' => array(
+            'max_capture' => [
                 'percent' => '20',
                 'amount' => '60'
-            )
-        ));
+            ]
+        ]);
     }
 
     /**
@@ -145,21 +145,21 @@ class GatewayInfoTest extends SapphireTest
 
         $this->assertEquals(
             GatewayInfo::getSupportedGateways(false),
-            array(
+            [
                 'PayPal_Express' => 'PayPal_Express',
                 'PaymentExpress_PxPay' => 'PaymentExpress_PxPay',
                 'Dummy' => 'Dummy'
-            ),
+            ],
             'When getting supported gateways without nice titles, keys and values in the array are identical'
         );
 
         $this->assertEquals(
             GatewayInfo::getSupportedGateways(true),
-            array(
+            [
                 'PayPal_Express' => 'PayPal Express EN',
                 'PaymentExpress_PxPay' => 'Px Pay Express EN',
                 'Dummy' => 'Dummy EN'
-            ),
+            ],
             'When getting supported gateways with nice titles, values must match translations'
         );
     }
@@ -169,9 +169,9 @@ class GatewayInfoTest extends SapphireTest
      */
     public function testIsOffsite()
     {
-        Config::modify()->merge(GatewayInfo::class, 'OffsiteGateway', array(
+        Config::modify()->merge(GatewayInfo::class, 'OffsiteGateway', [
             'is_offsite' => true
-        ));
+        ]);
 
         // this gateway doesn't implement `completePurchase`
         $this->assertFalse(GatewayInfo::isOffsite('\SilverStripe\Omnipay\Tests\Model\TestOnsiteGateway'));
@@ -217,9 +217,9 @@ class GatewayInfoTest extends SapphireTest
             'Manual payments should always use authorize'
         );
 
-        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'use_authorize' => true
-        ));
+        ]);
 
         $this->assertTrue(
             GatewayInfo::shouldUseAuthorize('PaymentExpress_PxPay'),
@@ -238,9 +238,9 @@ class GatewayInfoTest extends SapphireTest
         );
 
         // update config on manual gateway (should be ignored!)
-        Config::modify()->merge(GatewayInfo::class, 'Manual', array(
+        Config::modify()->merge(GatewayInfo::class, 'Manual', [
             'use_async_notification' => true
-        ));
+        ]);
 
         $this->assertFalse(
             GatewayInfo::shouldUseAsyncNotifications('Manual'),
@@ -248,9 +248,9 @@ class GatewayInfoTest extends SapphireTest
         );
 
         // update config of existing (non manual) gateway
-        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'use_async_notification' => true
-        ));
+        ]);
 
         $this->assertTrue(
             GatewayInfo::shouldUseAsyncNotifications('PaymentExpress_PxPay'),
@@ -270,9 +270,9 @@ class GatewayInfoTest extends SapphireTest
         );
 
         // update config of existing gateway
-        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'token_key' => 'MyTokenKey'
-        ));
+        ]);
 
         $this->assertEquals(
             GatewayInfo::getTokenKey('PaymentExpress_PxPay', 'TOKEN'),
@@ -281,9 +281,9 @@ class GatewayInfoTest extends SapphireTest
         );
 
         // update config to an invalid token key (not a string)
-        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'token_key' => 12
-        ));
+        ]);
 
         $this->assertEquals(
             GatewayInfo::getTokenKey('PaymentExpress_PxPay', 'TOKEN'),
@@ -299,23 +299,23 @@ class GatewayInfoTest extends SapphireTest
     {
         $this->assertEquals(
             GatewayInfo::requiredFields('\SilverStripe\Omnipay\Tests\Model\TestOnsiteGateway'),
-            array('name', 'number', 'expiryMonth', 'expiryYear', 'cvv'),
+            ['name', 'number', 'expiryMonth', 'expiryYear', 'cvv'],
             'Onsite gateway must have at least these default required fields'
         );
 
         $this->assertEquals(
             GatewayInfo::requiredFields('PaymentExpress_PxPay'),
-            array('name', 'number'),
+            ['name', 'number'],
             'Required fields must match the ones defined in config'
         );
 
-        Config::modify()->merge(GatewayInfo::class, '\SilverStripe\Omnipay\Tests\Model\TestOnsiteGateway', array(
-            'required_fields' => array('important', 'very_important', 'cvv')
-        ));
+        Config::modify()->merge(GatewayInfo::class, '\SilverStripe\Omnipay\Tests\Model\TestOnsiteGateway', [
+            'required_fields' => ['important', 'very_important', 'cvv']
+        ]);
 
         $this->assertEquals(
             GatewayInfo::requiredFields('\SilverStripe\Omnipay\Tests\Model\TestOnsiteGateway'),
-            array('important', 'very_important', 'cvv', 'name', 'number', 'expiryMonth', 'expiryYear'),
+            ['important', 'very_important', 'cvv', 'name', 'number', 'expiryMonth', 'expiryYear'],
             'Onsite gateway must merge default and defined required fields'
         );
 
@@ -337,27 +337,27 @@ class GatewayInfoTest extends SapphireTest
         $this->assertEquals(20, GatewayInfo::maxExcessCapturePercent('PaymentExpress_PxPay'));
 
         // set only max amount
-        Config::modify()->merge(GatewayInfo::class, 'Dummy', array('max_capture' => '12'));
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', ['max_capture' => '12']);
 
         $this->assertEquals(12, GatewayInfo::maxExcessCaptureAmount('Dummy'));
         $this->assertEquals(-1, GatewayInfo::maxExcessCapturePercent('Dummy'));
 
         // set only percentage
-        Config::modify()->merge(GatewayInfo::class, 'Dummy', array('max_capture' => '15%'));
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', ['max_capture' => '15%']);
 
         $this->assertEquals(-1, GatewayInfo::maxExcessCaptureAmount('Dummy'));
         $this->assertEquals(15, GatewayInfo::maxExcessCapturePercent('Dummy'));
 
         // invalid values
-        Config::modify()->merge(GatewayInfo::class, 'Dummy', array('max_capture' => '-1'));
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', ['max_capture' => '-1']);
         $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy'));
         $this->assertEquals(0, GatewayInfo::maxExcessCapturePercent('Dummy'));
 
-        Config::modify()->merge(GatewayInfo::class, 'Dummy', array('max_capture' => '-20%'));
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', ['max_capture' => '-20%']);
         $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy'));
         $this->assertEquals(0, GatewayInfo::maxExcessCapturePercent('Dummy'));
 
-        Config::modify()->merge(GatewayInfo::class, 'Dummy', array('max_capture' => 'test'));
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', ['max_capture' => 'test']);
         $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy'));
         $this->assertEquals(0, GatewayInfo::maxExcessCapturePercent('Dummy'));
 
@@ -428,11 +428,11 @@ class GatewayInfoTest extends SapphireTest
         $this->assertEquals(GatewayInfo::FULL, GatewayInfo::refundMode('PaymentExpress_PxPay'));
 
         // check with explicit values
-        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'can_capture' => 'full',
             'can_refund' => 'off',
             'can_void' => 'off'
-        ));
+        ]);
 
         $this->assertTrue(GatewayInfo::allowCapture('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowPartialCapture('PaymentExpress_PxPay'));
@@ -442,11 +442,11 @@ class GatewayInfoTest extends SapphireTest
         $this->assertEquals(GatewayInfo::OFF, GatewayInfo::refundMode('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
 
-        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'can_capture' => 'multiple',
             'can_refund' => 'full',
             'can_void' => 'false'
-        ));
+        ]);
 
         $this->assertTrue(GatewayInfo::allowCapture('PaymentExpress_PxPay'));
         $this->assertTrue(GatewayInfo::allowPartialCapture('PaymentExpress_PxPay'));
@@ -457,11 +457,11 @@ class GatewayInfoTest extends SapphireTest
         $this->assertFalse(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
 
         // check with true/false
-        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'can_capture' => false,
             'can_refund' => true,
             'can_void' => true
-        ));
+        ]);
 
         $this->assertFalse(GatewayInfo::allowCapture('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowPartialCapture('PaymentExpress_PxPay'));
@@ -472,11 +472,11 @@ class GatewayInfoTest extends SapphireTest
         $this->assertTrue(GatewayInfo::allowVoid('PaymentExpress_PxPay'));
 
         // check with "truthy" and "falsy" values
-        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'can_capture' => '0',
             'can_refund' => '1',
             'can_void' => '1'
-        ));
+        ]);
 
         $this->assertFalse(GatewayInfo::allowCapture('PaymentExpress_PxPay'));
         $this->assertFalse(GatewayInfo::allowPartialCapture('PaymentExpress_PxPay'));

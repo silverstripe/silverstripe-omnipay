@@ -50,14 +50,14 @@ abstract class PaymentTest extends FunctionalTest
         Config::modify()->remove('ServiceFactory', 'services');
 
         // Create the default service map
-        Config::modify()->set(ServiceFactory::class, 'services', array(
+        Config::modify()->set(ServiceFactory::class, 'services', [
             'authorize' => '\SilverStripe\Omnipay\Service\AuthorizeService',
             'createcard' => '\SilverStripe\Omnipay\Service\CreateCardService',
             'purchase' => '\SilverStripe\Omnipay\Service\PurchaseService',
             'refund' => '\SilverStripe\Omnipay\Service\RefundService',
             'capture' => '\SilverStripe\Omnipay\Service\CaptureService',
             'void' => '\SilverStripe\Omnipay\Service\VoidService'
-        ));
+        ]);
 
         Payment::add_extension(PaymentTestPaymentExtensionHooks::class);
     }
@@ -84,12 +84,12 @@ abstract class PaymentTest extends FunctionalTest
 
         $this->factory = ServiceFactory::create();
 
-        Payment::config()->allowed_gateways = array(
+        Payment::config()->allowed_gateways = [
             'PayPal_Express',
             'PaymentExpress_PxPay',
             'Manual',
             'Dummy'
-        );
+        ];
 
         // clear settings for PaymentExpress_PxPay (don't let user configs bleed into tests)
         Config::modify()

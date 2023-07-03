@@ -51,7 +51,7 @@ class CaptureService extends NotificationCompleteService
      * @throws MissingParameterException if no transaction reference can be found from messages or parameters
      * @throws InvalidParameterException if the amount parameter was invalid
      */
-    public function initiate($data = array())
+    public function initiate($data = [])
     {
         if (!$this->payment->canCapture()) {
             throw new InvalidConfigurationException('Capture of this payment not allowed.');
@@ -112,12 +112,12 @@ class CaptureService extends NotificationCompleteService
 
         $gatewayData = array_merge(
             $data,
-            array(
+            [
                 'amount' => (float)$amount,
                 'currency' => $this->payment->MoneyCurrency,
                 'transactionReference' => $reference,
                 'notifyUrl' => $this->getEndpointUrl('notify')
-            )
+            ]
         );
 
         $this->extend('onBeforeCapture', $gatewayData);

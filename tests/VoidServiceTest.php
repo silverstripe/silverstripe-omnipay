@@ -24,80 +24,80 @@ class VoidServiceTest extends BaseNotificationServiceTest
 
     protected $endStatus = 'Void';
 
-    protected $successFromFixtureMessages = array(
-        array( // response that was loaded from the fixture
+    protected $successFromFixtureMessages = [
+        [ // response that was loaded from the fixture
             'ClassName' => Message\AuthorizedResponse::class,
             'Reference' => 'authorizedPaymentReceipt'
-        ),
-        array( // the generated void request
+        ],
+        [ // the generated void request
             'ClassName' => Message\VoidRequest::class,
             'Reference' => 'authorizedPaymentReceipt'
-        ),
-        array( // the generated void response
+        ],
+        [ // the generated void response
             'ClassName' => Message\VoidedResponse::class,
             'Reference' => 'authorizedPaymentReceipt'
-        )
-    );
+        ]
+    ];
 
-    protected $successMessages = array(
-        array( // the generated void request
+    protected $successMessages = [
+        [ // the generated void request
             'ClassName' => Message\VoidRequest::class,
             'Reference' => 'testThisRecipe123'
-        ),
-        array( // the generated void response
+        ],
+        [ // the generated void response
             'ClassName' => Message\VoidedResponse::class,
             'Reference' => 'testThisRecipe123'
-        )
-    );
+        ]
+    ];
 
-    protected $failureMessages = array(
-        array( // response that was loaded from the fixture
+    protected $failureMessages = [
+        [ // response that was loaded from the fixture
             'ClassName' => Message\AuthorizedResponse::class,
             'Reference' => 'authorizedPaymentReceipt'
-        ),
-        array( // the generated void request
+        ],
+        [ // the generated void request
             'ClassName' => Message\VoidRequest::class,
             'Reference' => 'authorizedPaymentReceipt'
-        ),
-        array( // the generated void error
+        ],
+        [ // the generated void error
             'ClassName' => Message\VoidError::class,
             'Reference' => 'authorizedPaymentReceipt'
-        )
-    );
+        ]
+    ];
 
-    protected $notificationFailureMessages = array(
-        array(
+    protected $notificationFailureMessages = [
+        [
             'ClassName' => Message\AuthorizedResponse::class,
             'Reference' => 'authorizedPaymentReceipt'
-        ),
-        array(
+        ],
+        [
             'ClassName' => Message\VoidRequest::class,
             'Reference' => 'authorizedPaymentReceipt'
-        ),
-        array(
+        ],
+        [
             'ClassName' => Message\NotificationError::class,
             'Reference' => 'authorizedPaymentReceipt'
-        )
-    );
+        ]
+    ];
 
     protected $errorMessageClass = Message\VoidError::class;
 
-    protected $successPaymentExtensionHooks = array(
+    protected $successPaymentExtensionHooks = [
         'onVoid'
-    );
+    ];
 
-    protected $initiateServiceExtensionHooks = array(
+    protected $initiateServiceExtensionHooks = [
         'onBeforeVoid',
         'onAfterVoid',
         'onAfterSendVoid',
         'updateServiceResponse'
-    );
+    ];
 
-    protected $initiateFailedServiceExtensionHooks = array(
+    protected $initiateFailedServiceExtensionHooks = [
         'onBeforeVoid',
         'onAfterVoid',
         'updateServiceResponse'
-    );
+    ];
 
     public function setUp(): void
     {

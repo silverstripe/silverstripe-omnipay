@@ -10,7 +10,7 @@ use SilverStripe\Omnipay\GatewayInfo;
 class GatewayFieldsFactoryTest extends SapphireTest
 {
     // Expected credit card fields
-    protected $ccFields = array(
+    protected $ccFields = [
         'type',
         'name',
         'number',
@@ -20,10 +20,10 @@ class GatewayFieldsFactoryTest extends SapphireTest
         'expiryYear',
         'cvv',
         'issueNumber'
-    );
+    ];
 
     // expected billing fields
-    protected $billingFields = array(
+    protected $billingFields = [
         'billingAddress1',
         'billingAddress2',
         'billingCity',
@@ -31,10 +31,10 @@ class GatewayFieldsFactoryTest extends SapphireTest
         'billingState',
         'billingCountry',
         'billingPhone'
-    );
+    ];
 
     // expected shipping fields
-    protected $shippingFields = array(
+    protected $shippingFields = [
         'shippingAddress1',
         'shippingAddress2',
         'shippingCity',
@@ -42,13 +42,13 @@ class GatewayFieldsFactoryTest extends SapphireTest
         'shippingState',
         'shippingCountry',
         'shippingPhone'
-    );
+    ];
 
     // expected company fields
-    protected $companyFields = array('company');
+    protected $companyFields = ['company'];
 
     // expected email fields
-    protected $emailFields = array('email');
+    protected $emailFields = ['email'];
 
     /** @var GatewayFieldsFactory */
     protected $factory;
@@ -62,13 +62,13 @@ class GatewayFieldsFactoryTest extends SapphireTest
 
         $this->factory =  new GatewayFieldsFactory(
             null,
-            array(
+            [
             'Card',
             'Billing',
             'Shipping',
             'Company',
             'Email'
-            )
+            ]
         );
     }
 
@@ -91,7 +91,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
         // Create a gateway-factory without a gateway
         $factory = new GatewayFieldsFactory(
             null,
-            array('Card')
+            ['Card']
         );
 
         $fields = $factory->getFields();
@@ -106,7 +106,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
         // Create a gateway-factory without a gateway
         $factory = new GatewayFieldsFactory(
             null,
-            array('Billing')
+            ['Billing']
         );
 
         $fields = $factory->getFields();
@@ -121,7 +121,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
         // Create a gateway-factory without a gateway
         $factory = new GatewayFieldsFactory(
             null,
-            array('Shipping')
+            ['Shipping']
         );
 
         $fields = $factory->getFields();
@@ -136,7 +136,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
         // Create a gateway-factory without a gateway
         $factory = new GatewayFieldsFactory(
             null,
-            array('Company')
+            ['Company']
         );
 
         $fields = $factory->getFields();
@@ -151,7 +151,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
         // Create a gateway-factory without a gateway
         $factory = new GatewayFieldsFactory(
             null,
-            array('Email')
+            ['Email']
         );
 
         $fields = $factory->getFields();
@@ -255,25 +255,25 @@ class GatewayFieldsFactoryTest extends SapphireTest
             'is_offsite' => false
         ]);
 
-        Config::modify()->merge('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename', array(
+        Config::modify()->merge('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename', [
             'prefix' => 'prefix_',
             'name' => 'testName',
             'number' => 'testNumber',
             'expiryMonth' => 'testExpiryMonth',
             'expiryYear' => 'testExpiryYear',
-            'Dummy' => array(
+            'Dummy' => [
                 'prefix' => 'dummy_',
                 'number' => 'dummyCCnumber'
-            )
-        ));
+            ]
+        ]);
 
-        $factory = new GatewayFieldsFactory(null, array(
+        $factory = new GatewayFieldsFactory(null, [
             'Card'
-        ));
+        ]);
 
         $fields = $factory->getFields();
 
-        $expected = array(
+        $expected = [
             'prefix_type',
             'prefix_testName',
             'prefix_testNumber',
@@ -283,46 +283,46 @@ class GatewayFieldsFactoryTest extends SapphireTest
             'prefix_testExpiryYear',
             'prefix_cvv',
             'prefix_issueNumber'
-        );
+        ];
 
         $this->assertEquals($expected, array_keys($fields->dataFields()));
 
-        $factory = new GatewayFieldsFactory('Dummy', array(
+        $factory = new GatewayFieldsFactory('Dummy', [
             'Card'
-        ));
+        ]);
 
         $fields = $factory->getFields();
 
-        $expected = array(
+        $expected = [
             'dummy_testName',
             'dummy_dummyCCnumber',
             'dummy_testExpiryMonth',
             'dummy_testExpiryYear',
             'dummy_cvv',
-        );
+        ];
 
         $this->assertEquals($expected, array_keys($fields->dataFields()));
     }
 
     public function testNormalizeFormData()
     {
-        Config::modify()->set('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename', array(
+        Config::modify()->set('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename', [
             'prefix' => 'prefix_',
             'name' => 'testName',
             'number' => 'testNumber',
             'expiryMonth' => 'testExpiryMonth',
             'expiryYear' => 'testExpiryYear',
-            'Dummy' => array(
+            'Dummy' => [
                 'prefix' => 'dummy_',
                 'number' => 'dummyCCnumber'
-            )
-        ));
+            ]
+        ]);
 
         // Test global rename
         $factory = new GatewayFieldsFactory();
         $this->assertEquals(
             $factory->normalizeFormData(
-                array(
+                [
                     'prefix_testName' => 'Reece Alexander',
                     'prefix_testNumber' => '4242424242424242',
                     'prefix_testExpiryMonth' => '11',
@@ -330,39 +330,39 @@ class GatewayFieldsFactoryTest extends SapphireTest
                     'someOtherFormValue' => 'Should be unchanged',
                     // Ensure other fields are not affected by prefix change!
                     'prefix_prefixedValue' => 'Something'
-                )
+                ]
             ),
-            array(
+            [
                 'name' => 'Reece Alexander',
                 'number' => '4242424242424242',
                 'expiryMonth' => '11',
                 'expiryYear' => '2016',
                 'someOtherFormValue' => 'Should be unchanged',
                 'prefix_prefixedValue' => 'Something'
-            )
+            ]
         );
         // Test gateway specific rename
         $factory = new GatewayFieldsFactory('Dummy');
 
         $this->assertEquals(
             $factory->normalizeFormData(
-                array(
+                [
                     'dummy_testName' => 'Reece Alexander',
                     'dummy_dummyCCnumber' => '4242424242424242',
                     'dummy_testExpiryMonth' => '11',
                     'dummy_testExpiryYear' => '2016',
                     'someOtherFormValue' => 'Should be unchanged',
                     'dummy_prefixedValue' => 'Something'
-                )
+                ]
             ),
-            array(
+            [
                 'name' => 'Reece Alexander',
                 'number' => '4242424242424242',
                 'expiryMonth' => '11',
                 'expiryYear' => '2016',
                 'someOtherFormValue' => 'Should be unchanged',
                 'dummy_prefixedValue' => 'Something'
-            )
+            ]
         );
     }
 }

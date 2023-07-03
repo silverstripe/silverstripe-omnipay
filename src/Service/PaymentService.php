@@ -79,7 +79,7 @@ abstract class PaymentService
      * @throws InvalidConfigurationException when there's a misconfiguration in the module itself
      * @return ServiceResponse the service response
      */
-    abstract public function initiate($data = array());
+    abstract public function initiate($data = []);
 
     /**
      * Complete a previously initiated gateway request.
@@ -91,7 +91,7 @@ abstract class PaymentService
      * @throws InvalidConfigurationException when there's a misconfiguration in the module itself
      * @return ServiceResponse the service response
      */
-    abstract public function complete($data = array(), $isNotification = false);
+    abstract public function complete($data = [], $isNotification = false);
 
     /**
      * Cancel a payment
@@ -217,21 +217,21 @@ abstract class PaymentService
      * @param boolean $includeCardOrToken whether or not to include card or token data
      * @return array
      */
-    protected function gatherGatewayData($data = array(), $includeCardOrToken = true)
+    protected function gatherGatewayData($data = [], $includeCardOrToken = true)
     {
         //set the client IP address, if not already set
         if (!isset($data['clientIp'])) {
             $data['clientIp'] = Controller::curr()->getRequest()->getIP();
         }
 
-        $gatewaydata = array_merge($data, array(
+        $gatewaydata = array_merge($data, [
             'amount' => (float)$this->payment->MoneyAmount,
             'currency' => $this->payment->MoneyCurrency,
             //set all gateway return/cancel/notify urls to PaymentGatewayController endpoint
             'returnUrl' => $this->getEndpointUrl("complete"),
             'cancelUrl' => $this->getEndpointUrl("cancel"),
             'notifyUrl' => $this->getEndpointUrl("notify")
-        ));
+        ]);
 
         // Often, the shop will want to pass in a transaction ID (order #, etc), but if there's
         // not one we need to set it as Ominpay requires this.
@@ -330,13 +330,13 @@ abstract class PaymentService
     protected function createPartialPayment($amount, $status, $write = true)
     {
         /** @var Payment $payment */
-        $payment = Payment::create(array(
+        $payment = Payment::create([
             'Gateway' => $this->payment->Gateway,
             'TransactionReference' => $this->payment->TransactionReference,
             'SuccessUrl' => $this->payment->SuccessUrl,
             'FailureUrl' => $this->payment->FailureUrl,
             'InitialPaymentID' => $this->payment->ID
-        ));
+        ]);
 
         $payment->setCurrency($this->payment->getCurrency());
         $payment->setAmount($amount);
@@ -401,7 +401,7 @@ abstract class PaymentService
      */
     protected function createMessage($type, $data = null)
     {
-        $output = array();
+        $output = [];
 
         if (is_string($data)) {
             $output = [

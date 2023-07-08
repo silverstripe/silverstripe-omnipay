@@ -2,7 +2,8 @@ hr:
   SilverStripe\Omnipay\Model\Payment:
     PLURALNAME: Plaćanja
     SINGULARNAME: Plaćanje
-    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+    TitleTemplate: '{Gateway} {Money} '
+    TitleTemplateDateFormat: 'd/m/Y'
     InvalidUrl: 'Neispravan link plaćanja.'
     InvalidStatus: 'Neispravan/nepostojeći status plaćanja'
     NotFound: 'Plaćanje nije pronađeno.'

@@ -2,7 +2,8 @@ nb:
   SilverStripe\Omnipay\Model\Payment:
     PLURALNAME: Batalinger
     SINGULARNAME: Betaling
-    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+    TitleTemplate: '{Gateway} {Money} '
+    TitleTemplateDateFormat: 'd/m/Y'
     InvalidUrl: 'Ugyldig betalings URL.'
     InvalidStatus: 'Invalid/ubehandlet betalingsstatus'
     NotFound: 'Betaling kan ikke bli funnet.'

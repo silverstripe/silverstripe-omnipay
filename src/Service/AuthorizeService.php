@@ -2,15 +2,15 @@
 
 namespace SilverStripe\Omnipay\Service;
 
-use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
+use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
-use SilverStripe\Omnipay\Model\Message\AuthorizeRequest;
 use SilverStripe\Omnipay\Model\Message\AuthorizedResponse;
-use SilverStripe\Omnipay\Model\Message\CompleteAuthorizeError;
 use SilverStripe\Omnipay\Model\Message\AuthorizeError;
 use SilverStripe\Omnipay\Model\Message\AuthorizeRedirectResponse;
+use SilverStripe\Omnipay\Model\Message\AuthorizeRequest;
 use SilverStripe\Omnipay\Model\Message\AwaitingAuthorizeResponse;
+use SilverStripe\Omnipay\Model\Message\CompleteAuthorizeError;
 use SilverStripe\Omnipay\Model\Message\CompleteAuthorizeRequest;
 
 class AuthorizeService extends PaymentService
@@ -20,7 +20,7 @@ class AuthorizeService extends PaymentService
      *
      * @inheritdoc
      */
-    public function initiate($data = array())
+    public function initiate($data = [])
     {
         if ($this->payment->Status !== 'Created') {
             throw new InvalidStateException('Cannot authorize this payment. Status is not "Created"');
@@ -67,7 +67,7 @@ class AuthorizeService extends PaymentService
             );
         } elseif ($serviceResponse->isError()) {
             $this->createMessage(AuthorizeError::class, $response);
-        } else {
+        } elseif ($serviceResponse->isSuccessful()) {
             $this->markCompleted('Authorized', $serviceResponse, $response);
         }
 
@@ -79,7 +79,7 @@ class AuthorizeService extends PaymentService
      * This is usually only called by PaymentGatewayController.
      * @inheritdoc
      */
-    public function complete($data = array(), $isNotification = false)
+    public function complete($data = [], $isNotification = false)
     {
         $flags = $isNotification ? ServiceResponse::SERVICE_NOTIFICATION : 0;
 
@@ -118,15 +118,12 @@ class AuthorizeService extends PaymentService
 
         $serviceResponse = $this->wrapOmnipayResponse($response, $isNotification);
 
-        if ($serviceResponse->isError()) {
-            $this->createMessage(CompleteAuthorizeError::class, $response);
-            return $serviceResponse;
-        }
-
-        if (!$serviceResponse->isAwaitingNotification()) {
-            $this->markCompleted('Authorized', $serviceResponse, $response);
-        } else {
+        if ($serviceResponse->isAwaitingNotification()) {
             ErrorHandling::safeExtend($this->payment, 'onAwaitingAuthorized', $serviceResponse);
+        } elseif ($serviceResponse->isError()) {
+            $this->createMessage(CompleteAuthorizeError::class, $response);
+        } elseif ($serviceResponse->isSuccessful()) {
+            $this->markCompleted('Authorized', $serviceResponse, $response);
         }
 
         return $serviceResponse;

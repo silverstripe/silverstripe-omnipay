@@ -2,7 +2,8 @@ it:
   SilverStripe\Omnipay\Model\Payment:
     PLURALNAME: Pagamenti
     SINGULARNAME: Pagamento
-    TitleTemplate: '{Gateway} {Money} %d/%m/%Y'
+    TitleTemplate: '{Gateway} {Money} '
+    TitleTemplateDateFormat: 'd/m/Y'
     InvalidUrl: 'Url di pagamento non valida.'
     InvalidStatus: 'Status di pagamento non valido/non gestito'
     NotFound: 'Pagamento non trovato.'

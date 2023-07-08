@@ -209,15 +209,22 @@ final class Payment extends DataObject implements PermissionProvider
      */
     public function getTitle()
     {
-        return strftime(_t(
+        return _t(
             'SilverStripe\Omnipay\Model\Payment.TitleTemplate',
-            '{Gateway} {Money} %d/%m/%Y',
+            '{Gateway} {Money}',
             'A template for the payment title',
-            str_replace('%', '%%', array(
+            [
                 'Gateway' => $this->getGatewayTitle(),
                 'Money' => $this->dbObject('Money')->Nice()
-            ))
-        ), strtotime($this->Created));
+            ]
+        ) . date_format(
+            date_create($this->Created),
+            _t(
+                'SilverStripe\Omnipay\Model\Payment.TitleTemplateDateFormat',
+                'd/m/Y',
+                'Localised date for payment title'
+            )
+        );
     }
 
     /**
@@ -342,7 +349,7 @@ final class Payment extends DataObject implements PermissionProvider
 
         return Payment::get()
             ->filter('InitialPaymentID', $this->ID)
-            ->sort(array('Created' => 'DESC', 'ID' => 'DESC'));
+            ->sort(['Created' => 'DESC', 'ID' => 'DESC']);
     }
 
     /**
@@ -424,7 +431,7 @@ final class Payment extends DataObject implements PermissionProvider
         if ($this->isInDB()) {
             // Check if there are partial captures and deny further captures if multiple captures aren't enabled
             $hasPartials = $this->getPartialPayments()
-                    ->filter('Status', array('Captured', 'PendingCapture'))
+                    ->filter('Status', ['Captured', 'PendingCapture'])
                     ->count() > 0;
             if ($hasPartials && GatewayInfo::captureMode($this->Gateway) !== GatewayInfo::MULTIPLE) {
                 return false;
@@ -476,7 +483,7 @@ final class Payment extends DataObject implements PermissionProvider
         if ($this->isInDB()) {
             // Check if there are partial refunds and deny further refunds if multiple refunds aren't enabled
             $hasPartials = $this->getPartialPayments()
-                    ->filter('Status', array('Refunded', 'PendingRefund'))
+                    ->filter('Status', ['Refunded', 'PendingRefund'])
                     ->count() > 0;
             if ($hasPartials && GatewayInfo::refundMode($this->Gateway) !== GatewayInfo::MULTIPLE) {
                 return false;
@@ -501,8 +508,8 @@ final class Payment extends DataObject implements PermissionProvider
      */
     public function providePermissions()
     {
-        return array(
-            'REFUND_PAYMENTS' => array(
+        return [
+            'REFUND_PAYMENTS' => [
                 'name' => _t('SilverStripe\Omnipay\Model\Payment.PERMISSION_REFUND_PAYMENTS', 'Refund payments'),
                 'help' => _t(
                     'SilverStripe\Omnipay\Model\Payment.PERMISSION_REFUND_PAYMENTS_HELP',
@@ -510,8 +517,8 @@ final class Payment extends DataObject implements PermissionProvider
                 ),
                 'category' => _t('SilverStripe\Omnipay\Model\Payment.PAYMENT_PERMISSIONS', 'Payment actions'),
                 'sort' => 200
-            ),
-            'CAPTURE_PAYMENTS' => array(
+            ],
+            'CAPTURE_PAYMENTS' => [
                 'name' => _t('SilverStripe\Omnipay\Model\Payment.PERMISSION_CAPTURE_PAYMENTS', 'Capture payments'),
                 'help' => _t(
                     'SilverStripe\Omnipay\Model\Payment.PERMISSION_CAPTURE_PAYMENTS_HELP',
@@ -519,8 +526,8 @@ final class Payment extends DataObject implements PermissionProvider
                 ),
                 'category' => _t('SilverStripe\Omnipay\Model\Payment.PAYMENT_PERMISSIONS', 'Payment actions'),
                 'sort' => 200
-            ),
-            'VOID_PAYMENTS' => array(
+            ],
+            'VOID_PAYMENTS' => [
                 'name' => _t('SilverStripe\Omnipay\Model\Payment.PERMISSION_VOID_PAYMENTS', 'Void payments'),
                 'help' => _t(
                     'SilverStripe\Omnipay\Model\Payment.PERMISSION_VOID_PAYMENTS_HELP',
@@ -528,8 +535,8 @@ final class Payment extends DataObject implements PermissionProvider
                 ),
                 'category' => _t('SilverStripe\Omnipay\Model\Payment.PAYMENT_PERMISSIONS', 'Payment actions'),
                 'sort' => 200
-            )
-        );
+            ]
+        ];
     }
 
     /**
@@ -550,10 +557,10 @@ final class Payment extends DataObject implements PermissionProvider
         // collect all the payment status values
         foreach ($this->dbObject('Status')->enumValues() as $value) {
             $key = strtoupper($value);
-            $entities['SilverStripe\Omnipay\Model\Payment.STATUS_' . $key] = array(
+            $entities['SilverStripe\Omnipay\Model\Payment.STATUS_' . $key] = [
                 $value,
                 "Translation of the payment status '$value'"
-            );
+            ];
         }
 
         return $entities;
@@ -600,7 +607,7 @@ final class Payment extends DataObject implements PermissionProvider
      */
     protected function getStatusValues()
     {
-        $values = array();
+        $values = [];
         foreach ($this->dbObject('Status')->enumValues() as $value) {
             $values[$value] = _t('SilverStripe\Omnipay\Model\Payment.STATUS_' . strtoupper($value), $value);
         }

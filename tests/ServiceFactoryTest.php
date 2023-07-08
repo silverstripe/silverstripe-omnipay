@@ -13,9 +13,9 @@ use SilverStripe\Omnipay\Tests\Service\ServiceFactoryTestService;
 
 class ServiceFactoryTest extends PaymentTest
 {
-    private static $dependencies = array(
+    private static $dependencies = [
         ServiceFactoryTestTestService::class
-    );
+    ];
 
     /**
      * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
@@ -40,9 +40,9 @@ class ServiceFactoryTest extends PaymentTest
             'Intent "payment" must return a PurchaseService when gateway doesn\'t use authorize.'
         );
 
-        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'use_authorize' => true
-        ));
+        ]);
 
         $this->assertInstanceOf(
             'SilverStripe\Omnipay\Service\AuthorizeService',
@@ -51,14 +51,15 @@ class ServiceFactoryTest extends PaymentTest
         );
 
         // This will throw an exception, because there's no service for the intent "undefined"
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
         $this->factory->getService($this->payment, 'undefined');
     }
 
     public function testCustomService()
     {
-        Config::modify()->merge(ServiceFactory::class, 'services', array(
+        Config::modify()->merge(ServiceFactory::class, 'services', [
             'purchase' => ServiceFactoryTestService::class
-        ));
+        ]);
 
         $this->assertInstanceOf(
             ServiceFactoryTestService::class,

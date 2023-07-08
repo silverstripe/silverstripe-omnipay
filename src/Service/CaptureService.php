@@ -51,7 +51,7 @@ class CaptureService extends NotificationCompleteService
      * @throws MissingParameterException if no transaction reference can be found from messages or parameters
      * @throws InvalidParameterException if the amount parameter was invalid
      */
-    public function initiate($data = array())
+    public function initiate($data = [])
     {
         if (!$this->payment->canCapture()) {
             throw new InvalidConfigurationException('Capture of this payment not allowed.');
@@ -112,12 +112,12 @@ class CaptureService extends NotificationCompleteService
 
         $gatewayData = array_merge(
             $data,
-            array(
+            [
                 'amount' => (float)$amount,
                 'currency' => $this->payment->MoneyCurrency,
                 'transactionReference' => $reference,
                 'notifyUrl' => $this->getEndpointUrl('notify')
-            )
+            ]
         );
 
         $this->extend('onBeforeCapture', $gatewayData);
@@ -138,7 +138,9 @@ class CaptureService extends NotificationCompleteService
 
         $serviceResponse = $this->wrapOmnipayResponse($response);
 
-        if ($serviceResponse->isAwaitingNotification()) {
+        if ($serviceResponse->isError()) {
+            $this->createMessage($this->errorMessageType, $response);
+        } elseif ($serviceResponse->isRedirect() || $serviceResponse->isAwaitingNotification()) {
             if ($diff < 0) {
                 $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
             } elseif ($diff > 0) {
@@ -146,17 +148,13 @@ class CaptureService extends NotificationCompleteService
             }
             $this->payment->Status = $this->pendingState;
             $this->payment->write();
-        } else {
-            if ($serviceResponse->isError()) {
-                $this->createMessage($this->errorMessageType, $response);
-            } else {
-                if ($diff < 0) {
-                    $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
-                } elseif ($diff > 0) {
-                    $this->createPartialPayment($diff, $this->pendingState);
-                }
-                $this->markCompleted($this->endState, $serviceResponse, $response);
+        } elseif ($serviceResponse->isSuccessful()) {
+            if ($diff < 0) {
+                $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
+            } elseif ($diff > 0) {
+                $this->createPartialPayment($diff, $this->pendingState);
             }
+            $this->markCompleted($this->endState, $serviceResponse, $response);
         }
 
         return $serviceResponse;

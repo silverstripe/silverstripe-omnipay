@@ -41,209 +41,209 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
 
     public function updateServiceResponse($serviceResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'updateServiceResponse',
-            'args' => array($serviceResponse)
-        );
+            'args' => [$serviceResponse]
+        ];
     }
 
     public function updatePartialPayment($newPayment, $originalPayment)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'updatePartialPayment',
-            'args' => array($newPayment, $originalPayment)
-        );
+            'args' => [$newPayment, $originalPayment]
+        ];
     }
 
     public function onBeforeAuthorize($data)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onBeforeAuthorize',
-            'args' => array($data)
-        );
+            'args' => [$data]
+        ];
     }
 
     public function onBeforeCapture($data)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onBeforeCapture',
-            'args' => array($data)
-        );
+            'args' => [$data]
+        ];
     }
 
     public function onBeforePurchase($data)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onBeforePurchase',
-            'args' => array($data)
-        );
+            'args' => [$data]
+        ];
     }
 
     public function onBeforeRefund($data)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onBeforeRefund',
-            'args' => array($data)
-        );
+            'args' => [$data]
+        ];
     }
 
     public function onBeforeVoid($data)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onBeforeVoid',
-            'args' => array($data)
-        );
+            'args' => [$data]
+        ];
     }
 
     public function onBeforeCompleteAuthorize($data)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onBeforeCompleteAuthorize',
-            'args' => array($data)
-        );
+            'args' => [$data]
+        ];
     }
 
     public function onBeforeCompletePurchase($data)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onBeforeCompletePurchase',
-            'args' => array($data)
-        );
+            'args' => [$data]
+        ];
     }
 
     public function onAfterAuthorize($omnipayRequest)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterAuthorize',
-            'args' => array($omnipayRequest)
-        );
+            'args' => [$omnipayRequest]
+        ];
     }
 
     public function onAfterCapture($omnipayRequest)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterCapture',
-            'args' => array($omnipayRequest)
-        );
+            'args' => [$omnipayRequest]
+        ];
     }
 
     public function onAfterPurchase($omnipayRequest)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterPurchase',
-            'args' => array($omnipayRequest)
-        );
+            'args' => [$omnipayRequest]
+        ];
     }
 
     public function onAfterRefund($omnipayRequest)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterRefund',
-            'args' => array($omnipayRequest)
-        );
+            'args' => [$omnipayRequest]
+        ];
     }
 
     public function onAfterVoid($omnipayRequest)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterVoid',
-            'args' => array($omnipayRequest)
-        );
+            'args' => [$omnipayRequest]
+        ];
     }
 
     public function onAfterCompletePurchase($omnipayRequest)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterCompletePurchase',
-            'args' => array($omnipayRequest)
-        );
+            'args' => [$omnipayRequest]
+        ];
     }
 
     public function onAfterCompleteAuthorize($omnipayRequest)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterCompleteAuthorize',
-            'args' => array($omnipayRequest)
-        );
+            'args' => [$omnipayRequest]
+        ];
     }
 
     public function onAfterSendAuthorize($omnipayRequest, $omnipayResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterSendAuthorize',
-            'args' => array($omnipayRequest, $omnipayResponse)
-        );
+            'args' => [$omnipayRequest, $omnipayResponse]
+        ];
     }
 
     public function onAfterSendCapture($omnipayRequest, $omnipayResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterSendCapture',
-            'args' => array($omnipayRequest, $omnipayResponse)
-        );
+            'args' => [$omnipayRequest, $omnipayResponse]
+        ];
     }
 
     public function onAfterSendPurchase($omnipayRequest, $omnipayResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterSendPurchase',
-            'args' => array($omnipayRequest, $omnipayResponse)
-        );
+            'args' => [$omnipayRequest, $omnipayResponse]
+        ];
     }
 
     public function onAfterSendRefund($omnipayRequest, $omnipayResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterSendRefund',
-            'args' => array($omnipayRequest, $omnipayResponse)
-        );
+            'args' => [$omnipayRequest, $omnipayResponse]
+        ];
     }
 
     public function onAfterSendVoid($omnipayRequest, $omnipayResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterSendVoid',
-            'args' => array($omnipayRequest, $omnipayResponse)
-        );
+            'args' => [$omnipayRequest, $omnipayResponse]
+        ];
     }
 
     public function onBeforeCreateCard($data)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onBeforeCreateCard',
-            'args' => array($data)
-        );
+            'args' => [$data]
+        ];
     }
 
     public function onAfterCreateCard($omnipayRequest)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterCreateCard',
-            'args' => array($omnipayRequest)
-        );
+            'args' => [$omnipayRequest]
+        ];
     }
 
     public function onAfterSendCreateCard($omnipayRequest, $omnipayResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterSendCreateCard',
-            'args' => array($omnipayRequest, $omnipayResponse)
-        );
+            'args' => [$omnipayRequest, $omnipayResponse]
+        ];
     }
 
     public function onBeforeCompleteCreateCard($data)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onBeforeCompleteCreateCard',
-            'args' => array($data)
-        );
+            'args' => [$data]
+        ];
     }
 
     public function onAfterCompleteCreateCard($omnipayRequest)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAfterCompleteCreateCard',
-            'args' => array($omnipayRequest)
-        );
+            'args' => [$omnipayRequest]
+        ];
     }
 }

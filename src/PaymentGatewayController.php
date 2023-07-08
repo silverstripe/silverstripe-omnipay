@@ -187,7 +187,7 @@ class PaymentGatewayController extends Controller
                 $response = $serviceResponse->redirectOrRespond();
                 break;
             case "notify":
-                $serviceResponse = $service->complete(array(), true);
+                $serviceResponse = $service->complete([], true);
                 $response = $serviceResponse->redirectOrRespond();
                 break;
             case "cancel":

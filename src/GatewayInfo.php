@@ -410,7 +410,7 @@ class GatewayInfo
      */
     public static function requiredFields($gateway)
     {
-        $fields = array();
+        $fields = [];
 
         $requiredFields = self::getConfigSetting($gateway, 'required_fields');
 
@@ -422,7 +422,7 @@ class GatewayInfo
         if (!self::isOffsite($gateway) && !self::isManual($gateway)) {
             $fields = array_merge(
                 $fields,
-                array('name', 'number', 'expiryMonth', 'expiryYear', 'cvv')
+                ['name', 'number', 'expiryMonth', 'expiryYear', 'cvv']
             );
         }
 
@@ -442,7 +442,7 @@ class GatewayInfo
             return null;
         }
 
-        $convertConstants = function(&$config) use (&$convertConstants){
+        $convertConstants = function (&$config) use (&$convertConstants) {
             foreach ($config as $key => &$value) {
                 if (is_array($value)) {
                     $convertConstants($value);

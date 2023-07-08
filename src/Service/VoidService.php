@@ -2,12 +2,14 @@
 
 namespace SilverStripe\Omnipay\Service;
 
+use Omnipay\Common\Exception\OmnipayException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Exception\MissingParameterException;
-use Omnipay\Common\Exception\OmnipayException;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
-use SilverStripe\Omnipay\Model\Message;
+use SilverStripe\Omnipay\Model\Message\VoidedResponse;
+use SilverStripe\Omnipay\Model\Message\VoidError;
+use SilverStripe\Omnipay\Model\Message\VoidRequest;
 
 class VoidService extends NotificationCompleteService
 {
@@ -17,9 +19,9 @@ class VoidService extends NotificationCompleteService
 
     protected $pendingState = 'PendingVoid';
 
-    protected $requestMessageType = Message\VoidRequest::class;
+    protected $requestMessageType = VoidRequest::class;
 
-    protected $errorMessageType = Message\VoidError::class;
+    protected $errorMessageType = VoidError::class;
 
     /**
      * Void/cancel a payment
@@ -33,7 +35,7 @@ class VoidService extends NotificationCompleteService
      * @inheritdoc
      * @throws MissingParameterException if no transaction reference can be found from messages or parameters
      */
-    public function initiate($data = array())
+    public function initiate($data = [])
     {
         if (!$this->payment->canVoid()) {
             throw new InvalidConfigurationException('Voiding of this payment not allowed.');
@@ -70,12 +72,12 @@ class VoidService extends NotificationCompleteService
 
         $gatewayData = array_merge(
             $data,
-            array(
+            [
                 'amount' => (float)$this->payment->MoneyAmount,
                 'currency' => $this->payment->MoneyCurrency,
                 'transactionReference' => $reference,
                 'notifyUrl' => $this->getEndpointUrl('notify')
-            )
+            ]
         );
 
         $this->extend('onBeforeVoid', $gatewayData);
@@ -97,15 +99,13 @@ class VoidService extends NotificationCompleteService
 
         $serviceResponse = $this->wrapOmnipayResponse($response);
 
-        if ($serviceResponse->isAwaitingNotification()) {
+        if ($serviceResponse->isError()) {
+            $this->createMessage($this->errorMessageType, $response);
+        } elseif ($serviceResponse->isRedirect() || $serviceResponse->isAwaitingNotification()) {
             $this->payment->Status = $this->pendingState;
             $this->payment->write();
-        } else {
-            if ($serviceResponse->isError()) {
-                $this->createMessage($this->errorMessageType, $response);
-            } else {
-                $this->markCompleted($this->endState, $serviceResponse, $response);
-            }
+        } elseif ($serviceResponse->isSuccessful()) {
+            $this->markCompleted($this->endState, $serviceResponse, $response);
         }
 
         return $serviceResponse;
@@ -114,7 +114,7 @@ class VoidService extends NotificationCompleteService
     protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
     {
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
-        $this->createMessage(Message\VoidedResponse::class, $gatewayMessage);
+        $this->createMessage(VoidedResponse::class, $gatewayMessage);
 
         ErrorHandling::safeExtend($this->payment, 'onVoid', $serviceResponse);
     }

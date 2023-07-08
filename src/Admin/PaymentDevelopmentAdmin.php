@@ -46,20 +46,20 @@ class PaymentDevelopmentAdmin extends Controller
 			<tbody>';
 
         foreach ($types as $gateway) {
-            echo '<tr>'.
-                '<td>'.$gateway->getShortName().'</td>'.
-                '<td>'.$gateway->getName().'</td>'.
-                '<td>'.($gateway->supportsPurchase() ? 'yes' : '').'</td>'.
-                '<td>'.($gateway->supportsAuthorize() ? 'yes' : '').'</td>'.
-                '<td>'.($gateway->supportsCompleteAuthorize() ? 'yes' : '').'</td>'.
-                '<td>'.($gateway->supportsCapture() ? 'yes' : '').'</td>'.
-                '<td>'.($gateway->supportsCompletePurchase() ? 'yes' : '').'</td>'.
-                '<td>'.($gateway->supportsRefund() ? 'yes' : '').'</td>'.
-                '<td>'.($gateway->supportsVoid() ? 'yes' : '').'</td>'.
-                '<td>'.($gateway->supportsCreateCard() ? 'yes' : '').'</td>'.
-                '<td>'.($gateway->supportsDeleteCard() ? 'yes' : '').'</td>'.
-                '<td>'.($gateway->supportsUpdateCard() ? 'yes' : '').'</td>'.
-                '<td>'.($gateway->supportsAcceptNotification() ? 'yes' : '').'</td>'.
+            echo '<tr>' .
+                '<td>' . $gateway->getShortName() . '</td>' .
+                '<td>' . $gateway->getName() . '</td>' .
+                '<td>' . ($gateway->supportsPurchase() ? 'yes' : '') . '</td>' .
+                '<td>' . ($gateway->supportsAuthorize() ? 'yes' : '') . '</td>' .
+                '<td>' . ($gateway->supportsCompleteAuthorize() ? 'yes' : '') . '</td>' .
+                '<td>' . ($gateway->supportsCapture() ? 'yes' : '') . '</td>' .
+                '<td>' . ($gateway->supportsCompletePurchase() ? 'yes' : '') . '</td>' .
+                '<td>' . ($gateway->supportsRefund() ? 'yes' : '') . '</td>' .
+                '<td>' . ($gateway->supportsVoid() ? 'yes' : '') . '</td>' .
+                '<td>' . ($gateway->supportsCreateCard() ? 'yes' : '') . '</td>' .
+                '<td>' . ($gateway->supportsDeleteCard() ? 'yes' : '') . '</td>' .
+                '<td>' . ($gateway->supportsUpdateCard() ? 'yes' : '') . '</td>' .
+                '<td>' . ($gateway->supportsAcceptNotification() ? 'yes' : '') . '</td>' .
             '</tr>';
             if ($this->request->getVar('defaults')) {
                 echo '<tr><td colspan="13">';
@@ -84,7 +84,7 @@ class PaymentDevelopmentAdmin extends Controller
             array_keys(GatewayInfo::getSupportedGateways(false))
         ));
 
-        $supportedGateways = array();
+        $supportedGateways = [];
 
         array_walk($gateways, function ($name, $index) use (&$supportedGateways, &$factory) {
             try {

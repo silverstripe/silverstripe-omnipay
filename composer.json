@@ -10,12 +10,14 @@
         "omnipay/common": "^3"
     },
     "require-dev": {
+        "guzzlehttp/psr7": "^2.5",
         "silverstripe/versioned" : "^1.0",
-        "phpunit/phpunit": "^5.7",
-        "php-http/guzzle6-adapter": "^1.1",
+        "phpunit/phpunit": "^9.5",
+        "php-http/guzzle7-adapter": "^1",
         "omnipay/paypal": "^3",
         "omnipay/dummy": "^3",
-        "omnipay/paymentexpress": "^3"
+        "omnipay/paymentexpress": "^3.1.1",
+        "symfony/http-foundation": "^5.4.25 || ^6.3.1"
     },
     "autoload": {
         "psr-4": {

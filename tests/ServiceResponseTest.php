@@ -13,7 +13,7 @@ class ServiceResponseTest extends FunctionalTest
     /** @var Payment */
     protected $payment;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -102,6 +102,7 @@ class ServiceResponseTest extends FunctionalTest
     public function testInvalidAddFlag()
     {
         $response = new ServiceResponse($this->payment);
+        $this->expectException('\InvalidArgumentException');
         $response->addFlag("Test");
     }
 
@@ -111,6 +112,7 @@ class ServiceResponseTest extends FunctionalTest
     public function testInvalidHasFlag()
     {
         $response = new ServiceResponse($this->payment);
+        $this->expectException('\InvalidArgumentException');
         $response->hasFlag("Test");
     }
 
@@ -120,6 +122,7 @@ class ServiceResponseTest extends FunctionalTest
     public function testInvalidRemoveFlag()
     {
         $response = new ServiceResponse($this->payment);
+        $this->expectException('\InvalidArgumentException');
         $response->removeFlag("Test");
     }
 
@@ -177,6 +180,7 @@ class ServiceResponseTest extends FunctionalTest
         $this->assertEquals($httpResponse->getStatusCode(), 302);
 
         // trying to set the URL now should trigger an exception
+        $this->expectException('\SilverStripe\Omnipay\Exception\ServiceException');
         $response->setTargetUrl('/my/endpoint');
     }
 
@@ -217,6 +221,7 @@ class ServiceResponseTest extends FunctionalTest
         $this->assertEquals($httpResponse->getBody(), 'SelfSubmittingForm HTML');
 
         // tryin to set the URL now should trigger an exception
+        $this->expectException('\SilverStripe\Omnipay\Exception\ServiceException');
         $response->setTargetUrl('/my/endpoint');
     }
 }

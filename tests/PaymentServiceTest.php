@@ -17,7 +17,7 @@ class PaymentServiceTest extends PaymentTest
     /** @var \SilverStripe\Omnipay\Service\PurchaseService */
     protected $service;
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
@@ -34,12 +34,12 @@ class PaymentServiceTest extends PaymentTest
 
     public function testGateway()
     {
-        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', [
             // set some invalid params
-            'parameters' => array(
+            'parameters' => [
                 'DummyParameter' => 'DummyValue'
-            )
-        ));
+            ]
+        ]);
 
         $gateway = $this->service->oGateway();
         $this->assertEquals($gateway->getShortName(), 'Dummy');
@@ -50,10 +50,10 @@ class PaymentServiceTest extends PaymentTest
         $gateway = $this->service->oGateway();
         $this->assertEquals($gateway->getShortName(), 'PaymentExpress_PxPay');
 
-        $expectedParams = array(
+        $expectedParams = [
             'username' => 'EXAMPLEUSER',
             'password' => '235llgwxle4tol23l'
-        );
+        ];
 
         $this->assertEquals(
             // the gateway might return more parameters, but it should at least contain the expected params
@@ -211,12 +211,13 @@ class PaymentServiceTest extends PaymentTest
 
         // build a gateway that doesn't have the `acceptNotification` method
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->setMethods(array('getName'))
+            ->setMethods(['getName'])
             ->getMock();
 
         $service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
 
         // this should throw an exception
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
         $service->handleNotification();
     }
 

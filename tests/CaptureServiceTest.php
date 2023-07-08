@@ -36,89 +36,89 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
     protected $endStatus = 'Captured';
 
-    protected $successFromFixtureMessages = array(
-        array( // response that was loaded from the fixture
+    protected $successFromFixtureMessages = [
+        [ // response that was loaded from the fixture
             'ClassName' => AuthorizedResponse::class,
             'Reference' => 'authorizedPaymentReceipt'
-        ),
-        array( // the generated Capture request
+        ],
+        [ // the generated Capture request
             'ClassName' => CaptureRequest::class,
             'Reference' => 'authorizedPaymentReceipt'
-        ),
-        array( // the generated Capture response
+        ],
+        [ // the generated Capture response
             'ClassName' => CapturedResponse::class,
             'Reference' => 'authorizedPaymentReceipt'
-        )
-    );
+        ]
+    ];
 
-    protected $successMessages = array(
-        array( // the generated capture request
+    protected $successMessages = [
+        [ // the generated capture request
             'ClassName' => CaptureRequest::class,
             'Reference' => 'testThisRecipe123'
-        ),
-        array( // the generated capture response
+        ],
+        [ // the generated capture response
             'ClassName' => CapturedResponse::class,
             'Reference' => 'testThisRecipe123'
-        )
-    );
+        ]
+    ];
 
-    protected $failureMessages = array(
-        array( // response that was loaded from the fixture
+    protected $failureMessages = [
+        [ // response that was loaded from the fixture
             'ClassName' => AuthorizedResponse::class,
             'Reference' => 'authorizedPaymentReceipt'
-        ),
-        array( // the generated capture request
+        ],
+        [ // the generated capture request
             'ClassName' => CaptureRequest::class,
             'Reference' => 'authorizedPaymentReceipt'
-        ),
-        array( // the generated capture response
+        ],
+        [ // the generated capture response
             'ClassName' => CaptureError::class,
             'Reference' => 'authorizedPaymentReceipt'
-        )
-    );
+        ]
+    ];
 
-    protected $notificationFailureMessages = array(
-        array(
+    protected $notificationFailureMessages = [
+        [
             'ClassName' => AuthorizedResponse::class,
             'Reference' => 'authorizedPaymentReceipt'
-        ),
-        array(
+        ],
+        [
             'ClassName' => CaptureRequest::class,
             'Reference' => 'authorizedPaymentReceipt'
-        ),
-        array(
+        ],
+        [
             'ClassName' => NotificationError::class,
             'Reference' => 'authorizedPaymentReceipt'
-        )
-    );
+        ]
+    ];
 
     protected $errorMessageClass = CaptureError::class;
 
-    protected $successPaymentExtensionHooks = array(
+    protected $successPaymentExtensionHooks = [
         'onCaptured'
-    );
+    ];
 
-    protected $initiateServiceExtensionHooks = array(
+    protected $initiateServiceExtensionHooks = [
         'onBeforeCapture',
         'onAfterCapture',
         'onAfterSendCapture',
         'updateServiceResponse'
-    );
+    ];
 
-    protected $initiateFailedServiceExtensionHooks = array(
+    protected $initiateFailedServiceExtensionHooks = [
         'onBeforeCapture',
         'onAfterCapture',
         'updateServiceResponse'
-    );
+    ];
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
         $this->logInWithPermission('CAPTURE_PAYMENTS');
         CaptureService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
         CaptureService::remove_extension(PaymentTestServiceExtensionHooks::class);
@@ -141,7 +141,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // We supply the amount, but specify the full amount here. So this should be equal to a full capture
-        $service->initiate(array('amount' => '123.45'));
+        $service->initiate(['amount' => '123.45']);
 
         // there should be NO partial payments
         $this->assertEquals(0, $payment->getPartialPayments()->count());
@@ -171,10 +171,10 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         // load an authorized payment from fixture
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
-        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
             'max_capture' => '20%',
             'can_capture' => 'full'
-        ));
+        ]);
 
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
@@ -183,7 +183,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // We capture ~110% of the authorized payment
-        $service->initiate(array('amount' => '135.80'));
+        $service->initiate(['amount' => '135.80']);
 
         // there should be a new partial payment
         $this->assertEquals(1, $payment->getPartialPayments()->count());
@@ -208,25 +208,25 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // ensure the correct service hooks were called
         $this->assertEquals(
-            array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment')),
+            array_merge($this->initiateServiceExtensionHooks, ['updatePartialPayment']),
             $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
 
     public function testExcessCaptureViaNotification()
     {
-        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', array(
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'max_capture' => '20%'
-        ));
+        ]);
 
         // load a payment from fixture
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway and only allow full captures
-        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
             'use_async_notification' => true,
             'can_capture' => 'full'
-        ));
+        ]);
 
         $stubGateway = $this->buildPaymentGatewayStub(false, $this->fixtureReceipt);
         // register our mock gateway factory as injection
@@ -235,7 +235,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // the full 120%, must work, as excess capture isn't the same as a partial capture
-        $service->initiate(array('amount' => '148.14'));
+        $service->initiate(['amount' => '148.14']);
 
         // payment amount should still be the full amount!
         $this->assertEquals('123.45', $payment->MoneyAmount);
@@ -249,7 +249,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('24.69', $partialPayment->MoneyAmount);
 
         // Now a notification comes in
-        $this->get('paymentendpoint/'. $payment->Identifier .'/notify');
+        $this->get('paymentendpoint/' . $payment->Identifier . '/notify');
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -259,7 +259,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // ensure the correct service hooks were called
         $this->assertEquals(
-            array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment', 'updateServiceResponse')),
+            array_merge($this->initiateServiceExtensionHooks, ['updatePartialPayment', 'updateServiceResponse']),
             $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
 
@@ -276,24 +276,24 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('24.69', $partialPayment->MoneyAmount);
 
         // check existance of messages
-        SapphireTest::assertListContains(array(
-            array(
+        SapphireTest::assertListContains([
+            [
                 'ClassName' => AuthorizedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt'
-            ),
-            array(
+            ],
+            [
                 'ClassName' => CaptureRequest::class,
                 'Reference' => 'authorizedPaymentReceipt'
-            ),
-            array(
+            ],
+            [
                 'ClassName' => NotificationSuccessful::class,
                 'Reference' => 'authorizedPaymentReceipt'
-            ),
-            array(
+            ],
+            [
                 'ClassName' => CapturedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt'
-            )
-        ), $payment->Messages());
+            ]
+        ], $payment->Messages());
 
         // try to complete a second time
         $service = $this->getService($payment);
@@ -317,7 +317,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // We do a partial capture
-        $service->initiate(array('amount' => '23.45'));
+        $service->initiate(['amount' => '23.45']);
 
         // there should be a new partial payment
         $this->assertEquals(1, $payment->getPartialPayments()->count());
@@ -334,21 +334,21 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertFalse($payment->canCapture(null, true));
 
         // check existance of messages and existence of references
-        SapphireTest::assertListContains(array(
-            array(
+        SapphireTest::assertListContains([
+            [
                 'ClassName' => AuthorizedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt',
-            ),
+            ],
 
-            array(
+            [
                 'ClassName' => CaptureRequest::class,
                 'Reference' => 'authorizedPaymentReceipt',
-            ),
-            array(
+            ],
+            [
                 'ClassName' => PartiallyCapturedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt',
-            ),
-        ), $payment->Messages());
+            ],
+        ], $payment->Messages());
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -358,7 +358,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // ensure the correct service hooks were called
         $this->assertEquals(
-            array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment')),
+            array_merge($this->initiateServiceExtensionHooks, ['updatePartialPayment']),
             $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
@@ -369,9 +369,9 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // allow multiple captures
-        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
             'can_capture' => 'multiple'
-        ));
+        ]);
 
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
@@ -380,7 +380,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // We do a partial capture
-        $service->initiate(array('amount' => '23.45'));
+        $service->initiate(['amount' => '23.45']);
 
         // there should be a new partial payment
         $this->assertEquals(1, $payment->getPartialPayments()->count());
@@ -396,7 +396,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
 
         // We do another partial capture
-        $service->initiate(array('amount' => '90.00'));
+        $service->initiate(['amount' => '90.00']);
 
         // there should be a new partial payment
         $partialPayment = $payment->getPartialPayments()->first();
@@ -407,7 +407,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('10.00', $payment->MoneyAmount);
 
         // We do another partial capture for the remaining amount. Here, there's no partial payment involved.
-        $service->initiate(array('amount' => '10.00'));
+        $service->initiate(['amount' => '10.00']);
         $this->assertEquals('Captured', $payment->Status);
         $this->assertEquals('10.00', $payment->MoneyAmount);
         $this->assertFalse($payment->canCapture(null, true));
@@ -419,10 +419,10 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
             'use_async_notification' => true,
             'can_capture' => 'multiple'
-        ));
+        ]);
 
         $stubGateway = $this->buildPaymentGatewayStub(false, $this->fixtureReceipt);
         // register our mock gateway factory as injection
@@ -430,7 +430,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         $service = $this->getService($payment);
         $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->Reset();
-        $service->initiate(array('amount' => '100.45'));
+        $service->initiate(['amount' => '100.45']);
 
         // payment amount should still be the full amount!
         $this->assertEquals('123.45', $payment->MoneyAmount);
@@ -444,7 +444,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('-100.45', $partialPayment->MoneyAmount);
 
         // Now a notification comes in
-        $this->get('paymentendpoint/'. $payment->Identifier .'/notify');
+        $this->get('paymentendpoint/' . $payment->Identifier . '/notify');
 
         // ensure payment hooks were called
         $this->assertEquals(
@@ -454,7 +454,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // ensure the correct service hooks were called
         $this->assertEquals(
-            array_merge($this->initiateServiceExtensionHooks, array('updatePartialPayment', 'updateServiceResponse')),
+            array_merge($this->initiateServiceExtensionHooks, ['updatePartialPayment', 'updateServiceResponse']),
             $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
 
@@ -475,24 +475,24 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertTrue($payment->canCapture(null, true));
 
         // check existance of messages
-        SapphireTest::assertListContains(array(
-            array(
+        SapphireTest::assertListContains([
+            [
                 'ClassName' => AuthorizedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt'
-            ),
-            array(
+            ],
+            [
                 'ClassName' => CaptureRequest::class,
                 'Reference' => 'authorizedPaymentReceipt'
-            ),
-            array(
+            ],
+            [
                 'ClassName' => NotificationSuccessful::class,
                 'Reference' => 'authorizedPaymentReceipt'
-            ),
-            array(
+            ],
+            [
                 'ClassName' => PartiallyCapturedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt'
-            )
-        ), $payment->Messages());
+            ]
+        ], $payment->Messages());
 
         // try to complete a second time
         $service = $this->getService($payment);
@@ -510,9 +510,9 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
             'use_async_notification' => true
-        ));
+        ]);
 
         $stubGateway = $this->buildPaymentGatewayStub(false, $this->fixtureReceipt);
         // register our mock gateway factory as injection
@@ -521,12 +521,12 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // try to initiate two captures without waiting for one to complete
-        $service->initiate(array('amount' => '100.00'));
+        $service->initiate(['amount' => '100.00']);
 
         $exception = null;
         try {
             // the second attempt must throw an exception!
-            $service->initiate(array('amount' => '23.75'));
+            $service->initiate(['amount' => '23.75']);
         } catch (\Exception $ex) {
             $exception = $ex;
         }
@@ -542,16 +542,16 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('-100.00', $partialPayment->MoneyAmount);
 
         // check existance of messages
-        SapphireTest::assertListContains(array(
-            array(
+        SapphireTest::assertListContains([
+            [
                 'ClassName' => AuthorizedResponse::class,
                 'Reference' => 'authorizedPaymentReceipt'
-            ),
-            array(
+            ],
+            [
                 'ClassName' => CaptureRequest::class,
                 'Reference' => 'authorizedPaymentReceipt'
-            )
-        ), $payment->Messages());
+            ]
+        ], $payment->Messages());
     }
 
     /**
@@ -569,7 +569,8 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // We supply the amount, but specify an amount that is way over what was authorized
         // This will throw an InvalidParameterException
-        $service->initiate(array('amount' => '1000000.00'));
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
+        $service->initiate(['amount' => '1000000.00']);
     }
 
     /**
@@ -587,7 +588,8 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // We supply the amount, but specify an amount that is not a number
         // This will throw an InvalidParameterException
-        $service->initiate(array('amount' => 'test'));
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
+        $service->initiate(['amount' => 'test']);
     }
 
     /**
@@ -605,7 +607,8 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // We supply the amount, but specify an amount that is not a positive number
         // This will throw an InvalidParameterException
-        $service->initiate(array('amount' => '-1'));
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
+        $service->initiate(['amount' => '-1']);
     }
 
     /**
@@ -622,13 +625,14 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $service = $this->getService($payment);
 
         // only allow full capture, thus disabling partial refunds
-        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
             'can_capture' => 'full'
-        ));
+        ]);
 
         // We supply a partial amount
         // This will throw an InvalidParameterException
-        $service->initiate(array('amount' => '10.00'));
+        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
+        $service->initiate(['amount' => '10.00']);
     }
 
     public function testPartialCaptureFailed()
@@ -641,7 +645,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
         $service = $this->getService($payment);
 
-        $service->initiate(array('amount' => '100.00'));
+        $service->initiate(['amount' => '100.00']);
 
         // there should be NO partial payments
         $this->assertEquals(0, $payment->getPartialPayments()->count());
@@ -657,9 +661,9 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         // use notification on the gateway
-        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, array(
+        Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
             'use_async_notification' => true
-        ));
+        ]);
 
         $stubGateway = $this->buildPaymentGatewayStub(
             false,
@@ -672,10 +676,10 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         $service = $this->getService($payment);
 
-        $service->initiate(array('amount' => '53.45'));
+        $service->initiate(['amount' => '53.45']);
 
         // Now a notification comes in (will fail)
-        $this->get('paymentendpoint/'. $payment->Identifier .'/notify');
+        $this->get('paymentendpoint/' . $payment->Identifier . '/notify');
 
         // we'll have to "reload" the payment from the DB now
         $payment = Payment::get()->byID($payment->ID);

@@ -128,8 +128,8 @@ class GatewayFieldsFactory
         $fields = FieldList::create();
 
         foreach ($this->fieldgroups as $group) {
-            if (method_exists($this, 'get'.$group.'Fields')) {
-                $fields->merge($this->{'get'.$group.'Fields'}());
+            if (method_exists($this, 'get' . $group . 'Fields')) {
+                $fields->merge($this->{'get' . $group . 'Fields'}());
             }
         }
 
@@ -142,18 +142,21 @@ class GatewayFieldsFactory
      */
     public function getCardFields()
     {
-        $months = array();
+        $months = [];
         //generate list of months
         for ($x = 1; $x <= 12; $x++) {
+            $date = new \DateTime();
+            $date->setTimestamp(mktime(0, 0, 0, $x, 1));
+
             // Fixes #145 - Thanks to @digitall-it
-            $months[$x] = str_pad($x, 2, '0', STR_PAD_LEFT) . " - " . strftime('%B', mktime(0, 0, 0, $x, 1));
+            $months[$x] = str_pad($x, 2, '0', STR_PAD_LEFT) . " - " . $date->format('F');
         }
         $year = date('Y');
         $range = 5;
         $startrange = range(date('Y', strtotime("-$range years")), $year);
         $expiryrange = range($year, date('Y', strtotime("+$range years")));
 
-        $fields = array(
+        $fields = [
             'type' => DropdownField::create(
                 $this->getFieldName('type'),
                 _t('SilverStripe\Omnipay\PaymentForm.Type', 'Type'),
@@ -197,7 +200,7 @@ class GatewayFieldsFactory
                 $this->getFieldName('issueNumber'),
                 _t('SilverStripe\Omnipay\PaymentForm.IssueNumber', 'Issue Number')
             )
-        );
+        ];
 
         $this->cullForGateway($fields);
         //optionally group date fields
@@ -234,7 +237,7 @@ class GatewayFieldsFactory
         $brands = $card->getSupportedBrands();
 
         foreach ($brands as $brand => $x) {
-            $brands[$brand] = _t('CreditCard.'.strtoupper($brand), $brand);
+            $brands[$brand] = _t('CreditCard.' . strtoupper($brand), $brand);
         }
 
         return $brands;
@@ -247,7 +250,7 @@ class GatewayFieldsFactory
      */
     public function getBillingFields()
     {
-        $fields = array(
+        $fields = [
             'billingAddress1' => TextField::create(
                 $this->getFieldName('billingAddress1'),
                 _t('SilverStripe\Omnipay\PaymentForm.BillingAddress1', 'Address')
@@ -276,7 +279,7 @@ class GatewayFieldsFactory
                 $this->getFieldName('billingPhone'),
                 _t('SilverStripe\Omnipay\PaymentForm.BillingPhone', 'Phone')
             )
-        );
+        ];
 
         $this->cullForGateway($fields);
 
@@ -290,7 +293,7 @@ class GatewayFieldsFactory
      */
     public function getShippingFields()
     {
-        $fields = array(
+        $fields = [
             'shippingAddress1' => TextField::create(
                 $this->getFieldName('shippingAddress1'),
                 _t('SilverStripe\Omnipay\PaymentForm.ShippingAddress1', 'Shipping Address')
@@ -319,7 +322,7 @@ class GatewayFieldsFactory
                 $this->getFieldName('shippingPhone'),
                 _t('SilverStripe\Omnipay\PaymentForm.ShippingPhone', 'Shipping Phone')
             )
-        );
+        ];
 
         $this->cullForGateway($fields);
 
@@ -333,9 +336,9 @@ class GatewayFieldsFactory
      */
     public function getEmailFields()
     {
-        $fields = array(
+        $fields = [
             'email' => EmailField::create($this->getFieldName('email'), _t('SilverStripe\Omnipay\PaymentForm.Email', 'Email'))
-        );
+        ];
 
         $this->cullForGateway($fields);
 
@@ -349,9 +352,9 @@ class GatewayFieldsFactory
      */
     public function getCompanyFields()
     {
-        $fields = array(
+        $fields = [
             'company' => TextField::create($this->getFieldName('company'), _t('SilverStripe\Omnipay\PaymentForm.Company', 'Company'))
-        );
+        ];
 
         $this->cullForGateway($fields);
 
@@ -363,7 +366,7 @@ class GatewayFieldsFactory
      * @param $fields
      * @param array $defaults
      */
-    protected function cullForGateway(&$fields, $defaults = array())
+    protected function cullForGateway(&$fields, $defaults = [])
     {
         if (!$this->gateway) {
             return;
@@ -407,7 +410,7 @@ class GatewayFieldsFactory
      */
     public function getFieldNames(array $defaultNames)
     {
-        $stack = array();
+        $stack = [];
 
         if (empty($defaultNames)) {
             // throw user_error?

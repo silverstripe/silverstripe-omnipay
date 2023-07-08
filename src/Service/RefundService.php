@@ -43,7 +43,7 @@ class RefundService extends NotificationCompleteService
      * @throws MissingParameterException if no transaction reference can be found from messages or parameters
      * @throws InvalidParameterException if the amount parameter was invalid
      */
-    public function initiate($data = array())
+    public function initiate($data = [])
     {
         if (!$this->payment->canRefund()) {
             throw new InvalidConfigurationException('Refunding of this payment not allowed.');
@@ -104,12 +104,12 @@ class RefundService extends NotificationCompleteService
 
         $gatewayData = array_merge(
             $data,
-            array(
+            [
                 'amount' => (float)$amount,
                 'currency' => $this->payment->MoneyCurrency,
                 'transactionReference' => $reference,
                 'notifyUrl' => $this->getEndpointUrl('notify')
-            )
+            ]
         );
 
         $this->extend('onBeforeRefund', $gatewayData);

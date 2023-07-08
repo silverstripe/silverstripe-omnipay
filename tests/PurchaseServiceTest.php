@@ -15,73 +15,73 @@ class PurchaseServiceTest extends BasePurchaseServiceTest
     protected $omnipayMethod = 'purchase';
     protected $omnipayCompleteMethod = 'completePurchase';
 
-    protected $onsiteSuccessMessages = array(
-        array('ClassName' => Message\PurchaseRequest::class),
-        array('ClassName' => Message\PurchasedResponse::class)
-    );
+    protected $onsiteSuccessMessages = [
+        ['ClassName' => Message\PurchaseRequest::class],
+        ['ClassName' => Message\PurchasedResponse::class]
+    ];
 
-    protected $onsiteFailMessages = array(
-        array('ClassName' => Message\PurchaseRequest::class),
-        array('ClassName' => Message\PurchaseError::class)
-    );
+    protected $onsiteFailMessages = [
+        ['ClassName' => Message\PurchaseRequest::class],
+        ['ClassName' => Message\PurchaseError::class]
+    ];
 
-    protected $failMessages = array(
-        array('ClassName' => Message\PurchaseError::class)
-    );
+    protected $failMessages = [
+        ['ClassName' => Message\PurchaseError::class]
+    ];
 
-    protected $offsiteSuccessMessages = array(
-        array('ClassName' => Message\PurchaseRequest::class),
-        array('ClassName' => Message\PurchaseRedirectResponse::class),
-        array('ClassName' => Message\CompletePurchaseRequest::class),
-        array('ClassName' => Message\PurchasedResponse::class)
-    );
+    protected $offsiteSuccessMessages = [
+        ['ClassName' => Message\PurchaseRequest::class],
+        ['ClassName' => Message\PurchaseRedirectResponse::class],
+        ['ClassName' => Message\CompletePurchaseRequest::class],
+        ['ClassName' => Message\PurchasedResponse::class]
+    ];
 
-    protected $offsiteFailMessages = array(
-        array('ClassName' => Message\PurchaseRequest::class),
-        array('ClassName' => Message\PurchaseRedirectResponse::class),
-        array('ClassName' => Message\CompletePurchaseRequest::class),
-        array('ClassName' => Message\CompletePurchaseError::class)
-    );
+    protected $offsiteFailMessages = [
+        ['ClassName' => Message\PurchaseRequest::class],
+        ['ClassName' => Message\PurchaseRedirectResponse::class],
+        ['ClassName' => Message\CompletePurchaseRequest::class],
+        ['ClassName' => Message\CompletePurchaseError::class]
+    ];
 
     protected $failureMessageClass = Message\CompletePurchaseError::class;
 
     protected $paymentId = 'UNIQUEHASH23q5123tqasdf';
 
-    protected $successPaymentExtensionHooks = array(
+    protected $successPaymentExtensionHooks = [
         'onCaptured'
-    );
+    ];
 
-    protected $notifyPaymentExtensionHooks = array(
+    protected $notifyPaymentExtensionHooks = [
         'onAwaitingCaptured'
-    );
+    ];
 
-    protected $initiateServiceExtensionHooks = array(
+    protected $initiateServiceExtensionHooks = [
         'onBeforePurchase',
         'onAfterPurchase',
         'onAfterSendPurchase',
         'updateServiceResponse'
-    );
+    ];
 
-    protected $initiateFailedServiceExtensionHooks = array(
+    protected $initiateFailedServiceExtensionHooks = [
         'onBeforePurchase',
         'onAfterPurchase',
         'updateServiceResponse'
-    );
+    ];
 
-    protected $completeServiceExtensionHooks = array(
+    protected $completeServiceExtensionHooks = [
         'onBeforeCompletePurchase',
         'onAfterCompletePurchase',
         'updateServiceResponse'
-    );
+    ];
 
-    public function setUp()
+    public function setUp(): void
     {
         parent::setUp();
 
         PurchaseService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    public function tearDown()
+    public function tearDown(): void
     {
         parent::tearDown();
 

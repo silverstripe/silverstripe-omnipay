@@ -47,13 +47,13 @@ class ErrorHandling
             throw new \ErrorException($message, 0, $severity, $file, $line);
         }, E_WARNING & E_USER_WARNING & E_ERROR & E_USER_ERROR & E_RECOVERABLE_ERROR);
 
-        $retVal = array();
+        $retVal = [];
         try {
             $retVal = $object->extend($method, $a1, $a2, $a3, $a4, $a5, $a6, $a7);
         } catch (\Exception $ex) {
             if ($logger = Logging::getExceptionLogger()) {
                 $logger->warning(
-                    'An error occurred when trying to run extension point: '. $object->class . '->' . $method,
+                    'An error occurred when trying to run extension point: ' . $object->class . '->' . $method,
                     [
                         'exception' => $ex
                     ]

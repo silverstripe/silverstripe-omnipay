@@ -75,12 +75,12 @@ class Payable extends DataExtension
     public function HasPendingPayments()
     {
         return $this->owner->Payments()
-            ->filter('Status', array(
+            ->filter('Status', [
                 'PendingAuthorization',
                 'PendingPurchase',
                 'PendingCapture',
                 'PendingRefund',
                 'PendingVoid'
-            ))->count() > 0;
+            ])->count() > 0;
     }
 }

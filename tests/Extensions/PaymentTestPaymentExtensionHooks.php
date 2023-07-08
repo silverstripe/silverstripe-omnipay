@@ -77,72 +77,72 @@ class PaymentTestPaymentExtensionHooks extends DataExtension implements TestOnly
 
     public function onAuthorized($serviceResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAuthorized',
-            'args' => array($serviceResponse)
-        );
+            'args' => [$serviceResponse]
+        ];
     }
 
     public function onAwaitingAuthorized($serviceResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAwaitingAuthorized',
-            'args' => array($serviceResponse)
-        );
+            'args' => [$serviceResponse]
+        ];
     }
 
     public function onCaptured($serviceResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onCaptured',
-            'args' => array($serviceResponse)
-        );
+            'args' => [$serviceResponse]
+        ];
     }
 
     public function onAwaitingCaptured($serviceResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAwaitingCaptured',
-            'args' => array($serviceResponse)
-        );
+            'args' => [$serviceResponse]
+        ];
     }
 
     public function onRefunded($serviceResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onRefunded',
-            'args' => array($serviceResponse)
-        );
+            'args' => [$serviceResponse]
+        ];
     }
 
     public function onVoid($serviceResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onVoid',
-            'args' => array($serviceResponse)
-        );
+            'args' => [$serviceResponse]
+        ];
     }
 
     public function onCancelled()
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onCancelled',
             'args' => []
-        );
+        ];
     }
     public function onCardCreated($serviceResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onCardCreated',
-            'args' => array($serviceResponse)
-        );
+            'args' => [$serviceResponse]
+        ];
     }
 
     public function onAwaitingCreateCard($serviceResponse)
     {
-        $this->callStack[] = array(
+        $this->callStack[] = [
             'method' => 'onAwaitingCreateCard',
-            'args' => array($serviceResponse)
-        );
+            'args' => [$serviceResponse]
+        ];
     }
 }

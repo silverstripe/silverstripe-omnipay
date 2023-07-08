@@ -44,7 +44,7 @@ abstract class NotificationCompleteService extends PaymentService
      * @throws InvalidConfigurationException
      * @throws InvalidStateException
      */
-    public function complete($data = array(), $isNotification = true)
+    public function complete($data = [], $isNotification = true)
     {
         // The payment is already in the desired endstate
         if ($this->payment->Status === $this->endState) {
@@ -57,7 +57,7 @@ abstract class NotificationCompleteService extends PaymentService
         }
 
         if ($this->payment->Status !== $this->pendingState) {
-            throw new InvalidStateException('Cannot modify this payment. Status is not "'. $this->pendingState .'"');
+            throw new InvalidStateException('Cannot modify this payment. Status is not "' . $this->pendingState . '"');
         }
 
         $serviceResponse = $this->handleNotification();

@@ -58,9 +58,9 @@ class WorldPayResponseExtension extends Extension
 
             $viewer = new SSViewer("WorldPayCallback");
 
-            $html = $viewer->process(ArrayData::create(array(
+            $html = $viewer->process(ArrayData::create([
                 "ReturnURL" => $return_url
-            )));
+            ]));
 
             $response->setHttpResponse(new HTTPResponse($html, 200));
         }

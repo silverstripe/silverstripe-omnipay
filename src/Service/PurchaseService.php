@@ -26,7 +26,7 @@ class PurchaseService extends PaymentService
      *  If using {@link Form->getData()}, only fields which exist in the form are returned,
      *  effectively whitelisting against arbitrary user input.
      */
-    public function initiate($data = array())
+    public function initiate($data = [])
     {
         if ($this->payment->Status !== 'Created') {
             throw new InvalidStateException('Cannot initiate a purchase with this payment. Status is not "Created"');
@@ -85,7 +85,7 @@ class PurchaseService extends PaymentService
      * This is usually only called by PaymentGatewayController.
      * @inheritdoc
      */
-    public function complete($data = array(), $isNotification = false)
+    public function complete($data = [], $isNotification = false)
     {
         $flags = $isNotification ? ServiceResponse::SERVICE_NOTIFICATION : 0;
         // The payment is already captured

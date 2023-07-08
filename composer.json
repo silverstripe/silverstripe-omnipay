@@ -5,13 +5,13 @@
     "license": "BSD-3-Clause",
     "keywords": ["silverstripe","payment","omnipay"],
     "require": {
-        "silverstripe/framework": "^4",
-        "silverstripe/config": "^1",
+        "php": "^8.1",
+        "silverstripe/framework": "^5",
         "omnipay/common": "^3"
     },
     "require-dev": {
         "guzzlehttp/psr7": "^2.5",
-        "silverstripe/versioned" : "^1.0",
+        "silverstripe/versioned" : "*",
         "phpunit/phpunit": "^9.5",
         "php-http/guzzle7-adapter": "^1",
         "omnipay/paypal": "^3",

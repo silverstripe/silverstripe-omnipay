@@ -65,7 +65,7 @@ final class Payment extends DataObject implements PermissionProvider
     ];
 
     private static $casting = [
-        'Amount' => 'Decimal'
+        'Amount' => 'Currency'
     ];
 
     private static $summary_fields = [

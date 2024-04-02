@@ -18,9 +18,7 @@ class PaymentMathTest extends SapphireTest
         Config::modify()->set(PaymentMath::class, 'useBcMath', true);
     }
 
-    /**
-      * @doesNotPerformAssertions
-      */
+
     public function testPrecision()
     {
         if (!function_exists('bcsub')) {
@@ -44,6 +42,7 @@ class PaymentMathTest extends SapphireTest
         $this->assertEquals('99.900000000000000', PaymentMath::subtract('100.00', '0.1'));
         $this->assertEquals('0.499000000000000', PaymentMath::add('0.273', '0.226'));
     }
+
 
     public function testPrecisionFloat()
     {
@@ -70,9 +69,7 @@ class PaymentMathTest extends SapphireTest
         $this->assertEquals('0.4990000000000', PaymentMath::add('0.273', '0.226'));
     }
 
-    /**
-      * @doesNotPerformAssertions
-      */
+
     public function testSubtraction()
     {
         if (!function_exists('bcsub')) {
@@ -114,9 +111,7 @@ class PaymentMathTest extends SapphireTest
         $this->assertEquals('45.9990', $result);
     }
 
-    /**
-      * @doesNotPerformAssertions
-      */
+
     public function testAddition()
     {
         if (!function_exists('bcadd')) {

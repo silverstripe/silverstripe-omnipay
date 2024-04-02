@@ -4,6 +4,7 @@ namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Forms\FieldList;
 use SilverStripe\i18n\i18n;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Model\Payment;
@@ -33,13 +34,12 @@ class PaymentModelTest extends PaymentTest
         $this->assertEquals("Manual", $payment->Gateway);
     }
 
-    /**
-      * @doesNotPerformAssertions
-      */
+
     public function testCMSFields()
     {
         $fields = Payment::create()->getCMSFields();
-        $this->markTestIncomplete('getCMSFields tests');
+
+        $this->assertInstanceOf(FieldList::class, $fields);
     }
 
     public function testTitle()

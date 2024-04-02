@@ -1,0 +1,16 @@
+de:
+  NONAMESPACE: Include Entity without Namespace (de)
+  REPLACEMENTNONAMESPACE: "My replacement no namespace: {replacement} (de)"
+  REPLACEMENTINCLUDENONAMESPACE: "My include replacement no namespace: {replacement} (de)"
+  LAYOUTTEMPLATENONAMESPACE: Layout Template no namespace (de)
+  i18nTestModule:
+    # Comment for entity
+    ENTITY: 'Entity with "Double Quotes" (de)'
+    ADDITION: Addition (de)
+    MAINTEMPLATE: Main Template (de)
+    WITHNAMESPACE: Include Entity with Namespace (de)
+    LAYOUTTEMPLATE: Layout Template (de)
+    REPLACEMENTNAMESPACE: "My replacement: {replacement} (de)"
+    PRIORITYNOTICE: Low Module Priority (de)
+  i18nTestModuleInclude_ss:
+    REPLACEMENTINCLUDENAMESPACE: "My include replacement: {replacement} (de)"

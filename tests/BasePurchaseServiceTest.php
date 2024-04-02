@@ -737,7 +737,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
         $mockPaymentResponse->expects($this->any())
             ->method('getRedirectResponse')
-            ->will($this->returnValue(RedirectResponse::create($endpoint)));
+            ->will($this->returnValue(new RedirectResponse($endpoint)));
 
         $mockPaymentRequest = $this->getMockBuilder('Omnipay\PaymentExpress\Message\PxPayPurchaseRequest')
             ->disableOriginalConstructor()->getMock();

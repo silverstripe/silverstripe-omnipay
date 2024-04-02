@@ -161,7 +161,7 @@ class ServiceResponseTest extends FunctionalTest
 
         $mockPurchaseResponse->expects($this->any())
             ->method('getRedirectResponse')
-            ->will($this->returnValue(RedirectResponse::create('https://gateway.tld/endpoint')));
+            ->will($this->returnValue(new RedirectResponse('https://gateway.tld/endpoint')));
 
         // Assign an omnipay redirect response
         $response->setOmnipayResponse($mockPurchaseResponse);
@@ -199,7 +199,7 @@ class ServiceResponseTest extends FunctionalTest
         $mockPurchaseResponse->expects($this->any())
             ->method('isRedirect')->will($this->returnValue(true));
 
-        $htmlResponse = \Symfony\Component\HttpFoundation\Response::create('SelfSubmittingForm HTML');
+        $htmlResponse = new \Symfony\Component\HttpFoundation\Response('SelfSubmittingForm HTML');
         $mockPurchaseResponse->expects($this->any())
             ->method('getRedirectResponse')
             ->will($this->returnValue($htmlResponse));

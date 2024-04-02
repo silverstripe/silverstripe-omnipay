@@ -50,6 +50,16 @@ abstract class PaymentService
     ];
 
     /**
+     * @var \SilverStripe\Omnipay\Logger
+     */
+    protected $logger;
+
+    /**
+     * @var \SilverStripe\Omnipay\ExceptionLogger
+     */
+    protected $exceptionLogger;
+
+    /**
      * @var Payment
      */
     protected $payment;
@@ -515,4 +525,31 @@ abstract class PaymentService
     {
         return new CreditCard($data);
     }
+
+
+    public function setExceptionLogger($logger)
+    {
+        $this->exceptionLogger = $logger;
+        return $this;
+    }
+
+
+    public function getExceptionLogger()
+    {
+        return $this->exceptionLogger;
+    }
+
+
+    public function getLogger()
+    {
+        return $this->logger;
+    }
+
+
+    public function setLogger($logger)
+    {
+        $this->logger = $logger;
+        return $this;
+    }
+
 }

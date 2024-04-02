@@ -2,7 +2,6 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
-use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\GatewayFactory;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Dev\SapphireTest;
@@ -10,10 +9,7 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\i18n\i18n;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\i18n\Messages\MessageProvider;
-use SilverStripe\Omnipay\Model\TestOnsiteGateway;
-use SilverStripe\Omnipay\Model\TestOffsiteGateway;
 use SilverStripe\Omnipay\Model\Payment;
-use SilverStripe\i18n\Tests\i18nTestManifest;
 
 class GatewayInfoTest extends SapphireTest
 {

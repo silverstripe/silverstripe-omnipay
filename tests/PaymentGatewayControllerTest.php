@@ -134,13 +134,17 @@ class PaymentGatewayControllerTest extends PaymentTest
 
     public function testStaticRoute()
     {
+        Config::nest();
+
         $staticUrl = 'paymentendpoint/gateway/PaymentExpress_PxPay/complete?id=UNIQUEHASH23q5123tqasdf';
         $response = $this->get($staticUrl);
         // should return 404, because static route isn't enabled
         $this->assertEquals($response->getStatusCode(), 404);
 
         // Configure gateway to use static route
-        Config::modify()->update(GatewayInfo::class, 'PaymentExpress_PxPay', ['use_static_route' => true]);
+        Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', [
+            'use_static_route' => true
+        ]);
 
         $this->setMockHttpResponse(
             'paymentexpress/tests/Mock/PxPayCompletePurchaseSuccess.txt'

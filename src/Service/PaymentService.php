@@ -551,5 +551,4 @@ abstract class PaymentService
         $this->logger = $logger;
         return $this;
     }
-
 }

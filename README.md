@@ -12,15 +12,9 @@ The aim of this module is to make it easy for developers to add online payments 
 nutshell, it wraps the PHP Omnipay payments library and provides some additional functionality. To understand more about
 omnipay, see: https://github.com/thephpleague/omnipay
 
-## Version
-
-3.0+ for SilverStripe 4
-
-For contributions to 2.x (SS 3.x compatible), please use the `2` branch.
-
 ## Requirements
-
- * [silverstripe framework](https://github.com/silverstripe/silverstripe-framework) 4+
+ * PHP 8.1+
+ * [silverstripe framework](https://github.com/silverstripe/silverstripe-framework) v5 + 
  * [omnipay](https://github.com/omnipay/common) 3 & its dependencies - which include guzzle and some symphony libraries.
 
 ## Features
@@ -50,8 +44,8 @@ It is not too difficult to write your own gateway integration either, if needed.
 composer require silverstripe/silverstripe-omnipay ^3@dev
 ```
 
-As of version 2.0 this module only requires `omnipay/common` so you will also need to pull in your payment adapter of
-choice. Have a look at http://omnipay.thephpleague.com/gateways/official/ where the second column is the package name.
+You will also need to pull in your payment adapter of choice. Have a look at http://omnipay.thephpleague.com/gateways/official/ 
+where the second column is the package name.
 
 For example, if your site uses PayPal you would also need to run:
 

@@ -187,7 +187,7 @@ To do this, you'll need to introduce an extension that utilises the relevent ext
 For example:
 
 ```php
-class ShopPayment extends DataExtension {
+class ShopPayment extends Extension {
 
     private static $has_one = array(
         'Order' => 'Order'
@@ -212,7 +212,7 @@ This will add a has_many `Payment` relationship to your model, and provide some 
 For example, the following extension will be applied to `Payment`:
 
 ```php
-class ShopPayment extends DataExtension {
+class ShopPayment extends Extension {
     private static $has_one = array(
         'Order' => 'Order'
     );

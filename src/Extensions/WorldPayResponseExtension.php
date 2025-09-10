@@ -5,7 +5,7 @@ namespace SilverStripe\Omnipay\Extensions;
 use SilverStripe\Core\Extension;
 use SilverStripe\Control\Director;
 use SilverStripe\Omnipay\Service\ServiceResponse;
-use SilverStripe\View\ArrayData;
+use SilverStripe\Model\ArrayData;
 use SilverStripe\View\SSViewer;
 use SilverStripe\Control\HTTPResponse;
 

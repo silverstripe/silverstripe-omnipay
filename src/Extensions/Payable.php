@@ -2,9 +2,9 @@
 
 namespace SilverStripe\Omnipay\Extensions;
 
+use SilverStripe\Core\Extension;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Model\Payment;
-use SilverStripe\ORM\DataExtension;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\HasManyList;
 
@@ -14,7 +14,7 @@ use SilverStripe\ORM\HasManyList;
  * @property DataObject|Payable $owner
  * @method Payment[]|HasManyList Payments()
  */
-class Payable extends DataExtension
+class Payable extends Extension
 {
     private static $has_many = [
         'Payments' => Payment::class

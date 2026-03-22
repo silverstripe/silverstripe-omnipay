@@ -23,24 +23,23 @@ class PaymentMathTest extends SapphireTest
     {
         if (!function_exists('bcsub')) {
             $this->markTestIncomplete('BCMath extension not available');
-            return;
+        } else {
+            Config::modify()->set(PaymentMath::class, 'precision', 0);
+            $this->assertEquals('99', PaymentMath::subtract('100.00', '0.1'));
+            $this->assertEquals('0', PaymentMath::add('0.273', '0.226'));
+
+            Config::modify()->set(PaymentMath::class, 'precision', 1);
+            $this->assertEquals('99.9', PaymentMath::subtract('100.00', '0.1'));
+            $this->assertEquals('0.4', PaymentMath::add('0.273', '0.226'));
+
+            Config::modify()->set(PaymentMath::class, 'precision', 2);
+            $this->assertEquals('99.90', PaymentMath::subtract('100.00', '0.1'));
+            $this->assertEquals('0.49', PaymentMath::add('0.273', '0.226'));
+
+            Config::modify()->set(PaymentMath::class, 'precision', 15);
+            $this->assertEquals('99.900000000000000', PaymentMath::subtract('100.00', '0.1'));
+            $this->assertEquals('0.499000000000000', PaymentMath::add('0.273', '0.226'));
         }
-
-        Config::modify()->set(PaymentMath::class, 'precision', 0);
-        $this->assertEquals('99', PaymentMath::subtract('100.00', '0.1'));
-        $this->assertEquals('0', PaymentMath::add('0.273', '0.226'));
-
-        Config::modify()->set(PaymentMath::class, 'precision', 1);
-        $this->assertEquals('99.9', PaymentMath::subtract('100.00', '0.1'));
-        $this->assertEquals('0.4', PaymentMath::add('0.273', '0.226'));
-
-        Config::modify()->set(PaymentMath::class, 'precision', 2);
-        $this->assertEquals('99.90', PaymentMath::subtract('100.00', '0.1'));
-        $this->assertEquals('0.49', PaymentMath::add('0.273', '0.226'));
-
-        Config::modify()->set(PaymentMath::class, 'precision', 15);
-        $this->assertEquals('99.900000000000000', PaymentMath::subtract('100.00', '0.1'));
-        $this->assertEquals('0.499000000000000', PaymentMath::add('0.273', '0.226'));
     }
 
 
@@ -74,22 +73,21 @@ class PaymentMathTest extends SapphireTest
     {
         if (!function_exists('bcsub')) {
             $this->markTestIncomplete('BCMath extension not available');
-            return;
+        } else {
+            $result = PaymentMath::subtract('100.00', '3.6');
+            $this->assertEquals('96.40', $result);
+
+            $result = PaymentMath::subtract('100.00', '54.001');
+            $this->assertEquals('45.99', $result);
+
+            Config::modify()->set(PaymentMath::class, 'precision', 4);
+
+            $result = PaymentMath::subtract('100.00', '3.6');
+            $this->assertEquals('96.4000', $result);
+
+            $result = PaymentMath::subtract('100.00', '54.001');
+            $this->assertEquals('45.9990', $result);
         }
-
-        $result = PaymentMath::subtract('100.00', '3.6');
-        $this->assertEquals('96.40', $result);
-
-        $result = PaymentMath::subtract('100.00', '54.001');
-        $this->assertEquals('45.99', $result);
-
-        Config::modify()->set(PaymentMath::class, 'precision', 4);
-
-        $result = PaymentMath::subtract('100.00', '3.6');
-        $this->assertEquals('96.4000', $result);
-
-        $result = PaymentMath::subtract('100.00', '54.001');
-        $this->assertEquals('45.9990', $result);
     }
 
     public function testSubtractionFloat()
@@ -116,22 +114,21 @@ class PaymentMathTest extends SapphireTest
     {
         if (!function_exists('bcadd')) {
             $this->markTestIncomplete('BCMath extension not available');
-            return;
+        } else {
+            $result = PaymentMath::add('3.6', '80.40');
+            $this->assertEquals('84.00', $result);
+
+            $result = PaymentMath::add('100000.001', '0.1');
+            $this->assertEquals('100000.10', $result);
+
+            Config::modify()->set(PaymentMath::class, 'precision', 4);
+
+            $result = PaymentMath::add('3.6', '80.40');
+            $this->assertEquals('84.0000', $result);
+
+            $result = PaymentMath::add('100000.001', '0.1');
+            $this->assertEquals('100000.1010', $result);
         }
-
-        $result = PaymentMath::add('3.6', '80.40');
-        $this->assertEquals('84.00', $result);
-
-        $result = PaymentMath::add('100000.001', '0.1');
-        $this->assertEquals('100000.10', $result);
-
-        Config::modify()->set(PaymentMath::class, 'precision', 4);
-
-        $result = PaymentMath::add('3.6', '80.40');
-        $this->assertEquals('84.0000', $result);
-
-        $result = PaymentMath::add('100000.001', '0.1');
-        $this->assertEquals('100000.1010', $result);
     }
 
     public function testAdditionFloat()

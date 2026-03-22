@@ -25,7 +25,7 @@ class TestGatewayFactory extends GatewayFactory implements TestOnly
      */
     public static $httpRequest;
 
-    public function create($class, ClientInterface $httpClient = null, HttpRequest $httpRequest = null)
+    public function create($class, ?ClientInterface $httpClient = null, ?HttpRequest $httpRequest = null)
     {
         return parent::create($class, self::$httpClient, self::$httpRequest);
     }

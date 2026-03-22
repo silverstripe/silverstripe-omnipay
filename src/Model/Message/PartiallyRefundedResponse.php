@@ -4,4 +4,5 @@ namespace SilverStripe\Omnipay\Model\Message;
 
 class PartiallyRefundedResponse extends GatewayResponseMessage
 {
+    private static string $table_name = 'Omnipay_PartiallyRefundedResponse';
 }

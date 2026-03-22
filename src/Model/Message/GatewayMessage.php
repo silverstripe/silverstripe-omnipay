@@ -11,13 +11,13 @@ namespace SilverStripe\Omnipay\Model\Message;
  */
 class GatewayMessage extends PaymentMessage
 {
-    private static $db = [
+    private static array $db = [
         'Gateway' => 'Varchar',
         'Reference' => 'Varchar(255)',
         'Code' => 'Varchar'
     ];
 
-    private static $summary_fields = [
+    private static array $summary_fields = [
         'i18n_singular_name' => 'Type',
         'Message' => 'Message',
         'User.Name' => 'User',
@@ -26,5 +26,5 @@ class GatewayMessage extends PaymentMessage
         'Code' => 'Code'
     ];
 
-    private static $table_name = 'Omnipay_GatewayMessage';
+    private static string $table_name = 'Omnipay_GatewayMessage';
 }

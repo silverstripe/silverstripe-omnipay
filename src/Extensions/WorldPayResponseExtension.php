@@ -51,18 +51,18 @@ class WorldPayResponseExtension extends Extension
 
         if ($omnipayResponse !== null && !$response->isError()) {
             if ($omnipayResponse->isSuccessful()) {
-                $return_url = Director::absoluteURL($payment->SuccessUrl, true);
+                $return_url = Director::absoluteURL($payment->SuccessUrl, Director::BASE);
             } else {
-                $return_url = Director::absoluteURL($payment->FailureUrl, true);
+                $return_url = Director::absoluteURL($payment->FailureUrl, Director::BASE);
             }
 
-            $viewer = new SSViewer("WorldPayCallback");
+            $viewer = SSViewer::create("WorldPayCallback");
 
             $html = $viewer->process(ArrayData::create([
                 "ReturnURL" => $return_url
             ]));
 
-            $response->setHttpResponse(new HTTPResponse($html, 200));
+            $response->setHttpResponse(HTTPResponse::create($html, 200));
         }
     }
 }

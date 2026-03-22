@@ -12,10 +12,10 @@ namespace SilverStripe\Omnipay\Model\Message;
  */
 class GatewayRequestMessage extends GatewayMessage
 {
-    private static $db = [
+    private static array $db = [
         'SuccessURL' => 'Text',
         'FailureURL' => 'Text'
     ];
 
-    private static $table_name = 'Omnipay_GatewayRequestMessage';
+    private static string $table_name = 'Omnipay_GatewayRequestMessage';
 }

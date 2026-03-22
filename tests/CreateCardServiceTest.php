@@ -115,7 +115,7 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
         $mockPaymentResponse = $this
             ->getMockBuilder('Omnipay\Dummy\Message\Response')
             ->disableOriginalConstructor()
-            ->setMethods(['isSuccessful'])
+            ->onlyMethods(['isSuccessful'])
             ->getMock();
 
         $mockPaymentResponse
@@ -124,8 +124,8 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
             ->will($this->returnValue($successValue));
 
         $mockPaymentRequest = $this
-            ->getMockBuilder('Omnipay\Dummy\Message\AbstractRequest')
-            ->setMethods(['send'])
+            ->getMockBuilder('Omnipay\Common\Message\AbstractRequest')
+            ->onlyMethods(['send'])
             ->getMock();
 
         $mockPaymentRequest
@@ -138,7 +138,7 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
 
         $stubGateway = $this
             ->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->setMethods(['createCard', 'getName'])
+            ->onlyMethods(['createCard', 'getName'])
             ->getMock();
 
         $stubGateway->expects($this->once())

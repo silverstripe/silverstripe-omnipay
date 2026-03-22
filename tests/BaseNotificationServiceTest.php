@@ -393,7 +393,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
     {
         // Build the dummy gateway that doesn't contain the requested method (eg. void, capture or refund)
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->setMethods(['getName'])
+            ->onlyMethods(['getName'])
             ->getMock();
 
         // register our mock gateway factory as injection
@@ -624,7 +624,7 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         // Build the gateway
 
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->setMethods([$this->gatewayMethod, 'acceptNotification', 'getName'])
+            ->onlyMethods([$this->gatewayMethod, 'acceptNotification', 'getName'])
             ->getMock();
 
         $stubGateway->expects($this->any())

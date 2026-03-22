@@ -17,14 +17,13 @@ use SilverStripe\View\SSViewer;
 use SilverStripe\TemplateEngine\ScopeManager;
 use SilverStripe\View\ThemeResourceLoader;
 use SilverStripe\View\ThemeManifest;
-use SilverStripe\Model\ModelData;
 use Symfony\Component\Translation\Loader\ArrayLoader;
 use Symfony\Component\Translation\Translator;
 
 /**
  * Helper trait for bootstrapping test manifest for i18n tests
  */
-trait i18nTestManifest
+trait I18nTestManifest
 {
     /**
      * Fake webroot with a single module /i18ntestmodule which contains some files with _t() calls.
@@ -61,7 +60,7 @@ trait i18nTestManifest
     {
         // force ScopeManager to cache global template vars before we switch to the
         // test-project class manifest (since it will lose visibility of core classes)
-        $presenter = new ScopeManager(new ModelData());
+        $presenter = new ScopeManager(null);
         unset($presenter);
 
         // Switch to test manifest
@@ -104,7 +103,7 @@ trait i18nTestManifest
         $loader->setReader(new YamlReader());
         $translator->addLoader('ss', $loader); // Standard ss module loader
         $translator->addLoader('array', new ArrayLoader()); // Note: array loader isn't added by default
-        $provider = new SymfonyMessageProvider();
+        $provider = SymfonyMessageProvider::create();
         $provider->setTranslator($translator);
         Injector::inst()->registerService($provider, MessageProvider::class);
     }

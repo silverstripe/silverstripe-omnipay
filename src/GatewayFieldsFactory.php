@@ -149,7 +149,7 @@ class GatewayFieldsFactory
             $date->setTimestamp(mktime(0, 0, 0, $x, 1));
 
             // Fixes #145 - Thanks to @digitall-it
-            $months[$x] = str_pad($x, 2, '0', STR_PAD_LEFT) . " - " . $date->format('F');
+            $months[$x] = str_pad((string) $x, 2, '0', STR_PAD_LEFT) . " - " . $date->format('F');
         }
         $year = date('Y');
         $range = 5;
@@ -460,7 +460,7 @@ class GatewayFieldsFactory
      */
     private function getGlobalFieldName($defaultName)
     {
-        $renameMap = $this->config()->rename;
+        $renameMap = $this->config()->get('rename');
 
         if (is_array($renameMap) && array_key_exists($defaultName, $renameMap)) {
             return $renameMap[ $defaultName ];
@@ -473,7 +473,7 @@ class GatewayFieldsFactory
      * Fetches custom name for a gateway field from the rename map, or returns false
      *
      * @param      $defaultName
-     * @param null $gateway Optional, will default to current gateway if instantiated
+     * @param string|null $gateway Optional, will default to current gateway if instantiated
      *
      * @return bool|string Returns false if no custom gateway field name has been defined, otherwise returns the custom
      *                     name
@@ -488,7 +488,7 @@ class GatewayFieldsFactory
             return $this->getGatewayFieldName($defaultName, $this->gateway);
         }
 
-        $renameMap = $this->config()->rename;
+        $renameMap = $this->config()->get('rename');
 
         if (is_array($renameMap) && array_key_exists($gateway, $renameMap)) {
             $gatewayMap = $renameMap[ $gateway ];
@@ -507,7 +507,7 @@ class GatewayFieldsFactory
      */
     private function buildRenameMap()
     {
-        $renameMap = $this->config()->rename;
+        $renameMap = $this->config()->get('rename');
 
         if (!$renameMap) {
             return;
@@ -519,7 +519,7 @@ class GatewayFieldsFactory
         // if not, $prefix becomes an empty string
         $prefix = ($prefix) ? $prefix : ($this->getGlobalFieldName('prefix') ?: '');
 
-        foreach ($this->config()->whitelist as $defaultName) {
+        foreach ($this->config()->get('whitelist') as $defaultName) {
             // Gateway Rename Support
             if (array_key_exists($this->gateway, $renameMap)) {
                 if ($this->getGlobalFieldName($this->gateway) && $customName = $this->getGatewayFieldName($defaultName)) {

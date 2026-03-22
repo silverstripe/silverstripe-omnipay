@@ -81,7 +81,7 @@ class GatewayInfo
      */
     public static function getSupportedGateways($nice = true)
     {
-        $allowed = Payment::config()->allowed_gateways;
+        $allowed = Payment::config()->get('allowed_gateways');
 
         if (!is_array($allowed) || empty($allowed)) {
             throw new InvalidConfigurationException(

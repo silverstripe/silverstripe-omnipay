@@ -6,10 +6,10 @@ use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\CreditCard;
 use Omnipay\Common\Exception\OmnipayException;
 use Omnipay\Common\GatewayFactory;
-use Omnipay\Common\GatewayInterface;
 use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\NotificationInterface;
+use Omnipay\Common\Message\RequestInterface;
 use Omnipay\Common\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Controller;
@@ -42,7 +42,7 @@ abstract class PaymentService
     use Injectable;
 
     /**
-     *
+     * @var array<string, string>
      */
     private static $dependencies = [
         'logger' => '%$SilverStripe\Omnipay\Logger',
@@ -50,12 +50,12 @@ abstract class PaymentService
     ];
 
     /**
-     * @var \SilverStripe\Omnipay\Logger
+     * @var LoggerInterface
      */
     protected $logger;
 
     /**
-     * @var \SilverStripe\Omnipay\ExceptionLogger
+     * @var LoggerInterface
      */
     protected $exceptionLogger;
 
@@ -65,12 +65,12 @@ abstract class PaymentService
     protected $payment;
 
     /**
-     * @var AbstractResponse
+     * @var AbstractResponse|ResponseInterface|null
      */
     protected $response;
 
     /**
-     * @var GatewayFactory
+     * @var GatewayFactory|null
      */
     protected $gatewayFactory;
 
@@ -136,14 +136,17 @@ abstract class PaymentService
      * Get the omnipay gateway associated with this payment,
      * with configuration applied.
      *
-     * @throws \RuntimeException - when gateway doesn't exist.
-     * @return GatewayInterface|AbstractGateway omnipay gateway class
+     * @throws \RuntimeException when gateway doesn't exist or isn't an {@see AbstractGateway}.
      */
-    public function oGateway()
+    public function oGateway(): AbstractGateway
     {
         $gatewayName = $this->payment->Gateway;
 
         $gateway = $this->getGatewayFactory()->create($gatewayName);
+
+        if (!$gateway instanceof AbstractGateway) {
+            throw new \RuntimeException(sprintf('Gateway "%s" must extend AbstractGateway', $gatewayName));
+        }
 
         $parameters = GatewayInfo::getParameters($gatewayName);
 
@@ -200,7 +203,6 @@ abstract class PaymentService
             case NotificationInterface::STATUS_COMPLETED:
                 $this->createMessage(NotificationSuccessful::class, $notification);
                 return $this->generateServiceResponse(ServiceResponse::SERVICE_NOTIFICATION, $notification);
-                break;
             case NotificationInterface::STATUS_PENDING:
                 $this->createMessage(NotificationPending::class, $notification);
                 return $this->generateServiceResponse(
@@ -331,7 +333,7 @@ abstract class PaymentService
      * Create a partial payment that will be based on the current payment.
      * This new payment will inherit the Gateway, TransactionReference, SuccessUrl and FailureUrl
      * of the initial payment.
-     * @param float $amount the amount that the partial payment should have
+     * @param float|string $amount the amount that the partial payment should have
      * @param string $status the desired payment status
      * @param boolean $write whether or not to directly write the new Payment to DB (optional)
      * @throws \Exception
@@ -349,7 +351,7 @@ abstract class PaymentService
         ]);
 
         $payment->setCurrency($this->payment->getCurrency());
-        $payment->setAmount($amount);
+        $payment->setAmount((float) $amount);
 
         // set status later, because otherwise amount and currency become immutable
         $payment->Status = $status;
@@ -369,7 +371,7 @@ abstract class PaymentService
     /**
      * Generate a service response
      * @param int $flags a combination of service flags
-     * @param AbstractResponse|NotificationInterface|null $omnipayData the response or notification from the Omnipay gateway
+     * @param AbstractResponse|ResponseInterface|NotificationInterface|null $omnipayData the response or notification from the Omnipay gateway
      * @throws \SilverStripe\Omnipay\Exception\ServiceException
      * @return ServiceResponse
      */
@@ -404,7 +406,7 @@ abstract class PaymentService
      * @param string $type the type of transaction to create.
      *        This is any class that is (or extends) PaymentMessage.
      *
-     * @param array|string|AbstractResponse|AbstractRequest|OmnipayException|NotificationInterface $data
+     * @param array|string|AbstractResponse|AbstractRequest|RequestInterface|ResponseInterface|OmnipayException|NotificationInterface|null $data
      *
      * @throws \Omnipay\Common\Exception\InvalidRequestException
      * @return PaymentMessage newly created DataObject, saved to database.
@@ -433,6 +435,13 @@ abstract class PaymentService
                 'Reference' => $data->getTransactionReference(),
                 'Data' => $data->getData()
             ];
+        } elseif ($data instanceof ResponseInterface) {
+            $output = [
+                'Message' => $data->getMessage(),
+                'Code' => $data->getCode(),
+                'Reference' => $data->getTransactionReference(),
+                'Data' => $data->getData()
+            ];
         } elseif ($data instanceof AbstractRequest) {
             $output = [
                 'Token' => $data->getToken(),
@@ -446,6 +455,10 @@ abstract class PaymentService
                 'ReturnUrl' => $data->getReturnUrl(),
                 'CancelUrl' => $data->getCancelUrl(),
                 'NotifyUrl' => $data->getNotifyUrl(),
+                'Parameters' => $data->getParameters()
+            ];
+        } elseif ($data instanceof RequestInterface) {
+            $output = [
                 'Parameters' => $data->getParameters()
             ];
         } elseif ($data instanceof NotificationInterface) {
@@ -507,7 +520,7 @@ abstract class PaymentService
     }
 
     /**
-     * @param GatewayFactory $gatewayFactory
+     * @param GatewayFactory|\PHPUnit\Framework\MockObject\MockObject $gatewayFactory
      *
      * @return $this
      */

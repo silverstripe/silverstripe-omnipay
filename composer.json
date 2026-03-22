@@ -18,7 +18,10 @@
         "omnipay/dummy": "^3",
         "omnipay/paymentexpress": "^3.1.1",
         "moneyphp/money": "^4.5",
-        "symfony/http-foundation": "^5.4.25 || ^6.3.1"
+        "squizlabs/php_codesniffer": "^4.0",
+        "cambis/silverstan": "^2.1",
+        "phpstan/phpstan": "^2.1",
+        "omnipay/sagepay": "^3"
     },
     "autoload": {
         "psr-4": {
@@ -32,7 +35,11 @@
         }
     },
     "scripts": {
-        "lint": "phpcs -s src/ tests/"
+        "lint": "phpcs -s src/ tests/",
+        "lint:fix": "phpcs -s --fix src/ tests/",
+        "analyze": "phpstan analyze -c phpstan.neon.dist --memory-limit=512M",
+        "analyze:fix": "phpstan analyze -c phpstan.neon.dist --memory-limit=512M --fix",
+        "test": "phpunit"
     },
     "suggest": {
         "bummzack/silverstripe-omnipay-ui": "Adds UI Components to manage payments in the SilverStripe CMS."

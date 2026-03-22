@@ -37,9 +37,9 @@ class PaymentTestPaymentExtensionHooks extends Extension implements TestOnly
 
     protected $callStack = [];
 
-    public function setOwner($owner, $ownerBaseClass = null)
+    public function setOwner($owner)
     {
-        parent::setOwner($owner, $ownerBaseClass);
+        parent::setOwner($owner);
 
         if ($owner) {
             self::$instances[$owner->ID] = $this;

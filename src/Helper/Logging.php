@@ -79,14 +79,14 @@ class Logging
             return [$data];
         }
 
-        if (self::config()->logStyle == self::LOGSTYLE_SIMPLE) {
+        if (self::config()->get('logStyle') == self::LOGSTYLE_SIMPLE) {
             return array_filter([
                 isset($data['Message']) ? $data['Message'] : null,
                 isset($data['Code']) ? $data['Code'] : null
             ]);
         }
 
-        if (Director::isLive() || self::config()->logStyle == self::LOGSTYLE_VERBOSE) {
+        if (Director::isLive() || self::config()->get('logStyle') == self::LOGSTYLE_VERBOSE) {
             self::sanitize($data);
         }
 
@@ -99,7 +99,8 @@ class Logging
      */
     private static function sanitize(array &$data)
     {
-        $blackList = array_combine(self::config()->loggingBlacklist, self::config()->loggingBlacklist);
+        $loggingBlacklist = self::config()->get('loggingBlacklist');
+        $blackList = array_combine($loggingBlacklist, $loggingBlacklist);
         array_walk_recursive($data, function (&$value, $key) use ($blackList) {
             if (isset($blackList[$key])) {
                 $value = '(sanitized)';

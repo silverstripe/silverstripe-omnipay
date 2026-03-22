@@ -7,6 +7,7 @@ use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Omnipay\Model\Message;
+use SilverStripe\Omnipay\GatewayInfo;
 
 class AuthorizeServiceTest extends BasePurchaseServiceTest
 {

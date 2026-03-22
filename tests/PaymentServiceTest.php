@@ -14,7 +14,7 @@ use SilverStripe\Omnipay\Tests\Extensions\TestNotifyResponseExtension;
 
 class PaymentServiceTest extends PaymentTest
 {
-    /** @var \SilverStripe\Omnipay\Service\PurchaseService */
+    /** @var \SilverStripe\Omnipay\Service\PaymentService */
     protected $service;
 
     public function setUp(): void
@@ -211,7 +211,7 @@ class PaymentServiceTest extends PaymentTest
 
         // build a gateway that doesn't have the `acceptNotification` method
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->setMethods(['getName'])
+            ->onlyMethods(['getName'])
             ->getMock();
 
         $service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
@@ -233,7 +233,7 @@ class PaymentServiceTest extends PaymentTest
 
         $notificationResponse = $this->getMockBuilder($contract)
             ->disableOriginalConstructor()
-            ->setMethods(['getTransactionStatus', 'getTransactionReference', 'isSuccessful', 'getMessage', 'getData'])
+            ->onlyMethods(['getTransactionStatus', 'getTransactionReference', 'isSuccessful', 'getMessage', 'getData'])
             ->getMock();
 
         $notificationResponse->expects($this->any())
@@ -243,7 +243,7 @@ class PaymentServiceTest extends PaymentTest
         // Build the gateway
 
         $stubGateway = $this->getMockBuilder(AbstractGateway::class)
-            ->setMethods(['acceptNotification', 'getName'])
+            ->onlyMethods(['acceptNotification', 'getName'])
             ->getMock();
 
         $stubGateway->expects($this->once())

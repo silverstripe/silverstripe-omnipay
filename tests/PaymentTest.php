@@ -42,7 +42,7 @@ abstract class PaymentTest extends FunctionalTest
 
         if (static::$factoryExtensions) {
             foreach (static::$factoryExtensions as $extension) {
-                ServiceFactory::remove_extension($extension);
+                ServiceFactory::remove_extension(get_class($extension));
             }
         }
 
@@ -69,7 +69,7 @@ abstract class PaymentTest extends FunctionalTest
         // Add removed extensions back once the tests have completed
         if (static::$factoryExtensions) {
             foreach (static::$factoryExtensions as $extension) {
-                ServiceFactory::add_extension($extension);
+                ServiceFactory::add_extension(get_class($extension));
             }
         }
 
@@ -159,8 +159,8 @@ abstract class PaymentTest extends FunctionalTest
     }
 
     /**
-     * @param GatewayInterface|PHPUnit_Framework_MockObject_MockObject $stubGateway
-     * @return PHPUnit_Framework_MockObject_MockObject|GatewayFactory
+     * @param \Omnipay\Common\GatewayInterface|\PHPUnit\Framework\MockObject\MockObject $stubGateway
+     * @return \PHPUnit\Framework\MockObject\MockObject|\Omnipay\Common\GatewayFactory
      */
     protected function stubGatewayFactory($stubGateway)
     {

@@ -132,7 +132,7 @@ class SagePayExtension extends Extension
                 'StatusDetail=Accepted payment ' . $payment->Identifier
             ];
 
-            $response->setHttpResponse(new HTTPResponse(implode(ServerNotifyRequest::LINE_SEP, $msg), 200));
+            $response->setHttpResponse(HTTPResponse::create(implode(ServerNotifyRequest::LINE_SEP, $msg), 200));
         }
     }
 }

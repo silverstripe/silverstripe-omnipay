@@ -1,0 +1,19 @@
+includes:
+    - vendor/cambis/silverstan/extension.neon
+
+parameters:
+    level: 5
+    treatPhpDocTypesAsCertain: false
+    silverstan:
+        disallowNewInstanceOnInjectable:
+            enabled: false
+    ignoreErrors:
+        - '#SilverStripe\\Omnipay\\Service\\PaymentService::\$dependencies#'
+        - '#Call to an undefined method SilverStripe\\Core\\Extension::getCalledMethods#'
+        - '#Call to an undefined method SilverStripe\\Core\\Extension::Reset#'
+        - '#SilverStripe\\Omnipay\\Tests\\ServiceFactoryTest::\$dependencies#'
+    paths:
+        - src
+        - tests
+    excludePaths:
+        - tests/i18nTest/_fakewebroot/*

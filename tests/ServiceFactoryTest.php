@@ -14,7 +14,7 @@ use SilverStripe\Omnipay\Tests\Service\ServiceFactoryTestService;
 class ServiceFactoryTest extends PaymentTest
 {
     private static $dependencies = [
-        ServiceFactoryTestTestService::class
+        ServiceFactoryTestService::class
     ];
 
     /**

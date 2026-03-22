@@ -49,6 +49,7 @@ class PaymentModelTest extends PaymentTest
         $payment = $this->objFromFixture(Payment::class, "payment1");
         i18n::set_locale('en_US');
         $provider = i18n::getMessageProvider();
+        $this->assertInstanceOf(\SilverStripe\i18n\Messages\Symfony\SymfonyMessageProvider::class, $provider);
         $catalogue = $provider->getTranslator()->getCatalogue('en_US');
         $catalogue->set('Gateway.Manual', 'Manual');
 
@@ -272,7 +273,7 @@ class PaymentModelTest extends PaymentTest
 
         $this->assertEquals('144.00', $payment->getMaxCaptureAmount());
         $payment->Status = 'Created';
-        $payment->MoneyAmount = '900.00';
+        $payment->MoneyAmount = 900.0;
         $payment->Status = 'Authorized';
         // should use the fixed increase from EUR and USD, since the percentage increase would exceed the fixed amount
         $this->assertEquals('970.00', $payment->getMaxCaptureAmount());
@@ -289,7 +290,7 @@ class PaymentModelTest extends PaymentTest
 
         // test with a small payment amount
         $payment->Status = 'Created';
-        $payment->init('Dummy', '1.19', 'EUR');
+        $payment->init('Dummy', 1.19, 'EUR');
         $payment->Status = 'Authorized';
         $this->assertEquals('1.42', $payment->getMaxCaptureAmount());
     }

@@ -393,7 +393,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
     {
         // Build the dummy gateway
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->setMethods(['getName'])
+            ->onlyMethods(['getName'])
             ->getMock();
 
         // register our mock gateway factory as injection
@@ -413,7 +413,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
     {
         // Build the dummy gateway
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->setMethods(['getName'])
+            ->onlyMethods(['getName'])
             ->getMock();
 
         // register our mock gateway factory as injection
@@ -470,7 +470,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
             'token_key' => 'token'
         ]);
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->setMethods([$this->omnipayMethod, 'getName'])
+            ->onlyMethods([$this->omnipayMethod, 'getName'])
             ->getMock();
 
         $stubGateway->expects($this->once())
@@ -502,7 +502,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
             'token_key' => 'my_token'
         ]);
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->setMethods([$this->omnipayMethod, 'getName'])
+            ->onlyMethods([$this->omnipayMethod, 'getName'])
             ->getMock();
 
         $stubGateway->expects($this->once())
@@ -776,7 +776,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         // Build the gateway
 
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->setMethods([$this->omnipayMethod, $this->omnipayCompleteMethod, 'getName'])
+            ->onlyMethods([$this->omnipayMethod, $this->omnipayCompleteMethod, 'getName'])
             ->getMock();
 
         $stubGateway->expects($sendMustFail ? $this->any() : $this->once())
@@ -791,7 +791,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
     }
 
     /**
-     * @return PHPUnit_Framework_MockObject_MockObject|Omnipay\Common\Message\AbstractRequest
+     * @return \PHPUnit\Framework\MockObject\MockObject|\Omnipay\Common\Message\AbstractRequest
      */
     protected function stubRequest()
     {

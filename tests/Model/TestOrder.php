@@ -8,6 +8,8 @@ use SilverStripe\Omnipay\Extensions\Payable;
 
 class TestOrder extends DataObject implements TestOnly
 {
+    private static $table_name = 'Omnipay_TestOrder';
+
     private static $extensions = [
         Payable::class
     ];

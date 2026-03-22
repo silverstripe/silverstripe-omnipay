@@ -13,7 +13,7 @@ use SilverStripe\Omnipay\Model\Payment;
 
 class GatewayInfoTest extends SapphireTest
 {
-    use i18nTestManifest;
+    use I18nTestManifest;
 
     protected function tearDown(): void
     {

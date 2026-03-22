@@ -47,7 +47,7 @@ class TestRandomGenerator extends RandomGenerator implements TestOnly
             return array_shift($this->entropy);
         }
 
-        return parent::generateEntropy();
+        return bin2hex(random_bytes(32));
     }
 
     /**

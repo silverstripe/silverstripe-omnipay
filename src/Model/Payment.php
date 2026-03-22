@@ -103,7 +103,7 @@ final class Payment extends DataObject implements PermissionProvider
 
     public function getCMSFields()
     {
-        $fields = new FieldList(
+        $fields = FieldList::create(
             TextField::create('MoneyValue', $this->fieldLabel('Money'), $this->dbObject('Money')->Nice()),
             TextField::create('GatewayTitle', $this->fieldLabel('Gateway'), 'Gateway')
         );
@@ -148,7 +148,7 @@ final class Payment extends DataObject implements PermissionProvider
             $this->getStatusValues()
         )->setHasEmptyDefault(true));
 
-        $context->addFilter(new PartialMatchFilter('Gateway'));
+        $context->addFilter(PartialMatchFilter::create('Gateway'));
 
         return $context;
     }
@@ -251,7 +251,7 @@ final class Payment extends DataObject implements PermissionProvider
 
     /**
      * Get the payment status. This will return a localized value if available.
-     * @return string the payment status
+     * @return string|null the payment status
      */
     public function getPaymentStatus()
     {
@@ -263,7 +263,7 @@ final class Payment extends DataObject implements PermissionProvider
 
     /**
      * Get the payment amount
-     * @return string amount of this payment
+     * @return float amount of this payment
      */
     public function getAmount()
     {
@@ -272,7 +272,7 @@ final class Payment extends DataObject implements PermissionProvider
 
     /**
      * Set the payment amount, but only when the status is 'Created'.
-     * @param float $amount value to set the payment to
+     * @param float|string|DBMoney $amount value to set the payment to
      * @return  Payment this object for chaining
      */
     public function setAmount($amount)
@@ -280,7 +280,7 @@ final class Payment extends DataObject implements PermissionProvider
         if ($amount instanceof DBMoney) {
             $this->setField('Money', $amount);
         } elseif ($this->Status == 'Created' && is_numeric($amount)) {
-            $this->MoneyAmount = $amount;
+            $this->MoneyAmount = (float) $amount;
         }
         return $this;
     }
@@ -370,9 +370,9 @@ final class Payment extends DataObject implements PermissionProvider
         return $this->Status == 'Captured';
     }
 
-    public function forTemplate()
+    public function forTemplate(): string
     {
-        return $this->dbObject('Money');
+        return $this->dbObject('Money')->forTemplate();
     }
 
     /**

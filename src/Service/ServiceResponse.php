@@ -170,7 +170,7 @@ class ServiceResponse
 
     /**
      * Check if the given flag(s) is set (active)
-     * @param int $flag the flag to check. Can be a combination of several flags (joined with binary OR)
+     * @param mixed $flag the flag to check. Can be a combination of several flags (joined with binary OR)
      * @return bool true if the given flag/s match
      */
     public function hasFlag($flag)
@@ -185,7 +185,7 @@ class ServiceResponse
      * Add a flag for this response.
      * Example: `$r->addFlag(ServiceResponse::SERVICE_PENDING)`
      *
-     * @param int $flag
+     * @param mixed $flag
      * @throws \InvalidArgumentException if the parameter is not of type int
      * @return $this
      */
@@ -202,7 +202,7 @@ class ServiceResponse
      * Remove a flag from this response.
      * Example: `$r->removeFlag(ServiceResponse::SERVICE_PENDING)`
      *
-     * @param int $flag
+     * @param mixed $flag
      * @throws \InvalidArgumentException if the parameter is not of type int
      * @return $this
      */

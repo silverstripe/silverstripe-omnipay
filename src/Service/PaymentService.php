@@ -107,7 +107,7 @@ abstract class PaymentService
      * Cancel a payment
      *
      * @throws \Exception
-     * @throws \SilverStripe\ORM\ValidationException
+     * @throws \SilverStripe\Core\Validation\ValidationException
      * @throws \SilverStripe\Omnipay\Exception\ServiceException
      * @return ServiceResponse
      */
@@ -316,7 +316,7 @@ abstract class PaymentService
      * @param string $endStatus the end state to set on the payment
      * @param ServiceResponse $serviceResponse the service response
      * @param mixed $gatewayMessage the message from Omnipay
-     * @throws \SilverStripe\ORM\ValidationException
+     * @throws \SilverStripe\Core\Validation\ValidationException
      */
     protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
     {

@@ -13,8 +13,8 @@ nutshell, it wraps the PHP Omnipay payments library and provides some additional
 omnipay, see: https://github.com/thephpleague/omnipay
 
 ## Requirements
- * PHP 8.1+
- * [silverstripe framework](https://github.com/silverstripe/silverstripe-framework) v5 + 
+ * PHP 8.3+
+ * [silverstripe framework](https://github.com/silverstripe/silverstripe-framework) v6 + 
  * [omnipay](https://github.com/omnipay/common) 3 & its dependencies - which include guzzle and some symphony libraries.
 
 ## Features

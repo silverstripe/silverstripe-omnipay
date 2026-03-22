@@ -2,14 +2,14 @@
 
 namespace SilverStripe\Omnipay\Tests\Extensions;
 
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\Dev\TestOnly;
 
 /**
  * Extension that can be used to test payment hooks
  * @codeCoverageIgnore
  */
-class PaymentTestPaymentExtensionHooks extends DataExtension implements TestOnly
+class PaymentTestPaymentExtensionHooks extends Extension implements TestOnly
 {
     protected static $instances = [];
 

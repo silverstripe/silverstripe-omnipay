@@ -6,6 +6,16 @@ SilverStripe\Core\Injector\Injector:
   SilverStripe\Omnipay\Logger: '%$Psr\Log\LoggerInterface'
   SilverStripe\Omnipay\ExceptionLogger: '%$SilverStripe\Omnipay\Logger'
 
+# Default blacklist of sensitive parameter names that will be sanitized from log output
+SilverStripe\Omnipay\Helper\Logging:
+  loggingBlacklist:
+    - card
+    - token
+    - cvv
+    - cvc
+    - number
+    - password
+
 # Example how to set up a logger for omnipay that logs to a separate log-file named "omnipay.log"
 # SilverStripe\Core\Injector\Injector:
 #   SilverStripe\Omnipay\Logger:

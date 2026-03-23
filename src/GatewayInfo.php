@@ -76,10 +76,10 @@ class GatewayInfo
      *
      * @param bool $nice make the array values i18n readable.
      *
-     * @return array map of gateway short name to translated long name.
+     * @return array<string, string> map of gateway short name to translated long name.
      * @throws InvalidConfigurationException
      */
-    public static function getSupportedGateways($nice = true)
+    public static function getSupportedGateways(bool $nice = true): array
     {
         $allowed = Payment::config()->get('allowed_gateways');
 
@@ -406,9 +406,9 @@ class GatewayInfo
     /**
      * Get the required parameters for a given gateway
      * @param string $gateway gateway name
-     * @return array required parameters
+     * @return list<string> required parameters
      */
-    public static function requiredFields($gateway)
+    public static function requiredFields(string $gateway): array
     {
         $fields = [];
 
@@ -433,9 +433,9 @@ class GatewayInfo
      * Get the gateway config-parameters.
      *
      * @param string $gateway the gateway name
-     * @return array|null gateway parameters
+     * @return array<string, mixed>|null gateway parameters
      */
-    public static function getParameters($gateway)
+    public static function getParameters(string $gateway): ?array
     {
         $params = self::getConfigSetting($gateway, 'parameters');
         if (!is_array($params)) {

@@ -2,8 +2,10 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use Omnipay\Common\Http\ClientInterface;
 use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Core\Config\Config;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Omnipay\GatewayInfo;
@@ -593,7 +595,12 @@ abstract class BaseNotificationServiceTest extends PaymentTest
             ->method('getTransactionReference')->will($this->returnValue($transactionReference));
 
         $mockRequest = $this->getMockBuilder('Omnipay\Common\Message\AbstractRequest')
-            ->disableOriginalConstructor()->getMock();
+            ->setConstructorArgs([
+                $this->createMock(ClientInterface::class),
+                SymfonyRequest::create('/'),
+            ])
+            ->onlyMethods(['send', 'sendData', 'getData', 'getTransactionReference'])
+            ->getMock();
 
         if ($throwGatewayException) {
             $mockRequest->expects($this->any())->method('send')->will($this->throwException(
@@ -624,7 +631,8 @@ abstract class BaseNotificationServiceTest extends PaymentTest
         // Build the gateway
 
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->onlyMethods([$this->gatewayMethod, 'acceptNotification', 'getName'])
+            ->onlyMethods(['getName'])
+            ->addMethods([$this->gatewayMethod, 'acceptNotification'])
             ->getMock();
 
         $stubGateway->expects($this->any())

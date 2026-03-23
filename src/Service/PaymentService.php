@@ -84,24 +84,24 @@ abstract class PaymentService
 
     /**
      * Initiate a gateway request with some user/application supplied data.
-     * @param array $data payment data
+     * @param array<string, mixed> $data payment data
      * @throws InvalidStateException when the payment is in a state that prevents running `complete`
      * @throws InvalidConfigurationException when there's a misconfiguration in the module itself
      * @return ServiceResponse the service response
      */
-    abstract public function initiate($data = []);
+    abstract public function initiate(array $data = []): ServiceResponse;
 
     /**
      * Complete a previously initiated gateway request.
      * This is separate from initiate, since some requests require more than one step. Eg. offsite payments or
      * payments to gateways that return asynchronous responses.
-     * @param array $data payment data
+     * @param array<string, mixed> $data payment data
      * @param bool $isNotification whether or not this was called from a notification callback (async). Defaults to false
      * @throws InvalidStateException when the payment is in a state that prevents running `complete`
      * @throws InvalidConfigurationException when there's a misconfiguration in the module itself
      * @return ServiceResponse the service response
      */
-    abstract public function complete($data = [], $isNotification = false);
+    abstract public function complete(array $data = [], bool $isNotification = false): ServiceResponse;
 
     /**
      * Cancel a payment
@@ -111,7 +111,7 @@ abstract class PaymentService
      * @throws \SilverStripe\Omnipay\Exception\ServiceException
      * @return ServiceResponse
      */
-    public function cancel()
+    public function cancel(): ServiceResponse
     {
         if (!$this->payment->IsComplete()) {
             $this->payment->Status = 'Void';
@@ -127,7 +127,7 @@ abstract class PaymentService
      *
      * @return Payment
      */
-    public function getPayment()
+    public function getPayment(): Payment
     {
         return $this->payment;
     }
@@ -168,7 +168,7 @@ abstract class PaymentService
      * @throws \SilverStripe\Omnipay\Exception\ServiceException
      * @return ServiceResponse
      */
-    public function handleNotification()
+    public function handleNotification(): ServiceResponse
     {
         $gateway = $this->oGateway();
         if (!$gateway->supportsAcceptNotification()) {
@@ -225,11 +225,11 @@ abstract class PaymentService
      *
      * If you override this method, make sure to merge your data with parent::gatherGatewayData
      *
-     * @param array $data incoming data for the gateway
-     * @param boolean $includeCardOrToken whether or not to include card or token data
-     * @return array
+     * @param array<string, mixed> $data incoming data for the gateway
+     * @param bool $includeCardOrToken whether or not to include card or token data
+     * @return array<string, mixed>
      */
-    protected function gatherGatewayData($data = [], $includeCardOrToken = true)
+    protected function gatherGatewayData(array $data = [], bool $includeCardOrToken = true): array
     {
         //set the client IP address, if not already set
         if (!isset($data['clientIp'])) {
@@ -273,7 +273,7 @@ abstract class PaymentService
      * @param string $action the action to call on the endpoint (complete, notify or cancel)
      * @return string endpoint url
      */
-    protected function getEndpointUrl($action)
+    protected function getEndpointUrl(string $action): string
     {
         return PaymentGatewayController::getEndpointUrl($action, $this->payment->Identifier);
     }
@@ -285,7 +285,7 @@ abstract class PaymentService
      * @throws \SilverStripe\Omnipay\Exception\ServiceException
      * @return ServiceResponse
      */
-    protected function wrapOmnipayResponse(ResponseInterface $omnipayResponse, $isNotification = false)
+    protected function wrapOmnipayResponse(ResponseInterface $omnipayResponse, bool $isNotification = false): ServiceResponse
     {
         if ($isNotification) {
             $flags = ServiceResponse::SERVICE_NOTIFICATION;
@@ -320,7 +320,7 @@ abstract class PaymentService
      * @param mixed $gatewayMessage the message from Omnipay
      * @throws \SilverStripe\Core\Validation\ValidationException
      */
-    protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
+    protected function markCompleted(string $endStatus, ServiceResponse $serviceResponse, mixed $gatewayMessage): void
     {
         $this->payment->Status = $endStatus;
         if ($gatewayMessage && ($reference = $gatewayMessage->getTransactionReference())) {
@@ -376,9 +376,9 @@ abstract class PaymentService
      * @return ServiceResponse
      */
     protected function generateServiceResponse(
-        $flags,
-        $omnipayData = null
-    ) {
+        int $flags,
+        AbstractResponse|ResponseInterface|NotificationInterface|null $omnipayData = null
+    ): ServiceResponse {
         $response = new ServiceResponse($this->payment, $flags);
 
         if ($omnipayData) {
@@ -406,12 +406,12 @@ abstract class PaymentService
      * @param string $type the type of transaction to create.
      *        This is any class that is (or extends) PaymentMessage.
      *
-     * @param array|string|AbstractResponse|AbstractRequest|RequestInterface|ResponseInterface|OmnipayException|NotificationInterface|null $data
+     * @param array<string, mixed>|string|AbstractResponse|AbstractRequest|RequestInterface|ResponseInterface|OmnipayException|NotificationInterface|null $data
      *
      * @throws \Omnipay\Common\Exception\InvalidRequestException
      * @return PaymentMessage newly created DataObject, saved to database.
      */
-    protected function createMessage($type, $data = null)
+    protected function createMessage(string $type, mixed $data = null): PaymentMessage
     {
         $output = [];
 
@@ -424,7 +424,7 @@ abstract class PaymentService
         } elseif ($data instanceof \Exception) {
             $output = [
                 'Message' => $data->getMessage(),
-                'Code' => $data->getCode(),
+                'Code' => (string) $data->getCode(),
                 'Exception' => get_class($data),
                 'Backtrace' => $data->getTraceAsString()
             ];
@@ -494,7 +494,7 @@ abstract class PaymentService
      * @param mixed $data Data to log.
      * @param string $type Error message class.
      */
-    protected function logToFile($data, $type = '')
+    protected function logToFile(mixed $data, string $type = ''): void
     {
         $this->logger->log(
             // Log as error if we get a GatewayErrorMessage
@@ -531,35 +531,35 @@ abstract class PaymentService
     }
 
     /**
-     * @param array $data Credit card initial parameters.
+     * @param array<string, mixed> $data Credit card initial parameters.
      * @return \Omnipay\Common\CreditCard
      */
-    protected function getCreditCard($data)
+    protected function getCreditCard(array $data): CreditCard
     {
         return new CreditCard($data);
     }
 
 
-    public function setExceptionLogger($logger)
+    public function setExceptionLogger(?LoggerInterface $logger): static
     {
         $this->exceptionLogger = $logger;
         return $this;
     }
 
 
-    public function getExceptionLogger()
+    public function getExceptionLogger(): ?LoggerInterface
     {
         return $this->exceptionLogger;
     }
 
 
-    public function getLogger()
+    public function getLogger(): ?LoggerInterface
     {
         return $this->logger;
     }
 
 
-    public function setLogger($logger)
+    public function setLogger(?LoggerInterface $logger): static
     {
         $this->logger = $logger;
         return $this;

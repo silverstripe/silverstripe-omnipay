@@ -38,7 +38,7 @@ use SilverStripe\Forms\GridField\GridFieldConfig_RecordViewer;
  * @property string $FailureUrl
  * @property int $InitialPaymentID
  * @method Payment InitialPayment()
- * @method PaymentMessage[]|HasManyList Messages()
+ * @method HasManyList<PaymentMessage> Messages()
  */
 final class Payment extends DataObject implements PermissionProvider
 {
@@ -323,10 +323,9 @@ final class Payment extends DataObject implements PermissionProvider
 
     /**
      * Get a message of a given type
-     * @param $type
-     * @return mixed
+     * @param class-string $type
      */
-    public function getLatestMessageOfType($type)
+    public function getLatestMessageOfType(string $type): ?PaymentMessage
     {
         if (!$this->isInDB()) {
             return null;
@@ -339,9 +338,10 @@ final class Payment extends DataObject implements PermissionProvider
     /**
      * Get partial payments that have this payment as initial payment.
      * The list will be sorted from newest to oldest
-     * @return DataList|null
+     *
+     * @return DataList<Payment>|null
      */
-    public function getPartialPayments()
+    public function getPartialPayments(): ?DataList
     {
         if (!$this->isInDB()) {
             return null;
@@ -504,9 +504,9 @@ final class Payment extends DataObject implements PermissionProvider
      * * `CAPTURE_PAYMENTS` can capture payments
      * * `VOID_PAYMENTS` can void payments
      * @inheritdoc
-     * @return array
+     * @return array<string, array<string, mixed>>
      */
-    public function providePermissions()
+    public function providePermissions(): array
     {
         return [
             'REFUND_PAYMENTS' => [
@@ -543,14 +543,17 @@ final class Payment extends DataObject implements PermissionProvider
      * Only allow setting identifier, if one doesn't exist yet.
      * @param string $id identifier
      */
-    public function setIdentifier($id)
+    public function setIdentifier(string $id): void
     {
         if (!$this->Identifier) {
             $this->setField('Identifier', $id);
         }
     }
 
-    public function provideI18nEntities()
+    /**
+     * @return array<string, array{0: string, 1: string}>
+     */
+    public function provideI18nEntities(): array
     {
         $entities = parent::provideI18nEntities();
 
@@ -566,7 +569,7 @@ final class Payment extends DataObject implements PermissionProvider
         return $entities;
     }
 
-    protected function onBeforeWrite()
+    protected function onBeforeWrite(): void
     {
         parent::onBeforeWrite();
         if (!$this->Identifier) {
@@ -577,10 +580,9 @@ final class Payment extends DataObject implements PermissionProvider
     /**
      * Generate an internally unique string that identifies a payment,
      * and can be used in URLs.
-     * @param string|null $gateway
      * @return string Identifier
      */
-    protected function generateUniquePaymentIdentifier($gateway = null)
+    protected function generateUniquePaymentIdentifier(?string $gateway = null): string
     {
         $gateway = $gateway ?: $this->Gateway;
         $length = GatewayInfo::getConfigSetting($gateway, 'payment_identifier_length') ?:
@@ -603,9 +605,9 @@ final class Payment extends DataObject implements PermissionProvider
     /**
      * Get an array of status enum value to translated string.
      * Can be used for dropdowns
-     * @return array
+     * @return array<string, string>
      */
-    protected function getStatusValues()
+    protected function getStatusValues(): array
     {
         $values = [];
         foreach ($this->dbObject('Status')->enumValues() as $value) {

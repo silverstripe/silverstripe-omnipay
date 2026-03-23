@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Omnipay\Admin;
 
+use Omnipay\Common\AbstractGateway;
 use Omnipay\Omnipay;
 use SilverStripe\Dev\Debug;
 use SilverStripe\Omnipay\GatewayInfo;
@@ -16,12 +17,12 @@ use SilverStripe\Dev\DebugView;
  */
 class PaymentDevelopmentAdmin extends Controller
 {
-    public function index()
+    public function index(): void
     {
         $renderer = DebugView::create();
         $renderer->renderHeader();
         $renderer->renderInfo('Installed Omnipay Payment Gateways', Director::absoluteBaseURL());
-        $types = $this->PaymentTypes();
+        $types = $this->paymentTypes();
 
         //$renderer->renderVariable()
 
@@ -73,8 +74,10 @@ class PaymentDevelopmentAdmin extends Controller
 
     /**
      * Get all available payment types
+     *
+     * @return array<string, AbstractGateway>
      */
-    private function PaymentTypes()
+    private function paymentTypes(): array
     {
         $factory = Omnipay::getFactory();
         // since the omnipay gateway factory only returns gateways from the composer.json extra data,
@@ -89,7 +92,9 @@ class PaymentDevelopmentAdmin extends Controller
         array_walk($gateways, function ($name, $index) use (&$supportedGateways, &$factory) {
             try {
                 $instance = $factory->create($name);
-                $supportedGateways[$name] = $instance;
+                if ($instance instanceof AbstractGateway) {
+                    $supportedGateways[$name] = $instance;
+                }
             } catch (\Exception $e) {
             }
         });

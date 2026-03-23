@@ -41,7 +41,7 @@ class PaymentMessage extends DataObject
         return parent::getCMSFields()->makeReadOnly();
     }
 
-    public function onBeforeWrite()
+    public function onBeforeWrite(): void
     {
         parent::onBeforeWrite();
 

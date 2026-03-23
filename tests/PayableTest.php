@@ -3,8 +3,9 @@
 namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Omnipay\Extensions\Payable;
+use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Tests\Extensions\TestPaymentExtension;
 use SilverStripe\Omnipay\Tests\Model\TestOrder;
 
@@ -21,6 +22,11 @@ class PayableTest extends SapphireTest
     protected static $required_extensions = [
         Payment::class => [
             TestPaymentExtension::class
+        ],
+        // TestOnly models in tests/ do not reliably get private static $extensions merged when
+        // Extensible reads config with EXCLUDE_EXTRA_SOURCES (SilverStripe 6).
+        TestOrder::class => [
+            Payable::class
         ]
     ];
 

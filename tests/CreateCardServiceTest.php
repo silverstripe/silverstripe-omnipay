@@ -2,7 +2,9 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use Omnipay\Common\Http\ClientInterface;
 use SilverStripe\Omnipay\Service\CreateCardService;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
@@ -125,7 +127,11 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
 
         $mockPaymentRequest = $this
             ->getMockBuilder('Omnipay\Common\Message\AbstractRequest')
-            ->onlyMethods(['send'])
+            ->setConstructorArgs([
+                $this->createMock(ClientInterface::class),
+                SymfonyRequest::create('/'),
+            ])
+            ->onlyMethods(['send', 'sendData', 'getData'])
             ->getMock();
 
         $mockPaymentRequest
@@ -136,9 +142,12 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
         //--------------------------------------------------------------------------------------------------------------
         // Build the gateway
 
+        // createCard is not a real method on AbstractGateway (optional Omnipay API); PHPUnit 11
+        // requires addMethods(). getName is supplied by the generated mock stub for GatewayInterface.
         $stubGateway = $this
             ->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->onlyMethods(['createCard', 'getName'])
+            ->onlyMethods(['getName'])
+            ->addMethods(['createCard'])
             ->getMock();
 
         $stubGateway->expects($this->once())

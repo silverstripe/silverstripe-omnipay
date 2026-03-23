@@ -4,6 +4,7 @@ namespace SilverStripe\Omnipay\Extensions;
 
 use SilverStripe\Core\Extension;
 use SilverStripe\Control\Director;
+use SilverStripe\Omnipay\Service\PaymentService;
 use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\Model\ArrayData;
 use SilverStripe\View\SSViewer;
@@ -27,13 +28,12 @@ use SilverStripe\Control\HTTPResponse;
  * to use your own styling, WPDISPLAY tags, etc) then add a
  * "WorldPayCallback.ss" file to the tempaltes directory in your
  * theme.
+ *
+ * @extends Extension<PaymentService>
  */
 class WorldPayResponseExtension extends Extension
 {
-    /**
-     * @param ServiceResponse $response
-     */
-    public function updateServiceResponse($response)
+    public function updateServiceResponse(ServiceResponse $response): void
     {
         $payment = $response->getPayment();
 

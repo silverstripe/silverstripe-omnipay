@@ -8,6 +8,7 @@ use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\Core\Extension;
 use SilverStripe\Omnipay\Model\Message;
 use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\Service\PaymentService;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Control\Director;
 
@@ -27,29 +28,24 @@ use SilverStripe\Control\Director;
  *
  * @see https://github.com/silverstripe/silverstripe-omnipay/issues/153
  * @see https://github.com/silverstripe/silverstripe-omnipay/issues/159
+ *
+ * @extends Extension<PaymentService>
  */
 class SagePayExtension extends Extension
 {
-    /**
-     * @param array $gatewayData
-     */
-    public function onBeforePurchase(array &$gatewayData)
+    /** @param array<string, mixed> $gatewayData */
+    public function onBeforePurchase(array &$gatewayData): void
     {
         $this->addDescription($gatewayData);
     }
 
-    /**
-     * @param array $gatewayData
-     */
-    public function onBeforeAuthorize(array &$gatewayData)
+    /** @param array<string, mixed> $gatewayData */
+    public function onBeforeAuthorize(array &$gatewayData): void
     {
         $this->addDescription($gatewayData);
     }
 
-    /**
-     * @param ServiceResponse $response
-     */
-    public function updateServiceResponse($response)
+    public function updateServiceResponse(ServiceResponse $response): void
     {
         $payment = $response->getPayment();
 
@@ -61,18 +57,14 @@ class SagePayExtension extends Extension
         $this->respondToNotification($response, $payment);
     }
 
-    /**
-     * @param array $gatewayData
-     */
-    public function onBeforeCompletePurchase(array &$gatewayData)
+    /** @param array<string, mixed> $gatewayData */
+    public function onBeforeCompletePurchase(array &$gatewayData): void
     {
         $this->addTransactionReference($gatewayData);
     }
 
-    /**
-     * @param array $gatewayData
-     */
-    public function onBeforeCompleteAuthorize(array &$gatewayData)
+    /** @param array<string, mixed> $gatewayData */
+    public function onBeforeCompleteAuthorize(array &$gatewayData): void
     {
         $this->addTransactionReference($gatewayData, true);
     }
@@ -80,10 +72,10 @@ class SagePayExtension extends Extension
     /**
      * Grabs the transactionReference from the previous received message and adds it to the
      * gateway data, so that it can be sent back to SagePay as clarification
-     * @param array $gatewayData incoming gateway data
+     * @param array<string, mixed> $gatewayData incoming gateway data
      * @param bool $isAuthorize whether or not we're dealing with a complete authorize request
      */
-    private function addTransactionReference(array &$gatewayData, $isAuthorize = false)
+    private function addTransactionReference(array &$gatewayData, bool $isAuthorize = false): void
     {
         /** @var Payment $payment */
         $payment = $this->owner->getPayment();
@@ -100,9 +92,9 @@ class SagePayExtension extends Extension
 
     /**
      * Description for SagePay must be < 100 characters
-     * @param $gatewayData
+     * @param array<string, mixed> $gatewayData
      */
-    private function addDescription(array &$gatewayData)
+    private function addDescription(array &$gatewayData): void
     {
         $payment = $this->owner->getPayment();
         if ($payment->Gateway == 'SagePay_Direct' || $payment->Gateway == 'SagePay_Server') {
@@ -118,7 +110,7 @@ class SagePayExtension extends Extension
      * @param ServiceResponse $response
      * @param Payment $payment
      */
-    private function respondToNotification(ServiceResponse $response, Payment $payment)
+    private function respondToNotification(ServiceResponse $response, Payment $payment): void
     {
         $omnipayResponse = $response->getOmnipayResponse();
         if ($omnipayResponse !== null

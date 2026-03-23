@@ -4,5 +4,5 @@ namespace SilverStripe\Omnipay\Model\Message;
 
 class CaptureRequest extends GatewayRequestMessage
 {
-    private static $table_name = 'Omnipay_CaptureRequest';
+    private static string $table_name = 'Omnipay_CaptureRequest';
 }

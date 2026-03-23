@@ -39,11 +39,11 @@ class RefundService extends NotificationCompleteService
      * array. If the amount given is not a number, or if it exceeds the total amount of the payment, an exception
      * will be raised.
      *
-     * @inheritdoc
+     * @param array<string, mixed> $data
      * @throws MissingParameterException if no transaction reference can be found from messages or parameters
      * @throws InvalidParameterException if the amount parameter was invalid
      */
-    public function initiate($data = [])
+    public function initiate(array $data = []): ServiceResponse
     {
         if (!$this->payment->canRefund()) {
             throw new InvalidConfigurationException('Refunding of this payment not allowed.');
@@ -149,7 +149,7 @@ class RefundService extends NotificationCompleteService
         return $serviceResponse;
     }
 
-    protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
+    protected function markCompleted(string $endStatus, ServiceResponse $serviceResponse, mixed $gatewayMessage): void
     {
         // Get partial payments
         $partials = $this->payment->getPartialPayments()->filter('Status', $this->pendingState);

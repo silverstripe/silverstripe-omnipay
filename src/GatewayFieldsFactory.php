@@ -5,11 +5,12 @@ namespace SilverStripe\Omnipay;
 use Omnipay\Common\CreditCard;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
-use SilverStripe\Forms\FieldList;
-use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\DropdownField;
-use SilverStripe\Forms\FieldGroup;
 use SilverStripe\Forms\EmailField;
+use SilverStripe\Forms\FieldGroup;
+use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\FormField;
+use SilverStripe\Forms\TextField;
 
 /**
  * Helper for generating gateway fields, based on best practices.
@@ -20,7 +21,8 @@ class GatewayFieldsFactory
     use Configurable;
     use Injectable;
 
-    protected $fieldgroups = [
+    /** @var list<string> */
+    protected array $fieldgroups = [
         'Card',
         'Billing',
         'Shipping',
@@ -28,24 +30,19 @@ class GatewayFieldsFactory
         'Email'
     ];
 
-    protected $gateway;
+    protected ?string $gateway = null;
 
-    /**
-     * @var boolean
-     */
-    protected $groupdatefields = true;
+    protected bool $groupdatefields = true;
 
-    /**
-     * @var array
-     */
-    protected $renamemap = [];
+    /** @var array<string, string> */
+    protected array $renamemap = [];
 
     /**
      * @config
      *
-     * @var array
+     * @var list<string>
      */
-    private static $whitelist = [
+    private static array $whitelist = [
         'type',
         'name',
         'number',
@@ -77,9 +74,9 @@ class GatewayFieldsFactory
      * GatewayFieldsFactory constructor.
      *
      * @param string|null $gateway the gateway to create fields for. @see setGateway
-     * @param array $fieldgroups the field-groups to create
+     * @param list<string>|null $fieldgroups the field-groups to create
      */
-    public function __construct($gateway = null, $fieldgroups = null)
+    public function __construct(?string $gateway = null, ?array $fieldgroups = null)
     {
         $this->setGateway($gateway);
         $this->setFieldGroups($fieldgroups);
@@ -90,10 +87,10 @@ class GatewayFieldsFactory
      *
      * An array with field-groups to create. Valid entries are: `'Card', 'Billing', 'Shipping', 'Company', 'Email'`.
      *
-     * @param array $groups the groups to create
+     * @param list<string>|null $groups the groups to create
      * @return $this
      */
-    public function setFieldGroups($groups)
+    public function setFieldGroups(?array $groups)
     {
         if (is_array($groups)) {
             $this->fieldgroups = $groups;
@@ -111,7 +108,7 @@ class GatewayFieldsFactory
      * @param string|null $gateway the gateway to create fields for.
      * @return $this
      */
-    public function setGateway($gateway)
+    public function setGateway(?string $gateway)
     {
         $this->gateway = $gateway;
         $this->buildRenameMap();
@@ -229,9 +226,9 @@ class GatewayFieldsFactory
     /**
      * Get a list of supported credit-card brands.
      *
-     * @return array
+     * @return array<string, string>
      */
-    public function getCardTypes()
+    public function getCardTypes(): array
     {
         $card = new CreditCard();
         $brands = $card->getSupportedBrands();
@@ -363,10 +360,10 @@ class GatewayFieldsFactory
 
     /**
      * Clear all fields that are not required by the gateway. Does nothing if gateway is null
-     * @param $fields
-     * @param array $defaults
+     * @param array<string, FormField> $fields
+     * @param list<string> $defaults
      */
-    protected function cullForGateway(&$fields, $defaults = [])
+    protected function cullForGateway(array &$fields, array $defaults = []): void
     {
         if (!$this->gateway) {
             return;
@@ -384,11 +381,11 @@ class GatewayFieldsFactory
      * Attempts to find a custom field name and/or prefix defined in rename.yml, otherwise returns the same input
      * that it was given
      *
-     * @param string|array $defaultName The default name of the field
+     * @param string|list<string> $defaultName The default name of the field
      *
-     * @return string|array
+     * @return string|list<string>
      */
-    public function getFieldName($defaultName)
+    public function getFieldName(string|array $defaultName): string|array
     {
         if (is_array($defaultName)) {
             return $this->getFieldNames($defaultName);
@@ -404,11 +401,11 @@ class GatewayFieldsFactory
     /**
      * Batch support for getFieldName()
      *
-     * @param array $defaultNames
+     * @param list<string> $defaultNames
      *
-     * @return array
+     * @return list<string>
      */
-    public function getFieldNames(array $defaultNames)
+    public function getFieldNames(array $defaultNames): array
     {
         $stack = [];
 
@@ -428,11 +425,11 @@ class GatewayFieldsFactory
      * Normalizes form data keys to map to their respective Omnipay parameters (in other words: reverses the effects
      * from the custom field name support)
      *
-     * @param array $data The form data consisting of key value pairs
+     * @param array<string, mixed> $data The form data consisting of key value pairs
      *
-     * @return array
+     * @return array<string, mixed>
      */
-    public function normalizeFormData(array $data)
+    public function normalizeFormData(array $data): array
     {
         if (empty($data)) {
             return $data;
@@ -472,13 +469,12 @@ class GatewayFieldsFactory
     /**
      * Fetches custom name for a gateway field from the rename map, or returns false
      *
-     * @param      $defaultName
      * @param string|null $gateway Optional, will default to current gateway if instantiated
      *
      * @return bool|string Returns false if no custom gateway field name has been defined, otherwise returns the custom
      *                     name
      */
-    private function getGatewayFieldName($defaultName, $gateway = null)
+    private function getGatewayFieldName(string $defaultName, ?string $gateway = null): bool|string
     {
         if (!$gateway) {
             if (!$this->gateway) {

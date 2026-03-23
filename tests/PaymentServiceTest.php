@@ -221,9 +221,12 @@ class PaymentServiceTest extends PaymentTest
         $service->handleNotification();
     }
 
+    /**
+     * @param class-string $contract Mock class for the object returned by acceptNotification()
+     */
     protected function buildNotificationService(
-        $returnState,
-        $contract = NotificationInterface::class
+        mixed $returnState,
+        string $contract = NotificationInterface::class
     ) {
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
         $service = $this->factory->getService($payment, ServiceFactory::INTENT_PURCHASE);
@@ -231,19 +234,24 @@ class PaymentServiceTest extends PaymentTest
         //--------------------------------------------------------------------------------------------------------------
         // Notification response
 
-        $notificationResponse = $this->getMockBuilder($contract)
-            ->disableOriginalConstructor()
-            ->onlyMethods(['getTransactionStatus', 'getTransactionReference', 'isSuccessful', 'getMessage', 'getData'])
-            ->getMock();
-
-        $notificationResponse->expects($this->any())
-            ->method('getTransactionStatus')->will($this->returnValue($returnState));
+        if ($contract === NotificationInterface::class) {
+            $notificationResponse = $this->getMockBuilder(NotificationInterface::class)
+                ->onlyMethods(['getTransactionStatus', 'getTransactionReference', 'getMessage', 'getData'])
+                ->getMock();
+            $notificationResponse->expects($this->any())
+                ->method('getTransactionStatus')->willReturn($returnState);
+        } else {
+            $notificationResponse = $this->getMockBuilder($contract)
+                ->disableOriginalConstructor()
+                ->getMockForAbstractClass();
+        }
 
         //--------------------------------------------------------------------------------------------------------------
         // Build the gateway
 
         $stubGateway = $this->getMockBuilder(AbstractGateway::class)
-            ->onlyMethods(['acceptNotification', 'getName'])
+            ->onlyMethods(['getName'])
+            ->addMethods(['acceptNotification'])
             ->getMock();
 
         $stubGateway->expects($this->once())

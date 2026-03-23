@@ -18,15 +18,14 @@ class PurchaseService extends PaymentService
     /**
      * Attempt to make a payment.
      *
-     * @inheritdoc
-     * @param  array $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
+     * @param array<string, mixed> $data returnUrl/cancelUrl + customer creditcard and billing/shipping details.
      *  Some keys (e.g. "amount") are overwritten with data from the associated {@link $payment}.
      *  If this array is constructed from user data (e.g. a form submission), please take care
      *  to whitelist accepted fields, in order to ensure sensitive gateway parameters like "freeShipping" can't be set.
      *  If using {@link Form->getData()}, only fields which exist in the form are returned,
      *  effectively whitelisting against arbitrary user input.
      */
-    public function initiate($data = [])
+    public function initiate(array $data = []): ServiceResponse
     {
         if ($this->payment->Status !== 'Created') {
             throw new InvalidStateException('Cannot initiate a purchase with this payment. Status is not "Created"');
@@ -85,7 +84,7 @@ class PurchaseService extends PaymentService
      * This is usually only called by PaymentGatewayController.
      * @inheritdoc
      */
-    public function complete($data = [], $isNotification = false)
+    public function complete(array $data = [], bool $isNotification = false): ServiceResponse
     {
         $flags = $isNotification ? ServiceResponse::SERVICE_NOTIFICATION : 0;
         // The payment is already captured
@@ -133,7 +132,7 @@ class PurchaseService extends PaymentService
         return $serviceResponse;
     }
 
-    protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
+    protected function markCompleted(string $endStatus, ServiceResponse $serviceResponse, mixed $gatewayMessage): void
     {
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
         $this->createMessage(PurchasedResponse::class, $gatewayMessage);

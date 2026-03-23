@@ -11,11 +11,15 @@ use SilverStripe\ORM\HasManyList;
 /**
  * An extension for providing payments on a particular data object.
  *
- * @property DataObject|Payable $owner
- * @method Payment[]|HasManyList Payments()
+ * @extends Extension<DataObject>
+ * @property DataObject $owner
+ * @method HasManyList<Payment> Payments()
  */
 class Payable extends Extension
 {
+    /**
+     * @var array<string, class-string>
+     */
     private static $has_many = [
         'Payments' => Payment::class
     ];

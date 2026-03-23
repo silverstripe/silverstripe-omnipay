@@ -16,7 +16,7 @@ class ErrorHandling
      *
      * In dev and test environments, exceptions will be thrown!
      *
-     * @param mixed $object the object that should run the extension
+     * @param object $object the object that should run the extension
      * @param string $method the extension method to call
      * @param mixed $a1 optional parameter 1
      * @param mixed $a2 optional parameter 2
@@ -25,12 +25,12 @@ class ErrorHandling
      * @param mixed $a5 optional parameter 5
      * @param mixed $a6 optional parameter 6
      * @param mixed $a7 optional parameter 7
-     * @return array
+     * @return array<int|string, mixed>
      * @throws \Exception any exception that occurred (only in dev and test environments)
      */
     public static function safeExtend(
-        $object,
-        $method,
+        object $object,
+        string $method,
         &$a1 = null,
         &$a2 = null,
         &$a3 = null,
@@ -38,7 +38,7 @@ class ErrorHandling
         &$a5 = null,
         &$a6 = null,
         &$a7 = null
-    ) {
+    ): array {
         if (!(method_exists($object, 'extend'))) {
             return [];
         }
@@ -78,7 +78,7 @@ class ErrorHandling
      * @return mixed whatever your closure returns
      * @throws \Exception any exception that occurred (only in dev and test environments)
      */
-    public static function safeguard(\Closure $method, $errorMessage)
+    public static function safeguard(\Closure $method, string $errorMessage): mixed
     {
         set_error_handler(function ($severity, $message, $file, $line) {
             throw new \ErrorException($message, 0, $severity, $file, $line);

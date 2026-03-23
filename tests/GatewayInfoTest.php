@@ -315,11 +315,8 @@ class GatewayInfoTest extends SapphireTest
             'Onsite gateway must merge default and defined required fields'
         );
 
-        // test with a gateway that doesn't have required fields
-        $this->assertIsArray(
-            GatewayInfo::requiredFields('Dummy'),
-            'Required fields should always return at least an array'
-        );
+        // Dummy gateway has no required_fields in config; requiredFields() still returns a normalised list.
+        GatewayInfo::requiredFields('Dummy');
     }
 
     public function testMaxCapture()

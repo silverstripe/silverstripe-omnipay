@@ -19,11 +19,13 @@ use SilverStripe\Omnipay\Service\ServiceFactory;
  */
 class PaymentGatewayController extends Controller
 {
-    private static $allowed_actions = [
+    /** @var list<string> */
+    private static array $allowed_actions = [
         'gateway'
     ];
 
-    private static $url_handlers = [
+    /** @var array<string, string> */
+    private static array $url_handlers = [
         'gateway/$Gateway!/$Status' => 'gateway',
         '$Identifier/$Status/$ReturnURL' => 'index',
     ];

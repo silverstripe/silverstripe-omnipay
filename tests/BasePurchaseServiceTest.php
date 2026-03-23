@@ -2,7 +2,9 @@
 
 namespace SilverStripe\Omnipay\Tests;
 
+use Omnipay\Common\Http\ClientInterface;
 use SilverStripe\Dev\SapphireTest;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use SilverStripe\Omnipay\GatewayInfo;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use SilverStripe\Omnipay\Model\Payment;
@@ -470,7 +472,8 @@ abstract class BasePurchaseServiceTest extends PaymentTest
             'token_key' => 'token'
         ]);
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->onlyMethods([$this->omnipayMethod, 'getName'])
+            ->onlyMethods(['getName'])
+            ->addMethods([$this->omnipayMethod])
             ->getMock();
 
         $stubGateway->expects($this->once())
@@ -502,7 +505,8 @@ abstract class BasePurchaseServiceTest extends PaymentTest
             'token_key' => 'my_token'
         ]);
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->onlyMethods([$this->omnipayMethod, 'getName'])
+            ->onlyMethods(['getName'])
+            ->addMethods([$this->omnipayMethod])
             ->getMock();
 
         $stubGateway->expects($this->once())
@@ -776,7 +780,8 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         // Build the gateway
 
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->onlyMethods([$this->omnipayMethod, $this->omnipayCompleteMethod, 'getName'])
+            ->onlyMethods(['getName'])
+            ->addMethods([$this->omnipayMethod, $this->omnipayCompleteMethod])
             ->getMock();
 
         $stubGateway->expects($sendMustFail ? $this->any() : $this->once())
@@ -796,7 +801,11 @@ abstract class BasePurchaseServiceTest extends PaymentTest
     protected function stubRequest()
     {
         $request = $this->getMockBuilder('Omnipay\Common\Message\AbstractRequest')
-            ->disableOriginalConstructor()
+            ->setConstructorArgs([
+                $this->createMock(ClientInterface::class),
+                SymfonyRequest::create('/'),
+            ])
+            ->onlyMethods(['send', 'sendData', 'getData'])
             ->getMock();
         $response = $this->getMockBuilder('Omnipay\Common\Message\AbstractResponse')
             ->disableOriginalConstructor()

@@ -18,9 +18,9 @@ class AuthorizeService extends PaymentService
     /**
      * Start an authorization request
      *
-     * @inheritdoc
+     * @param array<string, mixed> $data
      */
-    public function initiate($data = [])
+    public function initiate(array $data = []): ServiceResponse
     {
         if ($this->payment->Status !== 'Created') {
             throw new InvalidStateException('Cannot authorize this payment. Status is not "Created"');
@@ -79,7 +79,7 @@ class AuthorizeService extends PaymentService
      * This is usually only called by PaymentGatewayController.
      * @inheritdoc
      */
-    public function complete($data = [], $isNotification = false)
+    public function complete(array $data = [], bool $isNotification = false): ServiceResponse
     {
         $flags = $isNotification ? ServiceResponse::SERVICE_NOTIFICATION : 0;
 
@@ -129,7 +129,7 @@ class AuthorizeService extends PaymentService
         return $serviceResponse;
     }
 
-    protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
+    protected function markCompleted(string $endStatus, ServiceResponse $serviceResponse, mixed $gatewayMessage): void
     {
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
         $this->createMessage(AuthorizedResponse::class, $gatewayMessage);

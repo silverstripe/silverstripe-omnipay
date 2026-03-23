@@ -38,13 +38,13 @@ abstract class NotificationCompleteService extends PaymentService
      * Complete a pending task.
      * This is only needed for notification, so this method will always assume $isNotification is true!
      *
-     * @param array $data
+     * @param array<string, mixed> $data
      * @param bool $isNotification
      * @return ServiceResponse
      * @throws InvalidConfigurationException
      * @throws InvalidStateException
      */
-    public function complete($data = [], $isNotification = true)
+    public function complete(array $data = [], bool $isNotification = true): ServiceResponse
     {
         // The payment is already in the desired endstate
         if ($this->payment->Status === $this->endState) {

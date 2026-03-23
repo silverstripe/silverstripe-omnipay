@@ -23,14 +23,15 @@ class Logging
      * @var string
      * @config
      */
-    private static $logStyle = 'verbose';
+    private static string $logStyle = 'verbose';
 
     /**
      * Field-Names that should be removed from the log
-     * @var array
      * @config
+     *
+     * @var list<string>
      */
-    private static $loggingBlacklist = [
+    private static array $loggingBlacklist = [
         'card', 'token', 'cvv'
     ];
 
@@ -66,9 +67,9 @@ class Logging
     /**
      * Prepare data for logging by cleaning up the data or simplify it.
      * @param mixed $data the incoming data to log
-     * @return array processed data for logging
+     * @return array<int|string, mixed> processed data for logging
      */
-    public static function prepareForLogging($data)
+    public static function prepareForLogging(mixed $data): array
     {
         if (empty($data)) {
             return [];
@@ -95,9 +96,9 @@ class Logging
 
     /**
      * Clean out sensitive data, such as credit-card numbers
-     * @param array $data
+     * @param array<string, mixed> $data
      */
-    private static function sanitize(array &$data)
+    private static function sanitize(array &$data): void
     {
         $loggingBlacklist = self::config()->get('loggingBlacklist');
         $blackList = array_combine($loggingBlacklist, $loggingBlacklist);

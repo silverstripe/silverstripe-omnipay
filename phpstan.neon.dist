@@ -2,16 +2,43 @@ includes:
     - vendor/cambis/silverstan/extension.neon
 
 parameters:
-    level: 5
+    level: 6
     treatPhpDocTypesAsCertain: false
     silverstan:
         disallowNewInstanceOnInjectable:
             enabled: false
     ignoreErrors:
         - '#SilverStripe\\Omnipay\\Service\\PaymentService::\$dependencies#'
+        - '#SilverStripe\\Omnipay\\Tests\\ServiceFactoryTest::\$dependencies#'
         - '#Call to an undefined method SilverStripe\\Core\\Extension::getCalledMethods#'
         - '#Call to an undefined method SilverStripe\\Core\\Extension::Reset#'
-        - '#SilverStripe\\Omnipay\\Tests\\ServiceFactoryTest::\$dependencies#'
+        # Test fixtures use untyped arrays; production code is fully specified.
+        -
+            identifier: missingType.iterableValue
+            path: tests/*
+        -
+            identifier: missingType.property
+            path: tests/*
+        -
+            identifier: missingType.return
+            path: tests/*
+        -
+            identifier: missingType.parameter
+            path: tests/*
+        -
+            identifier: missingType.generics
+            path: tests/*
+        # Payments() is added by this extension to the owner; PHPStan only sees DataObject.
+        -
+            identifier: method.notFound
+            path: src/Extensions/Payable.php
+        # SilverStripe config statics are intentionally untyped (see typed arrays breaking Config merge).
+        -
+            identifier: missingType.property
+            path: src/Model/Payment.php
+        -
+            identifier: missingType.property
+            path: src/Model/Message/PaymentMessage.php
     paths:
         - src
         - tests

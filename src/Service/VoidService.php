@@ -32,10 +32,10 @@ class VoidService extends NotificationCompleteService
      *
      * If there's no transaction-reference to be found, this method will raise an exception.
      *
-     * @inheritdoc
+     * @param array<string, mixed> $data
      * @throws MissingParameterException if no transaction reference can be found from messages or parameters
      */
-    public function initiate($data = [])
+    public function initiate(array $data = []): ServiceResponse
     {
         if (!$this->payment->canVoid()) {
             throw new InvalidConfigurationException('Voiding of this payment not allowed.');
@@ -111,7 +111,7 @@ class VoidService extends NotificationCompleteService
         return $serviceResponse;
     }
 
-    protected function markCompleted($endStatus, ServiceResponse $serviceResponse, $gatewayMessage)
+    protected function markCompleted(string $endStatus, ServiceResponse $serviceResponse, mixed $gatewayMessage): void
     {
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
         $this->createMessage(VoidedResponse::class, $gatewayMessage);

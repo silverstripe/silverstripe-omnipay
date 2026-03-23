@@ -52,16 +52,21 @@ There's a config setting `SilverStripe\Omnipay\Helper\Logging.logStyle` that def
 There's also a setting that controls which data-fields will be sanitized, so that they don't show up in the logs. If you're logging on
 a live environment, make sure to NOT log any sensitive information, such as credit-card numbers and CVV numbers!
 
-You can control this "blacklist" via the `SilverStripe\Omnipay\Helper\Logging.loggingBlacklist` setting. By default the Helper class is configured like this:
+You can control this "blacklist" via the `SilverStripe\Omnipay\Helper\Logging.loggingBlacklist` setting. By default the module is configured with a blacklist covering the most common sensitive payment parameters:
 
 ```yml
 SilverStripe\Omnipay\Helper\Logging:
   logStyle: 'verbose'
   loggingBlacklist:
-    - 'card'
-    - 'token'
-    - 'cvv'
+    - card
+    - token
+    - cvv
+    - cvc
+    - number
+    - password
 ```
+
+You can extend the blacklist in your project config by adding additional field names that are specific to your payment gateway implementation.
 
 ## Disable non-fatal error logging
 

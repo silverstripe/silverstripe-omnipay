@@ -6,16 +6,29 @@ use Omnipay\Common\Message\RequestInterface;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
-use SilverStripe\Omnipay\Model\Message\AwaitingCreateCardResponse;
-use SilverStripe\Omnipay\Model\Message\CompleteCreateCardError;
-use SilverStripe\Omnipay\Model\Message\CompleteCreateCardRequest;
-use SilverStripe\Omnipay\Model\Message\CreateCardError;
-use SilverStripe\Omnipay\Model\Message\CreateCardRedirectResponse;
-use SilverStripe\Omnipay\Model\Message\CreateCardRequest;
-use SilverStripe\Omnipay\Model\Message\CreateCardResponse;
 
 class CreateCardService extends PaymentService
 {
+    public const MESSAGE_CREATE_CARD_REQUEST = 'CreateCardRequest';
+
+    public const MESSAGE_CREATE_CARD_ERROR = 'CreateCardError';
+
+    public const MESSAGE_CREATE_CARD_REDIRECT_RESPONSE = 'CreateCardRedirectResponse';
+
+    public const MESSAGE_AWAITING_CREATE_CARD_RESPONSE = 'AwaitingCreateCardResponse';
+
+    public const MESSAGE_COMPLETE_CREATE_CARD_REQUEST = 'CompleteCreateCardRequest';
+
+    public const MESSAGE_COMPLETE_CREATE_CARD_ERROR = 'CompleteCreateCardError';
+
+    public const MESSAGE_CREATE_CARD_RESPONSE = 'CreateCardResponse';
+
+    /** @var list<string> */
+    public const ERROR_MESSAGE_TYPES = [
+        self::MESSAGE_CREATE_CARD_ERROR,
+        self::MESSAGE_COMPLETE_CREATE_CARD_ERROR,
+    ];
+
     /**
      * Start a createcard request
      *
@@ -44,12 +57,12 @@ class CreateCardService extends PaymentService
         $request = $this->oGateway()->createCard($gatewayData);
         $this->extend('onAfterCreateCard', $request);
 
-        $this->createMessage(CreateCardRequest::class, $request);
+        $this->createMessage(self::MESSAGE_CREATE_CARD_REQUEST, $request);
 
         try {
             $response = $this->response = $request->send();
         } catch (\Omnipay\Common\Exception\OmnipayException $e) {
-            $this->createMessage(CreateCardError::class, $e);
+            $this->createMessage(self::MESSAGE_CREATE_CARD_ERROR, $e);
             // create an error response
             return $this->generateServiceResponse(ServiceResponse::SERVICE_ERROR);
         }
@@ -63,11 +76,13 @@ class CreateCardService extends PaymentService
             $this->payment->write();
 
             $this->createMessage(
-                $serviceResponse->isRedirect() ? CreateCardRedirectResponse::class : AwaitingCreateCardResponse::class,
+                $serviceResponse->isRedirect()
+                    ? self::MESSAGE_CREATE_CARD_REDIRECT_RESPONSE
+                    : self::MESSAGE_AWAITING_CREATE_CARD_RESPONSE,
                 $response
             );
         } elseif ($serviceResponse->isError()) {
-            $this->createMessage(CreateCardError::class, $response);
+            $this->createMessage(self::MESSAGE_CREATE_CARD_ERROR, $response);
         } elseif ($serviceResponse->isSuccessful()) {
             $this->markCompleted('CardCreated', $serviceResponse, $response);
         }
@@ -108,12 +123,12 @@ class CreateCardService extends PaymentService
         $request = $gateway->completeCreateCard($gatewayData);
         $this->extend('onAfterCompleteCreateCard', $request);
 
-        $this->createMessage(CompleteCreateCardRequest::class, $request);
+        $this->createMessage(self::MESSAGE_COMPLETE_CREATE_CARD_REQUEST, $request);
         $response = null;
         try {
             $response       = $this->response = $request->send();
         } catch (\Omnipay\Common\Exception\OmnipayException $e) {
-            $this->createMessage(CompleteCreateCardError::class, $e);
+            $this->createMessage(self::MESSAGE_COMPLETE_CREATE_CARD_ERROR, $e);
             return $this->generateServiceResponse($flags | ServiceResponse::SERVICE_ERROR);
         }
 
@@ -122,7 +137,7 @@ class CreateCardService extends PaymentService
         if ($serviceResponse->isAwaitingNotification()) {
             ErrorHandling::safeExtend($this->payment, 'onAwaitingCreateCard', $serviceResponse);
         } elseif ($serviceResponse->isError()) {
-            $this->createMessage(CompleteCreateCardError::class, $response);
+            $this->createMessage(self::MESSAGE_COMPLETE_CREATE_CARD_ERROR, $response);
         } elseif ($serviceResponse->isSuccessful()) {
             $this->markCompleted('CardCreated', $serviceResponse, $response);
         }
@@ -133,7 +148,7 @@ class CreateCardService extends PaymentService
     protected function markCompleted(string $endStatus, ServiceResponse $serviceResponse, mixed $gatewayMessage): void
     {
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
-        $this->createMessage(CreateCardResponse::class, $gatewayMessage);
+        $this->createMessage(self::MESSAGE_CREATE_CARD_RESPONSE, $gatewayMessage);
         ErrorHandling::safeExtend($this->payment, 'onCardCreated', $serviceResponse);
     }
 }

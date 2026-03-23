@@ -8,9 +8,19 @@ use SilverStripe\Security\Member;
 use SilverStripe\Omnipay\Model\Payment;
 
 /**
- * Base class for logging messages, transactions etc associated with a payment.
+ * Logs gateway-related messages and metadata for a payment.
+ *
+ * The semantic kind of message is stored in {@link self::Type} (see message-type constants on each
+ * {@link \SilverStripe\Omnipay\Service\PaymentService} subclass).
+ *
  * @property string $Message
  * @property string $ClientIp
+ * @property string $Gateway
+ * @property string $Reference
+ * @property string $Code
+ * @property string $Type
+ * @property string $SuccessURL
+ * @property string $FailureURL
  * @property int $PaymentID
  * @property int $UserID
  * @method null|Payment Payment()
@@ -18,23 +28,36 @@ use SilverStripe\Omnipay\Model\Payment;
  */
 class PaymentMessage extends DataObject
 {
-    private static $db = [
+    private static array $db = [
         'Message' => 'Varchar(255)',
-        'ClientIp' => 'Varchar(39)'
+        'ClientIp' => 'Varchar(39)',
+        'Gateway' => 'Varchar',
+        'Reference' => 'Varchar(255)',
+        'Code' => 'Varchar',
+        'Type' => 'Varchar(128)',
+        'SuccessURL' => 'Text',
+        'FailureURL' => 'Text',
     ];
 
-    private static $has_one = [
+    private static array $has_one = [
         'Payment' => Payment::class,
-        'User' => Member::class
+        'User' => Member::class,
     ];
 
-    private static $summary_fields = [
-        'i18n_singular_name' => 'Type',
+    private static array $summary_fields = [
+        'Type' => 'Type',
         'Message' => 'Message',
-        'User.Name' => 'User'
+        'User.Name' => 'User',
+        'Gateway' => 'Gateway',
+        'Reference' => 'Reference',
+        'Code' => 'Code',
     ];
 
-    private static $table_name = 'Omnipay_PaymentMessage';
+    private static array $indexes = [
+        'Type' => true,
+    ];
+
+    private static string $table_name = 'Omnipay_PaymentMessage';
 
     public function getCMSFields()
     {
@@ -52,8 +75,32 @@ class PaymentMessage extends DataObject
         }
     }
 
+    public function i18n_singular_name()
+    {
+        if ($this->Type) {
+            return _t(__CLASS__ . '.TYPE_' . $this->Type, $this->Type);
+        }
+        return parent::i18n_singular_name();
+    }
+
     public function getTitle()
     {
         return $this->i18n_singular_name();
+    }
+
+    /**
+     * Whether this message type stores offsite request URLs ({@link self::SuccessURL} / {@link self::FailureURL}).
+     */
+    public static function isRequestMessageType(string $type): bool
+    {
+        return str_ends_with($type, 'Request');
+    }
+
+    /**
+     * @return class-string<self>
+     */
+    public static function classForMessageType(string $type): string
+    {
+        return self::class;
     }
 }

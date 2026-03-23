@@ -96,10 +96,21 @@ class PaymentMath
         }
 
         $scale = pow(10, max(0, $precision));
-        $a = (int)($scale * (float) $amountA);
-        $b = (int)($scale * (float) $amountB);
+        $scaledA = $scale * (float) $amountA;
+        $scaledB = $scale * (float) $amountB;
 
-        return max(-1, min(1, $a - $b));
+        if (abs($scaledA) <= PHP_INT_MAX && abs($scaledB) <= PHP_INT_MAX) {
+            $a = (int) $scaledA;
+            $b = (int) $scaledB;
+
+            return max(-1, min(1, $a - $b));
+        }
+
+        if (function_exists('bccomp')) {
+            return bccomp((string) $amountA, (string) $amountB, $precision);
+        }
+
+        return max(-1, min(1, $scaledA <=> $scaledB));
     }
 
     /**
@@ -110,10 +121,22 @@ class PaymentMath
      */
     private static function formatFloat($f, $precision)
     {
-        $scale = pow(10, max(0, $precision));
-        // clear off additional digits so that number_format doesn't round numbers
-        $i = (int)($f * $scale) / $scale;
+        $precision = max(0, (int) $precision);
+        $scale = pow(10, $precision);
+        $scaled = $f * $scale;
+
+        if (!is_finite($scaled)) {
+            return number_format($f, $precision, '.', '');
+        }
+
+        // Avoid (int) cast when the scaled value is outside int range — PHP 8.4+ warns and truncates incorrectly.
+        if (abs($scaled) <= PHP_INT_MAX) {
+            $i = (int) $scaled / $scale;
+        } else {
+            $i = ($scaled >= 0 ? floor($scaled) : ceil($scaled)) / $scale;
+        }
+
         // PHP 8+ interprets negative decimals in number_format as rounding to tens etc.; use non-negative decimals only
-        return number_format($i, max(0, $precision), '.', '');
+        return number_format($i, $precision, '.', '');
     }
 }

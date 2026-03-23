@@ -36,9 +36,6 @@ parameters:
         -
             identifier: missingType.property
             path: src/Model/Payment.php
-        -
-            identifier: missingType.property
-            path: src/Model/Message/PaymentMessage.php
     paths:
         - src
         - tests

@@ -9,23 +9,32 @@ use SilverStripe\Omnipay\Exception\MissingParameterException;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
 use SilverStripe\Omnipay\Helper\PaymentMath;
-use SilverStripe\Omnipay\Model\Message\PartiallyRefundedResponse;
-use SilverStripe\Omnipay\Model\Message\RefundedResponse;
-use SilverStripe\Omnipay\Model\Message\RefundError;
-use SilverStripe\Omnipay\Model\Message\RefundRequest;
 use SilverStripe\Omnipay\Model\Payment;
 
 class RefundService extends NotificationCompleteService
 {
+    public const MESSAGE_REFUND_REQUEST = 'RefundRequest';
+
+    public const MESSAGE_REFUND_ERROR = 'RefundError';
+
+    public const MESSAGE_REFUNDED_RESPONSE = 'RefundedResponse';
+
+    public const MESSAGE_PARTIALLY_REFUNDED_RESPONSE = 'PartiallyRefundedResponse';
+
+    /** @var list<string> */
+    public const ERROR_MESSAGE_TYPES = [
+        self::MESSAGE_REFUND_ERROR,
+    ];
+
     protected $startState = 'Captured';
 
     protected $endState = 'Refunded';
 
     protected $pendingState = 'PendingRefund';
 
-    protected $requestMessageType = RefundRequest::class;
+    protected $requestMessageType = self::MESSAGE_REFUND_REQUEST;
 
-    protected $errorMessageType = RefundError::class;
+    protected $errorMessageType = self::MESSAGE_REFUND_ERROR;
 
     /**
      * Return money to the previously charged credit card.
@@ -116,8 +125,7 @@ class RefundService extends NotificationCompleteService
         $request = $this->oGateway()->refund($gatewayData);
         $this->extend('onAfterRefund', $request);
 
-        $message = $this->createMessage($this->requestMessageType, $request);
-        $message->write();
+        $this->createMessage($this->requestMessageType, $request);
 
         try {
             $response = $this->response = $request->send();
@@ -184,9 +192,9 @@ class RefundService extends NotificationCompleteService
 
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
         if ($endStatus === 'Captured') {
-            $this->createMessage(PartiallyRefundedResponse::class, $gatewayMessage);
+            $this->createMessage(self::MESSAGE_PARTIALLY_REFUNDED_RESPONSE, $gatewayMessage);
         } else {
-            $this->createMessage(RefundedResponse::class, $gatewayMessage);
+            $this->createMessage(self::MESSAGE_REFUNDED_RESPONSE, $gatewayMessage);
         }
 
         ErrorHandling::safeExtend($this->payment, 'onRefunded', $serviceResponse);

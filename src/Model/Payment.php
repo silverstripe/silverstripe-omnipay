@@ -322,8 +322,9 @@ final class Payment extends DataObject implements PermissionProvider
     }
 
     /**
-     * Get a message of a given type
-     * @param class-string $type
+     * Get the most recent message with the given {@link PaymentMessage::Type} value.
+     *
+     * @param string $type Message type string (see constants on payment service classes).
      */
     public function getLatestMessageOfType(string $type): ?PaymentMessage
     {
@@ -331,7 +332,8 @@ final class Payment extends DataObject implements PermissionProvider
             return null;
         }
         return $this->Messages()
-            ->filter('ClassName', $type)
+            ->filter('Type', $type)
+            ->sort(['Created' => 'DESC', 'ID' => 'DESC'])
             ->first();
     }
 

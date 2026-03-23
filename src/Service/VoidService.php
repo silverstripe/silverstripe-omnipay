@@ -7,21 +7,29 @@ use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Exception\MissingParameterException;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
-use SilverStripe\Omnipay\Model\Message\VoidedResponse;
-use SilverStripe\Omnipay\Model\Message\VoidError;
-use SilverStripe\Omnipay\Model\Message\VoidRequest;
 
 class VoidService extends NotificationCompleteService
 {
+    public const MESSAGE_VOID_REQUEST = 'VoidRequest';
+
+    public const MESSAGE_VOID_ERROR = 'VoidError';
+
+    public const MESSAGE_VOIDED_RESPONSE = 'VoidedResponse';
+
+    /** @var list<string> */
+    public const ERROR_MESSAGE_TYPES = [
+        self::MESSAGE_VOID_ERROR,
+    ];
+
     protected $startState = 'Authorized';
 
     protected $endState = 'Void';
 
     protected $pendingState = 'PendingVoid';
 
-    protected $requestMessageType = VoidRequest::class;
+    protected $requestMessageType = self::MESSAGE_VOID_REQUEST;
 
-    protected $errorMessageType = VoidError::class;
+    protected $errorMessageType = self::MESSAGE_VOID_ERROR;
 
     /**
      * Void/cancel a payment
@@ -84,8 +92,7 @@ class VoidService extends NotificationCompleteService
         $request = $this->oGateway()->void($gatewayData);
         $this->extend('onAfterVoid', $request);
 
-        $message = $this->createMessage($this->requestMessageType, $request);
-        $message->write();
+        $this->createMessage($this->requestMessageType, $request);
 
         try {
             $response = $this->response = $request->send();
@@ -114,7 +121,7 @@ class VoidService extends NotificationCompleteService
     protected function markCompleted(string $endStatus, ServiceResponse $serviceResponse, mixed $gatewayMessage): void
     {
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
-        $this->createMessage(VoidedResponse::class, $gatewayMessage);
+        $this->createMessage(self::MESSAGE_VOIDED_RESPONSE, $gatewayMessage);
 
         ErrorHandling::safeExtend($this->payment, 'onVoid', $serviceResponse);
     }

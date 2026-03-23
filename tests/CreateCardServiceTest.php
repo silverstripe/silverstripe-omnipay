@@ -4,11 +4,10 @@ namespace SilverStripe\Omnipay\Tests;
 
 use Omnipay\Common\Http\ClientInterface;
 use SilverStripe\Omnipay\Service\CreateCardService;
-use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
-use SilverStripe\Omnipay\Model\Message;
+use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
 class CreateCardServiceTest extends BasePurchaseServiceTest
 {
@@ -19,33 +18,33 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
     protected $omnipayCompleteMethod = 'completeCreateCard';
 
     protected $onsiteSuccessMessages = [
-        ['ClassName' => Message\CreateCardRequest::class],
-        ['ClassName' => Message\CreateCardResponse::class]
+        ['Type' => CreateCardService::MESSAGE_CREATE_CARD_REQUEST],
+        ['Type' => CreateCardService::MESSAGE_CREATE_CARD_RESPONSE]
     ];
 
     protected $onsiteFailMessages = [
-        ['ClassName' => Message\CreateCardRequest::class],
-        ['ClassName' => Message\CreateCardError::class]
+        ['Type' => CreateCardService::MESSAGE_CREATE_CARD_REQUEST],
+        ['Type' => CreateCardService::MESSAGE_CREATE_CARD_ERROR]
     ];
 
     protected $failMessages = [
-        ['ClassName' => Message\CreateCardError::class]
+        ['Type' => CreateCardService::MESSAGE_CREATE_CARD_ERROR]
     ];
 
     protected $offsiteSuccessMessages = [
-        ['ClassName' => Message\CreateCardRequest::class],
-        ['ClassName' => Message\CreateCardRedirectResponse::class],
-        ['ClassName' => Message\CompleteCreateCardRequest::class],
-        ['ClassName' => Message\CreateCardResponse::class]
+        ['Type' => CreateCardService::MESSAGE_CREATE_CARD_REQUEST],
+        ['Type' => CreateCardService::MESSAGE_CREATE_CARD_REDIRECT_RESPONSE],
+        ['Type' => CreateCardService::MESSAGE_COMPLETE_CREATE_CARD_REQUEST],
+        ['Type' => CreateCardService::MESSAGE_CREATE_CARD_RESPONSE]
     ];
 
     protected $offsiteFailMessages = [
-        ['ClassName' => Message\CreateCardResponse::class],
-        ['ClassName' => Message\CompleteCreateCardRequest::class],
-        ['ClassName' => Message\CompleteCreateCardError::class]
+        ['Type' => CreateCardService::MESSAGE_CREATE_CARD_RESPONSE],
+        ['Type' => CreateCardService::MESSAGE_COMPLETE_CREATE_CARD_REQUEST],
+        ['Type' => CreateCardService::MESSAGE_COMPLETE_CREATE_CARD_ERROR]
     ];
 
-    protected $failureMessageClass = Message\CompleteCreateCardError::class;
+    protected $failureMessageType = CreateCardService::MESSAGE_COMPLETE_CREATE_CARD_ERROR;
 
     protected $paymentId = '18f2fcac2b8f7549fd0295b251d9e9db';
 
@@ -126,12 +125,12 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
             ->will($this->returnValue($successValue));
 
         $mockPaymentRequest = $this
-            ->getMockBuilder('Omnipay\Common\Message\AbstractRequest')
+            ->getMockBuilder('Omnipay\Dummy\Message\CreditCardRequest')
             ->setConstructorArgs([
                 $this->createMock(ClientInterface::class),
-                SymfonyRequest::create('/'),
+                $this->createMock(SymfonyRequest::class),
             ])
-            ->onlyMethods(['send', 'sendData', 'getData'])
+            ->onlyMethods(['send'])
             ->getMock();
 
         $mockPaymentRequest
@@ -142,12 +141,9 @@ class CreateCardServiceTest extends BasePurchaseServiceTest
         //--------------------------------------------------------------------------------------------------------------
         // Build the gateway
 
-        // createCard is not a real method on AbstractGateway (optional Omnipay API); PHPUnit 11
-        // requires addMethods(). getName is supplied by the generated mock stub for GatewayInterface.
         $stubGateway = $this
-            ->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->onlyMethods(['getName'])
-            ->addMethods(['createCard'])
+            ->getMockBuilder('Omnipay\Dummy\Gateway')
+            ->onlyMethods(['createCard', 'getName'])
             ->getMock();
 
         $stubGateway->expects($this->once())

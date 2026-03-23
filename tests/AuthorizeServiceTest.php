@@ -6,7 +6,6 @@ use SilverStripe\Omnipay\Service\AuthorizeService;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 use SilverStripe\Core\Config\Config;
-use SilverStripe\Omnipay\Model\Message;
 use SilverStripe\Omnipay\GatewayInfo;
 
 class AuthorizeServiceTest extends BasePurchaseServiceTest
@@ -20,34 +19,34 @@ class AuthorizeServiceTest extends BasePurchaseServiceTest
     protected $omnipayCompleteMethod = 'completeAuthorize';
 
     protected $onsiteSuccessMessages = [
-        ['ClassName' => Message\AuthorizeRequest::class],
-        ['ClassName' => Message\AuthorizedResponse::class]
+        ['Type' => AuthorizeService::MESSAGE_AUTHORIZE_REQUEST],
+        ['Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE]
     ];
 
     protected $onsiteFailMessages = [
-        ['ClassName' => Message\AuthorizeRequest::class],
-        ['ClassName' => Message\AuthorizeError::class]
+        ['Type' => AuthorizeService::MESSAGE_AUTHORIZE_REQUEST],
+        ['Type' => AuthorizeService::MESSAGE_AUTHORIZE_ERROR]
     ];
 
     protected $failMessages = [
-        ['ClassName' => Message\AuthorizeError::class]
+        ['Type' => AuthorizeService::MESSAGE_AUTHORIZE_ERROR]
     ];
 
     protected $offsiteSuccessMessages = [
-        ['ClassName' => Message\AuthorizeRequest::class],
-        ['ClassName' => Message\AuthorizeRedirectResponse::class],
-        ['ClassName' => Message\CompleteAuthorizeRequest::class],
-        ['ClassName' => Message\AuthorizedResponse::class]
+        ['Type' => AuthorizeService::MESSAGE_AUTHORIZE_REQUEST],
+        ['Type' => AuthorizeService::MESSAGE_AUTHORIZE_REDIRECT_RESPONSE],
+        ['Type' => AuthorizeService::MESSAGE_COMPLETE_AUTHORIZE_REQUEST],
+        ['Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE]
     ];
 
     protected $offsiteFailMessages = [
-        ['ClassName' => Message\AuthorizeRequest::class],
-        ['ClassName' => Message\AuthorizeRedirectResponse::class],
-        ['ClassName' => Message\CompleteAuthorizeRequest::class],
-        ['ClassName' => Message\CompleteAuthorizeError::class]
+        ['Type' => AuthorizeService::MESSAGE_AUTHORIZE_REQUEST],
+        ['Type' => AuthorizeService::MESSAGE_AUTHORIZE_REDIRECT_RESPONSE],
+        ['Type' => AuthorizeService::MESSAGE_COMPLETE_AUTHORIZE_REQUEST],
+        ['Type' => AuthorizeService::MESSAGE_COMPLETE_AUTHORIZE_ERROR]
     ];
 
-    protected $failureMessageClass = Message\CompleteAuthorizeError::class;
+    protected $failureMessageType = AuthorizeService::MESSAGE_COMPLETE_AUTHORIZE_ERROR;
 
     protected $paymentId = '62b26e0a8a77f60cce3e9a7994087b0e';
 

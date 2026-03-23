@@ -69,14 +69,14 @@ it:
     SINGULARNAME: 'Messaggio di pagamento'
     db_ClientIp: 'IP Client'
     db_Message: Messaggio
-    has_one_Payment: Pagamento
-    has_one_User: Utente
-  SilverStripe\Omnipay\Model\Message\GatewayMessage:
-    PLURALNAME: 'Messaggi del Gateway'
-    SINGULARNAME: 'Messaggio del Gateway'
-    db_Code: Codice
     db_Gateway: Gateway
     db_Reference: Riferimento
+    db_Code: Codice
+    db_Type: Tipo
+    db_SuccessURL: 'URL di successo'
+    db_FailureURL: 'URL di errore'
+    has_one_Payment: Pagamento
+    has_one_User: Utente
   CreditCard:
     VISA: Visa
     MASTERCARD: Mastercard

@@ -22,7 +22,7 @@ class GatewayFieldsFactory
     use Injectable;
 
     /** @var list<string> */
-    protected array $fieldgroups = [
+    protected array $fieldGroups = [
         'Card',
         'Billing',
         'Shipping',
@@ -32,10 +32,10 @@ class GatewayFieldsFactory
 
     protected ?string $gateway = null;
 
-    protected bool $groupdatefields = true;
+    protected bool $groupDateFields = true;
 
     /** @var array<string, string> */
-    protected array $renamemap = [];
+    protected array $renameMap = [];
 
     /**
      * @config
@@ -74,12 +74,12 @@ class GatewayFieldsFactory
      * GatewayFieldsFactory constructor.
      *
      * @param string|null $gateway the gateway to create fields for. @see setGateway
-     * @param list<string>|null $fieldgroups the field-groups to create
+     * @param list<string>|null $fieldGroups the field-groups to create
      */
-    public function __construct(?string $gateway = null, ?array $fieldgroups = null)
+    public function __construct(?string $gateway = null, ?array $fieldGroups = null)
     {
         $this->setGateway($gateway);
-        $this->setFieldGroups($fieldgroups);
+        $this->setFieldGroups($fieldGroups);
     }
 
     /**
@@ -93,7 +93,7 @@ class GatewayFieldsFactory
     public function setFieldGroups(?array $groups)
     {
         if (is_array($groups)) {
-            $this->fieldgroups = $groups;
+            $this->fieldGroups = $groups;
         }
 
         return $this;
@@ -124,7 +124,7 @@ class GatewayFieldsFactory
     {
         $fields = FieldList::create();
 
-        foreach ($this->fieldgroups as $group) {
+        foreach ($this->fieldGroups as $group) {
             if (method_exists($this, 'get' . $group . 'Fields')) {
                 $fields->merge($this->{'get' . $group . 'Fields'}());
             }
@@ -150,8 +150,8 @@ class GatewayFieldsFactory
         }
         $year = date('Y');
         $range = 5;
-        $startrange = range(date('Y', strtotime("-$range years")), $year);
-        $expiryrange = range($year, date('Y', strtotime("+$range years")));
+        $startRange = range(date('Y', strtotime("-$range years")), $year);
+        $expiryRange = range($year, date('Y', strtotime("+$range years")));
 
         $fields = [
             'type' => DropdownField::create(
@@ -175,7 +175,7 @@ class GatewayFieldsFactory
             'startYear' => DropdownField::create(
                 $this->getFieldName('startYear'),
                 _t('SilverStripe\Omnipay\PaymentForm.StartYear', 'Year'),
-                array_combine($startrange, $startrange),
+                array_combine($startRange, $startRange),
                 $year
             )->setHasEmptyDefault(true)->setEmptyString(_t('SilverStripe\Omnipay\PaymentForm.StartYearDefaultText', 'Please Select ...')),
             'expiryMonth' => DropdownField::create(
@@ -186,7 +186,7 @@ class GatewayFieldsFactory
             'expiryYear' => DropdownField::create(
                 $this->getFieldName('expiryYear'),
                 _t('SilverStripe\Omnipay\PaymentForm.ExpiryYear', 'Year'),
-                array_combine($expiryrange, $expiryrange),
+                array_combine($expiryRange, $expiryRange),
                 $year
             )->setHasEmptyDefault(true)->setEmptyString(_t('SilverStripe\Omnipay\PaymentForm.ExpiryYearDefaultText', 'Please Select ...')),
             'cvv' => TextField::create(
@@ -201,7 +201,7 @@ class GatewayFieldsFactory
 
         $this->cullForGateway($fields);
         //optionally group date fields
-        if ($this->groupdatefields) {
+        if ($this->groupDateFields) {
             if (isset($fields[ 'startMonth' ]) && isset($fields[ 'startYear' ])) {
                 $fields[ 'startMonth' ] = FieldGroup::create(
                     _t('SilverStripe\Omnipay\PaymentForm.Start', 'Start'),
@@ -391,8 +391,8 @@ class GatewayFieldsFactory
             return $this->getFieldNames($defaultName);
         }
 
-        if (isset($this->renamemap[$defaultName])) {
-            return $this->renamemap[$defaultName];
+        if (isset($this->renameMap[$defaultName])) {
+            return $this->renameMap[$defaultName];
         }
 
         return $defaultName;
@@ -435,7 +435,7 @@ class GatewayFieldsFactory
             return $data;
         }
 
-        $renameMap = array_flip($this->renamemap);
+        $renameMap = array_flip($this->renameMap);
 
         foreach ($renameMap as $customName => $defaultName) {
             if (array_key_exists($customName, $data)) {
@@ -517,10 +517,10 @@ class GatewayFieldsFactory
 
         foreach ($this->config()->get('whitelist') as $defaultName) {
             // Gateway Rename Support
-            if (array_key_exists($this->gateway, $renameMap)) {
+            if ($this->gateway && array_key_exists($this->gateway, $renameMap)) {
                 if ($this->getGlobalFieldName($this->gateway) && $customName = $this->getGatewayFieldName($defaultName)) {
                     // we have a gateway defined custom field name for $defaultName
-                    $this->renamemap[$defaultName] =  $prefix . $customName;
+                    $this->renameMap[$defaultName] =  $prefix . $customName;
                     continue;
                 }
 
@@ -529,13 +529,13 @@ class GatewayFieldsFactory
 
             //Global Rename
             if ($customName = $this->getGlobalFieldName($defaultName)) {
-                $this->renamemap[$defaultName] =  $prefix . $customName;
+                $this->renameMap[$defaultName] =  $prefix . $customName;
                 continue;
             }
 
             // at this point, no defined custom field names were found in either the global or gateway namespace of the
             // rename.yml configuration file, return the input as is with our prefix prepended if it has been defined
-            $this->renamemap[$defaultName] = $prefix . $defaultName;
+            $this->renameMap[$defaultName] = $prefix . $defaultName;
         }
     }
 }

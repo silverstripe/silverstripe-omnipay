@@ -69,14 +69,14 @@ de:
     SINGULARNAME: 'Zahlungsnachricht'
     db_ClientIp: 'Benutzer IP-Adresse'
     db_Message: Nachricht
-    has_one_Payment: Zahlung
-    has_one_User: Benutzer
-  SilverStripe\Omnipay\Model\Message\GatewayMessage:
-    PLURALNAME: 'Zahlungsnachrichten'
-    SINGULARNAME: 'Zahlungsnachricht'
-    db_Code: Code
     db_Gateway: Zahlungsmethode
     db_Reference: Referenz
+    db_Code: Code
+    db_Type: Typ
+    db_SuccessURL: Erfolgs-URL
+    db_FailureURL: Fehler-URL
+    has_one_Payment: Zahlung
+    has_one_User: Benutzer
   CreditCard:
     VISA: Visa
     MASTERCARD: Mastercard

@@ -60,12 +60,14 @@ hr:
     SINGULARNAME: 'Poruka plaćanja'
     db_ClientIp: 'Korisnikova IP adresa'
     db_Message: Poruka
-    has_one_Payment: Plaćanja
-    has_one_User: Korisnik
-  SilverStripe\Omnipay\Model\Message\GatewayMessage:
-    db_Code: Kod
     db_Gateway: Pristupnik
     db_Reference: Referenca
+    db_Code: Kod
+    db_Type: Vrsta
+    db_SuccessURL: 'URL uspjeha'
+    db_FailureURL: 'URL greške'
+    has_one_Payment: Plaćanja
+    has_one_User: Korisnik
   CreditCard:
     VISA: Visa
     MASTERCARD: Mastercard

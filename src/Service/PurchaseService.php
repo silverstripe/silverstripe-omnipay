@@ -5,16 +5,29 @@ namespace SilverStripe\Omnipay\Service;
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
-use SilverStripe\Omnipay\Model\Message\AwaitingPurchaseResponse;
-use SilverStripe\Omnipay\Model\Message\CompletePurchaseError;
-use SilverStripe\Omnipay\Model\Message\CompletePurchaseRequest;
-use SilverStripe\Omnipay\Model\Message\PurchasedResponse;
-use SilverStripe\Omnipay\Model\Message\PurchaseError;
-use SilverStripe\Omnipay\Model\Message\PurchaseRedirectResponse;
-use SilverStripe\Omnipay\Model\Message\PurchaseRequest;
 
 class PurchaseService extends PaymentService
 {
+    public const MESSAGE_PURCHASE_REQUEST = 'PurchaseRequest';
+
+    public const MESSAGE_PURCHASE_ERROR = 'PurchaseError';
+
+    public const MESSAGE_PURCHASE_REDIRECT_RESPONSE = 'PurchaseRedirectResponse';
+
+    public const MESSAGE_AWAITING_PURCHASE_RESPONSE = 'AwaitingPurchaseResponse';
+
+    public const MESSAGE_COMPLETE_PURCHASE_REQUEST = 'CompletePurchaseRequest';
+
+    public const MESSAGE_COMPLETE_PURCHASE_ERROR = 'CompletePurchaseError';
+
+    public const MESSAGE_PURCHASED_RESPONSE = 'PurchasedResponse';
+
+    /** @var list<string> */
+    public const ERROR_MESSAGE_TYPES = [
+        self::MESSAGE_PURCHASE_ERROR,
+        self::MESSAGE_COMPLETE_PURCHASE_ERROR,
+    ];
+
     /**
      * Attempt to make a payment.
      *
@@ -48,12 +61,12 @@ class PurchaseService extends PaymentService
         $request = $this->oGateway()->purchase($gatewayData);
         $this->extend('onAfterPurchase', $request);
 
-        $this->createMessage(PurchaseRequest::class, $request);
+        $this->createMessage(self::MESSAGE_PURCHASE_REQUEST, $request);
 
         try {
             $response = $this->response = $request->send();
         } catch (\Omnipay\Common\Exception\OmnipayException $e) {
-            $this->createMessage(PurchaseError::class, $e);
+            $this->createMessage(self::MESSAGE_PURCHASE_ERROR, $e);
             // create an error response
             return $this->generateServiceResponse(ServiceResponse::SERVICE_ERROR);
         }
@@ -67,11 +80,13 @@ class PurchaseService extends PaymentService
             $this->payment->write();
 
             $this->createMessage(
-                $serviceResponse->isRedirect() ? PurchaseRedirectResponse::class : AwaitingPurchaseResponse::class,
+                $serviceResponse->isRedirect()
+                    ? self::MESSAGE_PURCHASE_REDIRECT_RESPONSE
+                    : self::MESSAGE_AWAITING_PURCHASE_RESPONSE,
                 $response
             );
         } elseif ($serviceResponse->isError()) {
-            $this->createMessage(PurchaseError::class, $response);
+            $this->createMessage(self::MESSAGE_PURCHASE_ERROR, $response);
         } elseif ($serviceResponse->isSuccessful()) {
             $this->markCompleted('Captured', $serviceResponse, $response);
         }
@@ -110,12 +125,12 @@ class PurchaseService extends PaymentService
         $request = $gateway->completePurchase($gatewayData);
         $this->extend('onAfterCompletePurchase', $request);
 
-        $this->createMessage(CompletePurchaseRequest::class, $request);
+        $this->createMessage(self::MESSAGE_COMPLETE_PURCHASE_REQUEST, $request);
         $response = null;
         try {
             $response = $this->response = $request->send();
         } catch (\Omnipay\Common\Exception\OmnipayException $e) {
-            $this->createMessage(CompletePurchaseError::class, $e);
+            $this->createMessage(self::MESSAGE_COMPLETE_PURCHASE_ERROR, $e);
             return $this->generateServiceResponse($flags | ServiceResponse::SERVICE_ERROR);
         }
 
@@ -124,7 +139,7 @@ class PurchaseService extends PaymentService
         if ($serviceResponse->isAwaitingNotification()) {
             ErrorHandling::safeExtend($this->payment, 'onAwaitingCaptured', $serviceResponse);
         } elseif ($serviceResponse->isError()) {
-            $this->createMessage(CompletePurchaseError::class, $response);
+            $this->createMessage(self::MESSAGE_COMPLETE_PURCHASE_ERROR, $response);
         } elseif ($serviceResponse->isSuccessful()) {
             $this->markCompleted('Captured', $serviceResponse, $response);
         }
@@ -135,7 +150,7 @@ class PurchaseService extends PaymentService
     protected function markCompleted(string $endStatus, ServiceResponse $serviceResponse, mixed $gatewayMessage): void
     {
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
-        $this->createMessage(PurchasedResponse::class, $gatewayMessage);
+        $this->createMessage(self::MESSAGE_PURCHASED_RESPONSE, $gatewayMessage);
         ErrorHandling::safeExtend($this->payment, 'onCaptured', $serviceResponse);
     }
 }

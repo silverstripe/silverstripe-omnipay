@@ -4,20 +4,15 @@ namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\Omnipay\Model\Message\NotificationSuccessful;
-use SilverStripe\Omnipay\Model\Message\PartiallyCapturedResponse;
+use SilverStripe\Omnipay\Service\AuthorizeService;
 use SilverStripe\Omnipay\Service\CaptureService;
+use SilverStripe\Omnipay\Service\PaymentService;
 use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
-use SilverStripe\Omnipay\Model\Message\AuthorizedResponse;
-use SilverStripe\Omnipay\Model\Message\CaptureRequest;
-use SilverStripe\Omnipay\Model\Message\CapturedResponse;
-use SilverStripe\Omnipay\Model\Message\CaptureError;
-use SilverStripe\Omnipay\Model\Message\NotificationError;
 
 /**
  * Test the capture service
@@ -38,61 +33,61 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
     protected $successFromFixtureMessages = [
         [ // response that was loaded from the fixture
-            'ClassName' => AuthorizedResponse::class,
+            'Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE,
             'Reference' => 'authorizedPaymentReceipt'
         ],
         [ // the generated Capture request
-            'ClassName' => CaptureRequest::class,
+            'Type' => CaptureService::MESSAGE_CAPTURE_REQUEST,
             'Reference' => 'authorizedPaymentReceipt'
         ],
         [ // the generated Capture response
-            'ClassName' => CapturedResponse::class,
+            'Type' => CaptureService::MESSAGE_CAPTURED_RESPONSE,
             'Reference' => 'authorizedPaymentReceipt'
         ]
     ];
 
     protected $successMessages = [
         [ // the generated capture request
-            'ClassName' => CaptureRequest::class,
+            'Type' => CaptureService::MESSAGE_CAPTURE_REQUEST,
             'Reference' => 'testThisRecipe123'
         ],
         [ // the generated capture response
-            'ClassName' => CapturedResponse::class,
+            'Type' => CaptureService::MESSAGE_CAPTURED_RESPONSE,
             'Reference' => 'testThisRecipe123'
         ]
     ];
 
     protected $failureMessages = [
         [ // response that was loaded from the fixture
-            'ClassName' => AuthorizedResponse::class,
+            'Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE,
             'Reference' => 'authorizedPaymentReceipt'
         ],
         [ // the generated capture request
-            'ClassName' => CaptureRequest::class,
+            'Type' => CaptureService::MESSAGE_CAPTURE_REQUEST,
             'Reference' => 'authorizedPaymentReceipt'
         ],
         [ // the generated capture response
-            'ClassName' => CaptureError::class,
+            'Type' => CaptureService::MESSAGE_CAPTURE_ERROR,
             'Reference' => 'authorizedPaymentReceipt'
         ]
     ];
 
     protected $notificationFailureMessages = [
         [
-            'ClassName' => AuthorizedResponse::class,
+            'Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE,
             'Reference' => 'authorizedPaymentReceipt'
         ],
         [
-            'ClassName' => CaptureRequest::class,
+            'Type' => CaptureService::MESSAGE_CAPTURE_REQUEST,
             'Reference' => 'authorizedPaymentReceipt'
         ],
         [
-            'ClassName' => NotificationError::class,
+            'Type' => PaymentService::MESSAGE_NOTIFICATION_ERROR,
             'Reference' => 'authorizedPaymentReceipt'
         ]
     ];
 
-    protected $errorMessageClass = CaptureError::class;
+    protected $errorMessageType = CaptureService::MESSAGE_CAPTURE_ERROR;
 
     protected $successPaymentExtensionHooks = [
         'onCaptured'
@@ -278,19 +273,19 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         // check existance of messages
         SapphireTest::assertListContains([
             [
-                'ClassName' => AuthorizedResponse::class,
+                'Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE,
                 'Reference' => 'authorizedPaymentReceipt'
             ],
             [
-                'ClassName' => CaptureRequest::class,
+                'Type' => CaptureService::MESSAGE_CAPTURE_REQUEST,
                 'Reference' => 'authorizedPaymentReceipt'
             ],
             [
-                'ClassName' => NotificationSuccessful::class,
+                'Type' => PaymentService::MESSAGE_NOTIFICATION_SUCCESSFUL,
                 'Reference' => 'authorizedPaymentReceipt'
             ],
             [
-                'ClassName' => CapturedResponse::class,
+                'Type' => CaptureService::MESSAGE_CAPTURED_RESPONSE,
                 'Reference' => 'authorizedPaymentReceipt'
             ]
         ], $payment->Messages());
@@ -336,16 +331,16 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         // check existance of messages and existence of references
         SapphireTest::assertListContains([
             [
-                'ClassName' => AuthorizedResponse::class,
+                'Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE,
                 'Reference' => 'authorizedPaymentReceipt',
             ],
 
             [
-                'ClassName' => CaptureRequest::class,
+                'Type' => CaptureService::MESSAGE_CAPTURE_REQUEST,
                 'Reference' => 'authorizedPaymentReceipt',
             ],
             [
-                'ClassName' => PartiallyCapturedResponse::class,
+                'Type' => CaptureService::MESSAGE_PARTIALLY_CAPTURED_RESPONSE,
                 'Reference' => 'authorizedPaymentReceipt',
             ],
         ], $payment->Messages());
@@ -477,19 +472,19 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         // check existance of messages
         SapphireTest::assertListContains([
             [
-                'ClassName' => AuthorizedResponse::class,
+                'Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE,
                 'Reference' => 'authorizedPaymentReceipt'
             ],
             [
-                'ClassName' => CaptureRequest::class,
+                'Type' => CaptureService::MESSAGE_CAPTURE_REQUEST,
                 'Reference' => 'authorizedPaymentReceipt'
             ],
             [
-                'ClassName' => NotificationSuccessful::class,
+                'Type' => PaymentService::MESSAGE_NOTIFICATION_SUCCESSFUL,
                 'Reference' => 'authorizedPaymentReceipt'
             ],
             [
-                'ClassName' => PartiallyCapturedResponse::class,
+                'Type' => CaptureService::MESSAGE_PARTIALLY_CAPTURED_RESPONSE,
                 'Reference' => 'authorizedPaymentReceipt'
             ]
         ], $payment->Messages());
@@ -544,11 +539,11 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         // check existance of messages
         SapphireTest::assertListContains([
             [
-                'ClassName' => AuthorizedResponse::class,
+                'Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE,
                 'Reference' => 'authorizedPaymentReceipt'
             ],
             [
-                'ClassName' => CaptureRequest::class,
+                'Type' => CaptureService::MESSAGE_CAPTURE_REQUEST,
                 'Reference' => 'authorizedPaymentReceipt'
             ]
         ], $payment->Messages());

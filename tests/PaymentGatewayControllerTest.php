@@ -6,10 +6,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\Omnipay\Model\Message\CompletePurchaseRequest;
-use SilverStripe\Omnipay\Model\Message\PurchasedResponse;
-use SilverStripe\Omnipay\Model\Message\PurchaseRedirectResponse;
-use SilverStripe\Omnipay\Model\Message\PurchaseRequest;
+use SilverStripe\Omnipay\Service\PurchaseService;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\PaymentGatewayController;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentGatewayControllerTestExtension;
@@ -59,10 +56,10 @@ class PaymentGatewayControllerTest extends PaymentTest
                         ->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
                         ->first();
         SapphireTest::assertListContains([
-            ['ClassName' => PurchaseRequest::class],
-            ['ClassName' => PurchaseRedirectResponse::class],
-            ['ClassName' => CompletePurchaseRequest::class],
-            ['ClassName' => PurchasedResponse::class]
+            ['Type' => PurchaseService::MESSAGE_PURCHASE_REQUEST],
+            ['Type' => PurchaseService::MESSAGE_PURCHASE_REDIRECT_RESPONSE],
+            ['Type' => PurchaseService::MESSAGE_COMPLETE_PURCHASE_REQUEST],
+            ['Type' => PurchaseService::MESSAGE_PURCHASED_RESPONSE]
         ], $payment->Messages());
     }
 
@@ -81,10 +78,10 @@ class PaymentGatewayControllerTest extends PaymentTest
                         ->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
                         ->first();
         SapphireTest::assertListContains([
-            ['ClassName' => PurchaseRequest::class],
-            ['ClassName' => PurchaseRedirectResponse::class],
-            ['ClassName' => CompletePurchaseRequest::class],
-            ['ClassName' => PurchasedResponse::class]
+            ['Type' => PurchaseService::MESSAGE_PURCHASE_REQUEST],
+            ['Type' => PurchaseService::MESSAGE_PURCHASE_REDIRECT_RESPONSE],
+            ['Type' => PurchaseService::MESSAGE_COMPLETE_PURCHASE_REQUEST],
+            ['Type' => PurchaseService::MESSAGE_PURCHASED_RESPONSE]
         ], $payment->Messages());
     }
 
@@ -104,8 +101,8 @@ class PaymentGatewayControllerTest extends PaymentTest
             ->first();
 
         SapphireTest::assertListContains([
-            ['ClassName' => PurchaseRequest::class],
-            ['ClassName' => PurchaseRedirectResponse::class]
+            ['Type' => PurchaseService::MESSAGE_PURCHASE_REQUEST],
+            ['Type' => PurchaseService::MESSAGE_PURCHASE_REDIRECT_RESPONSE]
         ], $payment->Messages());
 
         $this->assertEquals($payment->Status, 'Void', 'Payment should be void');

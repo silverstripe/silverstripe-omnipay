@@ -8,10 +8,6 @@ use SilverStripe\Omnipay\Exception\InvalidParameterException;
 use SilverStripe\Omnipay\Exception\MissingParameterException;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
-use SilverStripe\Omnipay\Model\Message\CapturedResponse;
-use SilverStripe\Omnipay\Model\Message\CaptureError;
-use SilverStripe\Omnipay\Model\Message\CaptureRequest;
-use SilverStripe\Omnipay\Model\Message\PartiallyCapturedResponse;
 use SilverStripe\Omnipay\Helper\PaymentMath;
 use SilverStripe\Omnipay\Model\Payment;
 
@@ -22,15 +18,28 @@ use SilverStripe\Omnipay\Model\Payment;
  */
 class CaptureService extends NotificationCompleteService
 {
+    public const MESSAGE_CAPTURE_REQUEST = 'CaptureRequest';
+
+    public const MESSAGE_CAPTURE_ERROR = 'CaptureError';
+
+    public const MESSAGE_CAPTURED_RESPONSE = 'CapturedResponse';
+
+    public const MESSAGE_PARTIALLY_CAPTURED_RESPONSE = 'PartiallyCapturedResponse';
+
+    /** @var list<string> */
+    public const ERROR_MESSAGE_TYPES = [
+        self::MESSAGE_CAPTURE_ERROR,
+    ];
+
     protected $startState = 'Authorized';
 
     protected $endState = 'Captured';
 
     protected $pendingState = 'PendingCapture';
 
-    protected $requestMessageType = CaptureRequest::class;
+    protected $requestMessageType = self::MESSAGE_CAPTURE_REQUEST;
 
-    protected $errorMessageType = CaptureError::class;
+    protected $errorMessageType = self::MESSAGE_CAPTURE_ERROR;
 
     /**
      * Capture a previously authorized payment
@@ -124,8 +133,7 @@ class CaptureService extends NotificationCompleteService
         $request = $this->oGateway()->capture($gatewayData);
         $this->extend('onAfterCapture', $request);
 
-        $message = $this->createMessage($this->requestMessageType, $request);
-        $message->write();
+        $this->createMessage($this->requestMessageType, $request);
 
         try {
             $response = $this->response = $request->send();
@@ -206,9 +214,9 @@ class CaptureService extends NotificationCompleteService
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
 
         if ($endStatus === 'Captured') {
-            $this->createMessage(CapturedResponse::class, $gatewayMessage);
+            $this->createMessage(self::MESSAGE_CAPTURED_RESPONSE, $gatewayMessage);
         } else {
-            $this->createMessage(PartiallyCapturedResponse::class, $gatewayMessage);
+            $this->createMessage(self::MESSAGE_PARTIALLY_CAPTURED_RESPONSE, $gatewayMessage);
         }
 
         ErrorHandling::safeExtend($this->payment, 'onCaptured', $serviceResponse);

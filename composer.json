@@ -36,7 +36,7 @@
     },
     "scripts": {
         "lint": "phpcs -s src/ tests/",
-        "lint:fix": "phpcs -s --fix src/ tests/",
+        "lint:fix": "phpcbf -s src/ tests/",
         "analyze": "phpstan analyze -c phpstan.neon.dist --memory-limit=512M",
         "analyze:fix": "phpstan analyze -c phpstan.neon.dist --memory-limit=512M --fix",
         "test": "phpunit"

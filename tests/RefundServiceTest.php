@@ -4,12 +4,13 @@ namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
+use SilverStripe\Omnipay\Service\PaymentService;
+use SilverStripe\Omnipay\Service\PurchaseService;
 use SilverStripe\Omnipay\Service\RefundService;
 use Omnipay\Common\Message\NotificationInterface;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Model\Payment;
-use SilverStripe\Omnipay\Model\Message;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Omnipay\GatewayInfo;
@@ -33,61 +34,61 @@ class RefundServiceTest extends BaseNotificationServiceTest
 
     protected $successFromFixtureMessages = [
         [ // response that was loaded from the fixture
-            'ClassName' => Message\PurchasedResponse::class,
+            'Type' => PurchaseService::MESSAGE_PURCHASED_RESPONSE,
             'Reference' => 'paymentReceipt'
         ],
         [ // the generated refund request
-            'ClassName' => Message\RefundRequest::class,
+            'Type' => RefundService::MESSAGE_REFUND_REQUEST,
             'Reference' => 'paymentReceipt'
         ],
         [ // the generated refund response
-            'ClassName' => Message\RefundedResponse::class,
+            'Type' => RefundService::MESSAGE_REFUNDED_RESPONSE,
             'Reference' => 'paymentReceipt'
         ]
     ];
 
     protected $successMessages = [
         [ // the generated refund request
-            'ClassName' => Message\RefundRequest::class,
+            'Type' => RefundService::MESSAGE_REFUND_REQUEST,
             'Reference' => 'testThisRecipe123'
         ],
         [ // the generated refund response
-            'ClassName' => Message\RefundedResponse::class,
+            'Type' => RefundService::MESSAGE_REFUNDED_RESPONSE,
             'Reference' => 'testThisRecipe123'
         ]
     ];
 
     protected $failureMessages = [
         [ // response that was loaded from the fixture
-            'ClassName' => Message\PurchasedResponse::class,
+            'Type' => PurchaseService::MESSAGE_PURCHASED_RESPONSE,
             'Reference' => 'paymentReceipt'
         ],
         [ // the generated refund request
-            'ClassName' => Message\RefundRequest::class,
+            'Type' => RefundService::MESSAGE_REFUND_REQUEST,
             'Reference' => 'paymentReceipt'
         ],
         [ // the generated refund response
-            'ClassName' => Message\RefundError::class,
+            'Type' => RefundService::MESSAGE_REFUND_ERROR,
             'Reference' => 'paymentReceipt'
         ]
     ];
 
     protected $notificationFailureMessages = [
         [
-            'ClassName' => Message\PurchasedResponse::class,
+            'Type' => PurchaseService::MESSAGE_PURCHASED_RESPONSE,
             'Reference' => 'paymentReceipt'
         ],
         [
-            'ClassName' => Message\RefundRequest::class,
+            'Type' => RefundService::MESSAGE_REFUND_REQUEST,
             'Reference' => 'paymentReceipt'
         ],
         [
-            'ClassName' => Message\NotificationError::class,
+            'Type' => PaymentService::MESSAGE_NOTIFICATION_ERROR,
             'Reference' => 'paymentReceipt'
         ]
     ];
 
-    protected $errorMessageClass = Message\RefundError::class;
+    protected $errorMessageType = RefundService::MESSAGE_REFUND_ERROR;
 
     protected $successPaymentExtensionHooks = [
         'onRefunded'
@@ -192,16 +193,16 @@ class RefundServiceTest extends BaseNotificationServiceTest
         // check existance of messages and existence of references
         SapphireTest::assertListContains([
             [
-                'ClassName' => Message\PurchasedResponse::class,
+                'Type' => PurchaseService::MESSAGE_PURCHASED_RESPONSE,
                 'Reference' => 'paymentReceipt',
             ],
 
             [
-                'ClassName' => Message\RefundRequest::class,
+                'Type' => RefundService::MESSAGE_REFUND_REQUEST,
                 'Reference' => 'paymentReceipt',
             ],
             [
-                'ClassName' => Message\PartiallyRefundedResponse::class,
+                'Type' => RefundService::MESSAGE_PARTIALLY_REFUNDED_RESPONSE,
                 'Reference' => 'paymentReceipt',
             ],
         ], $payment->Messages());
@@ -330,19 +331,19 @@ class RefundServiceTest extends BaseNotificationServiceTest
         // check existance of messages
         SapphireTest::assertListContains([
             [
-                'ClassName' => Message\PurchasedResponse::class,
+                'Type' => PurchaseService::MESSAGE_PURCHASED_RESPONSE,
                 'Reference' => 'paymentReceipt'
             ],
             [
-                'ClassName' => Message\RefundRequest::class,
+                'Type' => RefundService::MESSAGE_REFUND_REQUEST,
                 'Reference' => 'paymentReceipt'
             ],
             [
-                'ClassName' => Message\NotificationSuccessful::class,
+                'Type' => PaymentService::MESSAGE_NOTIFICATION_SUCCESSFUL,
                 'Reference' => 'paymentReceipt'
             ],
             [
-                'ClassName' => Message\PartiallyRefundedResponse::class,
+                'Type' => RefundService::MESSAGE_PARTIALLY_REFUNDED_RESPONSE,
                 'Reference' => 'paymentReceipt'
             ]
         ], $payment->Messages());
@@ -397,11 +398,11 @@ class RefundServiceTest extends BaseNotificationServiceTest
         // check existance of messages
         SapphireTest::assertListContains([
             [
-                'ClassName' => Message\PurchasedResponse::class,
+                'Type' => PurchaseService::MESSAGE_PURCHASED_RESPONSE,
                 'Reference' => 'paymentReceipt'
             ],
             [
-                'ClassName' => Message\RefundRequest::class,
+                'Type' => RefundService::MESSAGE_REFUND_REQUEST,
                 'Reference' => 'paymentReceipt'
             ]
         ], $payment->Messages());

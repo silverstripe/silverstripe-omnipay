@@ -2,7 +2,7 @@ mappings:
   Payable: SilverStripe\Omnipay\Extensions\Payable
   Payment: SilverStripe\Omnipay\Model\Payment
   PaymentMessage: SilverStripe\Omnipay\Model\Message\PaymentMessage
-  GatewayRequestMessage: SilverStripe\Omnipay\Model\Message\GatewayRequestMessage
+  GatewayRequestMessage: SilverStripe\Omnipay\Model\Message\PaymentMessage
   SagePayExtension: SilverStripe\Omnipay\Extensions\SagePayExtension
   WorldPayResponseExtension: SilverStripe\Omnipay\Extensions\WorldPayResponseExtension
 

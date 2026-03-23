@@ -28,10 +28,10 @@ abstract class NotificationCompleteService extends PaymentService
     /** @var string the pending state name */
     protected $pendingState;
 
-    /** @var string message type used to store requests */
+    /** @var string {@link \SilverStripe\Omnipay\Model\Message\PaymentMessage::$Type} value for gateway requests */
     protected $requestMessageType;
 
-    /** @var  string message type used to store errors */
+    /** @var string {@link \SilverStripe\Omnipay\Model\Message\PaymentMessage::$Type} value for errors */
     protected $errorMessageType;
 
     /**

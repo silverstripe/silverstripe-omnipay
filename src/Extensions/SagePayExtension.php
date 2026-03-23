@@ -3,10 +3,10 @@
 namespace SilverStripe\Omnipay\Extensions;
 
 use Omnipay\SagePay\Message\ServerNotifyRequest;
-use SilverStripe\Omnipay\Model\Message\PurchaseRedirectResponse;
+use SilverStripe\Omnipay\Service\AuthorizeService;
+use SilverStripe\Omnipay\Service\PurchaseService;
 use SilverStripe\Omnipay\Service\ServiceResponse;
 use SilverStripe\Core\Extension;
-use SilverStripe\Omnipay\Model\Message;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Service\PaymentService;
 use SilverStripe\Control\HTTPResponse;
@@ -82,9 +82,10 @@ class SagePayExtension extends Extension
 
         // Only apply the changes if the gateway is SagePay Server
         if ($payment->Gateway == 'SagePay_Server') {
-            $type = ($isAuthorize) ? Message\AuthorizeRedirectResponse::class : Message\PurchaseRedirectResponse::class;
+            $type = ($isAuthorize)
+                ? AuthorizeService::MESSAGE_AUTHORIZE_REDIRECT_RESPONSE
+                : PurchaseService::MESSAGE_PURCHASE_REDIRECT_RESPONSE;
 
-            /** @var PurchaseRedirectResponse $message */
             $message = $payment->getLatestMessageOfType($type);
             $gatewayData['transactionReference'] = $message->Reference;
         }

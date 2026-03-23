@@ -47,8 +47,8 @@ abstract class BasePurchaseServiceTest extends PaymentTest
     /** @var array expected messages for a failed offsite payment */
     protected $offsiteFailMessages;
 
-    /** @var  string name of the failure message class */
-    protected $failureMessageClass;
+    /** @var string {@link \SilverStripe\Omnipay\Model\Message\PaymentMessage::Type} value for the complete-phase failure message */
+    protected $failureMessageType;
 
     /** @var array expected payment hooks that will be called with a successful payment */
     protected $successPaymentExtensionHooks;
@@ -448,7 +448,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $this->assertNull($serviceResponse->getOmnipayResponse());
         SapphireTest::assertListContains([
             [
-                'ClassName' => $this->failureMessageClass,
+                'Type' => $this->failureMessageType,
                 'Message' => 'Mock Exception'
             ]
         ], $this->payment->Messages());

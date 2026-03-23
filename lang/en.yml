@@ -64,20 +64,54 @@ en:
     StartYearDefaultText: 'Please Select ...'
     ExpiryMonthDefaultText: 'Please Select ...'
     ExpiryYearDefaultText: 'Please Select ...'
-  # Payment message classes
   SilverStripe\Omnipay\Model\Message\PaymentMessage:
     PLURALNAME: 'Payment Messages'
     SINGULARNAME: 'Payment Message'
     db_ClientIp: 'Client Ip'
     db_Message: Message
-    has_one_Payment: Payment
-    has_one_User: User
-  SilverStripe\Omnipay\Model\Message\GatewayMessage:
-    PLURALNAME: 'Gateway Messages'
-    SINGULARNAME: 'Gateway Message'
-    db_Code: Code
     db_Gateway: Gateway
     db_Reference: Reference
+    db_Code: Code
+    db_Type: Type
+    db_SuccessURL: 'Success URL'
+    db_FailureURL: 'Failure URL'
+    has_one_Payment: Payment
+    has_one_User: User
+    TYPE_AuthorizeError: 'Authorize error'
+    TYPE_AuthorizeRedirectResponse: 'Authorize redirect response'
+    TYPE_AuthorizeRequest: 'Authorize request'
+    TYPE_AuthorizedResponse: 'Authorized response'
+    TYPE_AwaitingAuthorizeResponse: 'Awaiting authorize response'
+    TYPE_AwaitingCreateCardResponse: 'Awaiting create card response'
+    TYPE_AwaitingPurchaseResponse: 'Awaiting purchase response'
+    TYPE_CaptureError: 'Capture error'
+    TYPE_CaptureRequest: 'Capture request'
+    TYPE_CapturedResponse: 'Captured response'
+    TYPE_CompleteAuthorizeError: 'Complete authorize error'
+    TYPE_CompleteAuthorizeRequest: 'Complete authorize request'
+    TYPE_CompleteCreateCardError: 'Complete create card error'
+    TYPE_CompleteCreateCardRequest: 'Complete create card request'
+    TYPE_CompletePurchaseError: 'Complete purchase error'
+    TYPE_CompletePurchaseRequest: 'Complete purchase request'
+    TYPE_CreateCardError: 'Create card error'
+    TYPE_CreateCardRedirectResponse: 'Create card redirect response'
+    TYPE_CreateCardRequest: 'Create card request'
+    TYPE_CreateCardResponse: 'Create card response'
+    TYPE_NotificationError: 'Notification error'
+    TYPE_NotificationPending: 'Notification pending'
+    TYPE_NotificationSuccessful: 'Notification successful'
+    TYPE_PartiallyCapturedResponse: 'Partially captured response'
+    TYPE_PartiallyRefundedResponse: 'Partially refunded response'
+    TYPE_PurchaseError: 'Purchase error'
+    TYPE_PurchaseRedirectResponse: 'Purchase redirect response'
+    TYPE_PurchaseRequest: 'Purchase request'
+    TYPE_PurchasedResponse: 'Purchased response'
+    TYPE_RefundError: 'Refund error'
+    TYPE_RefundRequest: 'Refund request'
+    TYPE_RefundedResponse: 'Refunded response'
+    TYPE_VoidError: 'Void error'
+    TYPE_VoidRequest: 'Void request'
+    TYPE_VoidedResponse: 'Voided response'
   # Credit card brands, supplied from Omnipay\Common\CreditCard::getSupportedBrands
   CreditCard:
     VISA: Visa

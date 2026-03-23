@@ -59,14 +59,14 @@ nb:
     SINGULARNAME: 'Betalingbeskjed'
     db_ClientIp: 'Kunde IP'
     db_Message: Beskjed
-    has_one_Payment: Betaling
-    has_one_User: Bruker
-  SilverStripe\Omnipay\Model\Message\GatewayMessage:
-    PLURALNAME: 'Gateway beskjeder'
-    SINGULARNAME: 'Gateway beskjede'
-    db_Code: Kode
     db_Gateway: Gateway
     db_Reference: Referanse
+    db_Code: Kode
+    db_Type: Type
+    db_SuccessURL: Suksess-URL
+    db_FailureURL: Feil-URL
+    has_one_Payment: Betaling
+    has_one_User: Bruker
   CreditCard:
     VISA: Visa
     MASTERCARD: Mastercard

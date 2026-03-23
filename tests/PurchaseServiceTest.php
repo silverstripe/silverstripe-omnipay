@@ -4,7 +4,6 @@ namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Omnipay\Service\PurchaseService;
 use SilverStripe\Omnipay\Model\Payment;
-use SilverStripe\Omnipay\Model\Message;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 
 class PurchaseServiceTest extends BasePurchaseServiceTest
@@ -16,34 +15,34 @@ class PurchaseServiceTest extends BasePurchaseServiceTest
     protected $omnipayCompleteMethod = 'completePurchase';
 
     protected $onsiteSuccessMessages = [
-        ['ClassName' => Message\PurchaseRequest::class],
-        ['ClassName' => Message\PurchasedResponse::class]
+        ['Type' => PurchaseService::MESSAGE_PURCHASE_REQUEST],
+        ['Type' => PurchaseService::MESSAGE_PURCHASED_RESPONSE]
     ];
 
     protected $onsiteFailMessages = [
-        ['ClassName' => Message\PurchaseRequest::class],
-        ['ClassName' => Message\PurchaseError::class]
+        ['Type' => PurchaseService::MESSAGE_PURCHASE_REQUEST],
+        ['Type' => PurchaseService::MESSAGE_PURCHASE_ERROR]
     ];
 
     protected $failMessages = [
-        ['ClassName' => Message\PurchaseError::class]
+        ['Type' => PurchaseService::MESSAGE_PURCHASE_ERROR]
     ];
 
     protected $offsiteSuccessMessages = [
-        ['ClassName' => Message\PurchaseRequest::class],
-        ['ClassName' => Message\PurchaseRedirectResponse::class],
-        ['ClassName' => Message\CompletePurchaseRequest::class],
-        ['ClassName' => Message\PurchasedResponse::class]
+        ['Type' => PurchaseService::MESSAGE_PURCHASE_REQUEST],
+        ['Type' => PurchaseService::MESSAGE_PURCHASE_REDIRECT_RESPONSE],
+        ['Type' => PurchaseService::MESSAGE_COMPLETE_PURCHASE_REQUEST],
+        ['Type' => PurchaseService::MESSAGE_PURCHASED_RESPONSE]
     ];
 
     protected $offsiteFailMessages = [
-        ['ClassName' => Message\PurchaseRequest::class],
-        ['ClassName' => Message\PurchaseRedirectResponse::class],
-        ['ClassName' => Message\CompletePurchaseRequest::class],
-        ['ClassName' => Message\CompletePurchaseError::class]
+        ['Type' => PurchaseService::MESSAGE_PURCHASE_REQUEST],
+        ['Type' => PurchaseService::MESSAGE_PURCHASE_REDIRECT_RESPONSE],
+        ['Type' => PurchaseService::MESSAGE_COMPLETE_PURCHASE_REQUEST],
+        ['Type' => PurchaseService::MESSAGE_COMPLETE_PURCHASE_ERROR]
     ];
 
-    protected $failureMessageClass = Message\CompletePurchaseError::class;
+    protected $failureMessageType = PurchaseService::MESSAGE_COMPLETE_PURCHASE_ERROR;
 
     protected $paymentId = 'UNIQUEHASH23q5123tqasdf';
 

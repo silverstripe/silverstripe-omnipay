@@ -178,8 +178,7 @@ class PaymentMathTest extends SapphireTest
         $this->assertEquals('10.00', PaymentMath::multiply('100.05', '0.1'));
         $this->assertEquals('-10.00', PaymentMath::multiply('100.05', '-0.1'));
         $this->assertEquals('912345678000000.00', PaymentMath::multiply('912345678', '1000000'));
-        // this will fail due to integer overflow
-        $this->assertNotEquals('912345678000000000.00', PaymentMath::multiply('912345678', '1000000000'));
+        $this->assertEquals('912345678000000000.00', PaymentMath::multiply('912345678', '1000000000'));
 
         Config::modify()->set(PaymentMath::class, 'precision', 4);
 
@@ -188,8 +187,7 @@ class PaymentMathTest extends SapphireTest
         $this->assertEquals('10.0050', PaymentMath::multiply('100.05', '0.1'));
         $this->assertEquals('-10.0050', PaymentMath::multiply('100.05', '-0.1'));
         $this->assertEquals('912345678000000.0000', PaymentMath::multiply('912345678', '1000000'));
-        // this will fail due to integer overflow
-        $this->assertNotEquals('912345678000000000.0000', PaymentMath::multiply('912345678', '1000000000'));
+        $this->assertEquals('912345678000000000.0000', PaymentMath::multiply('912345678', '1000000000'));
     }
 
     public function testCompare()

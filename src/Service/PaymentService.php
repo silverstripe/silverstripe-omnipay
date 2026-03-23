@@ -21,10 +21,6 @@ use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
 use SilverStripe\Omnipay\Helper\Logging;
-use SilverStripe\Omnipay\Model\Message\GatewayErrorMessage;
-use SilverStripe\Omnipay\Model\Message\NotificationError;
-use SilverStripe\Omnipay\Model\Message\NotificationPending;
-use SilverStripe\Omnipay\Model\Message\NotificationSuccessful;
 use SilverStripe\Omnipay\Model\Message\PaymentMessage;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\PaymentGatewayController;
@@ -40,6 +36,17 @@ abstract class PaymentService
 {
     use Extensible;
     use Injectable;
+
+    public const MESSAGE_NOTIFICATION_ERROR = 'NotificationError';
+
+    public const MESSAGE_NOTIFICATION_SUCCESSFUL = 'NotificationSuccessful';
+
+    public const MESSAGE_NOTIFICATION_PENDING = 'NotificationPending';
+
+    /** @var list<string> */
+    public const NOTIFICATION_ERROR_MESSAGE_TYPES = [
+        self::MESSAGE_NOTIFICATION_ERROR,
+    ];
 
     /**
      * @var array<string, string>
@@ -183,7 +190,7 @@ abstract class PaymentService
         try {
             $notification = $gateway->acceptNotification();
         } catch (OmnipayException $e) {
-            $this->createMessage(NotificationError::class, $e);
+            $this->createMessage(self::MESSAGE_NOTIFICATION_ERROR, $e);
             return $this->generateServiceResponse(
                 ServiceResponse::SERVICE_NOTIFICATION | ServiceResponse::SERVICE_ERROR
             );
@@ -191,7 +198,7 @@ abstract class PaymentService
 
         if (!($notification instanceof NotificationInterface)) {
             $this->createMessage(
-                NotificationError::class,
+                self::MESSAGE_NOTIFICATION_ERROR,
                 'Notification from Omnipay doesn\'t implement NotificationInterface'
             );
             return $this->generateServiceResponse(
@@ -201,10 +208,10 @@ abstract class PaymentService
 
         switch ($notification->getTransactionStatus()) {
             case NotificationInterface::STATUS_COMPLETED:
-                $this->createMessage(NotificationSuccessful::class, $notification);
+                $this->createMessage(self::MESSAGE_NOTIFICATION_SUCCESSFUL, $notification);
                 return $this->generateServiceResponse(ServiceResponse::SERVICE_NOTIFICATION, $notification);
             case NotificationInterface::STATUS_PENDING:
-                $this->createMessage(NotificationPending::class, $notification);
+                $this->createMessage(self::MESSAGE_NOTIFICATION_PENDING, $notification);
                 return $this->generateServiceResponse(
                     ServiceResponse::SERVICE_NOTIFICATION | ServiceResponse::SERVICE_PENDING,
                     $notification
@@ -212,7 +219,7 @@ abstract class PaymentService
         }
 
         // The only status left is error
-        $this->createMessage(NotificationError::class, $notification);
+        $this->createMessage(self::MESSAGE_NOTIFICATION_ERROR, $notification);
         return $this->generateServiceResponse(
             ServiceResponse::SERVICE_NOTIFICATION | ServiceResponse::SERVICE_ERROR,
             $notification
@@ -310,7 +317,7 @@ abstract class PaymentService
      * This sets the desired end-status on the payment, sets the transaction reference and writes the payment.
      *
      * In subclasses, you'll want to override this and:
-     * * Log/Write the GatewayMessage
+     * * Log/Write the payment message
      * * Call a "complete" hook
      *
      * Don't forget to call the parent method from your subclass!
@@ -403,8 +410,7 @@ abstract class PaymentService
     /**
      * Record a transaction on this for this payment.
      *
-     * @param string $type the type of transaction to create.
-     *        This is any class that is (or extends) PaymentMessage.
+     * @param string $type Message type constant (see message-type constants on each payment service class).
      *
      * @param array<string, mixed>|string|AbstractResponse|AbstractRequest|RequestInterface|ResponseInterface|OmnipayException|NotificationInterface|null $data
      *
@@ -471,8 +477,21 @@ abstract class PaymentService
         }
         $output = array_merge($output, [
             'PaymentID' => $this->payment->ID,
-            'Gateway' => $this->payment->Gateway
+            'Gateway' => $this->payment->Gateway,
+            'Type' => $type,
         ]);
+
+        $recordClass = PaymentMessage::classForMessageType($type);
+        if (PaymentMessage::isRequestMessageType($type)) {
+            if (isset($output['ReturnUrl'])) {
+                $output['SuccessURL'] = $output['ReturnUrl'];
+                unset($output['ReturnUrl']);
+            }
+            if (isset($output['CancelUrl'])) {
+                $output['FailureURL'] = $output['CancelUrl'];
+                unset($output['CancelUrl']);
+            }
+        }
 
         if ($data instanceof \Exception) {
             $this->exceptionLogger->error($data->getMessage(), ['exception' => $data]);
@@ -481,7 +500,7 @@ abstract class PaymentService
         }
 
         /** @var PaymentMessage $message */
-        $message = Injector::inst()->create($type)->update($output);
+        $message = Injector::inst()->create($recordClass)->update($output);
         $message->write();
 
         $this->payment->Messages()->add($message);
@@ -492,18 +511,42 @@ abstract class PaymentService
     /**
      * Helper function for logging gateway requests
      * @param mixed $data Data to log.
-     * @param string $type Error message class.
+     * @param string $type Message type string.
      */
     protected function logToFile(mixed $data, string $type = ''): void
     {
         $this->logger->log(
-            // Log as error if we get a GatewayErrorMessage
-            is_subclass_of($type, GatewayErrorMessage::class) ? 'error' : 'info',
+            $this->isErrorMessageType($type) ? 'error' : 'info',
             // Log title
             sprintf('%s (%s)', $type, $this->payment->Gateway),
             // Log context (just output the data)
             Logging::prepareForLogging($data)
         );
+    }
+
+    protected function isErrorMessageType(string $type): bool
+    {
+        return in_array($type, static::errorMessageTypesForLogging(), true);
+    }
+
+    /**
+     * @return list<string>
+     */
+    protected static function errorMessageTypesForLogging(): array
+    {
+        static $cache = null;
+        if ($cache === null) {
+            $cache = array_merge(
+                PurchaseService::ERROR_MESSAGE_TYPES,
+                AuthorizeService::ERROR_MESSAGE_TYPES,
+                CreateCardService::ERROR_MESSAGE_TYPES,
+                CaptureService::ERROR_MESSAGE_TYPES,
+                RefundService::ERROR_MESSAGE_TYPES,
+                VoidService::ERROR_MESSAGE_TYPES,
+                self::NOTIFICATION_ERROR_MESSAGE_TYPES
+            );
+        }
+        return $cache;
     }
 
     /**

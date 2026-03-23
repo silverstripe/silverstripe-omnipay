@@ -20,7 +20,7 @@ class Payable extends Extension
     /**
      * @var array<string, class-string>
      */
-    private static $has_many = [
+    private static array $has_many = [
         'Payments' => Payment::class
     ];
 

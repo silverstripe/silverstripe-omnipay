@@ -182,7 +182,7 @@ class PaymentGatewayController extends Controller
 
         $service = ServiceFactory::create()->getService($payment, $intent);
         $response = null;
-        //do the payment update
+
         switch ($this->getPaymentActionFromRequest($this->request, $payment)) {
             case "complete":
                 $serviceResponse = $service->complete();

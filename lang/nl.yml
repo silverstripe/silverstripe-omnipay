@@ -69,14 +69,14 @@ nl:
     SINGULARNAME: 'Betalingsbericht'
     db_ClientIp: 'Klanten Ip'
     db_Message: Bericht
-    has_one_Payment: Betaling
-    has_one_User: Gebruiker
-  SilverStripe\Omnipay\Model\Message\GatewayMessage:
-    PLURALNAME: 'Betaalmethode berichten'
-    SINGULARNAME: 'Betaalmethode bericht'
-    db_Code: Code
     db_Gateway: Betaalmethode
     db_Reference: Referentie
+    db_Code: Code
+    db_Type: Type
+    db_SuccessURL: Succes-URL
+    db_FailureURL: Fout-URL
+    has_one_Payment: Betaling
+    has_one_User: Gebruiker
   CreditCard:
     VISA: Visa
     MASTERCARD: Mastercard

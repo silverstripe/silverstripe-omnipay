@@ -31,6 +31,8 @@ en:
     PERMISSION_CAPTURE_PAYMENTS_HELP: 'Allow capturing of authorized payments'
     PERMISSION_VOID_PAYMENTS: 'Void payments'
     PERMISSION_VOID_PAYMENTS_HELP: 'Allow voiding of authorized payments'
+  SilverStripe\Omnipay\GatewayFieldsFactory:
+    StripePaymentElementGroupTitle: 'Payment details'
   SilverStripe\Omnipay\PaymentForm:
     BillingAddress1: Address
     BillingAddress2: 'Address line 2'

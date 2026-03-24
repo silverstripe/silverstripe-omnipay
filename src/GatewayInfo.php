@@ -6,6 +6,7 @@ use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\GatewayFactory;
 use SilverStripe\Core\Environment;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
+use SilverStripe\Omnipay\GatewayFieldsFactory;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Config\Configurable;
 
@@ -66,10 +67,13 @@ class GatewayInfo
 {
     use Configurable;
 
-    const OFF = 'off';
-    const FULL = 'full';
-    const PARTIAL = 'partial';
-    const MULTIPLE = 'multiple';
+    public const OFF = 'off';
+
+    public const FULL = 'full';
+
+    public const PARTIAL = 'partial';
+
+    public const MULTIPLE = 'multiple';
 
     /**
      * Get the available configured payment types, optionally with i18n readable names.
@@ -156,17 +160,17 @@ class GatewayInfo
         }
 
         $factory = new GatewayFactory();
-        $gateway = $factory->create($gateway);
+        $gatewayInst = $factory->create($gateway);
 
         // Some offsite gateways don't separate between authorize and complete requests,
         // so we need a different way to determine they're off site in the first place
         // without kicking off a purchase request within Omnipay.
-        if (method_exists($gateway, 'isOffsite')) {
-            return !!$gateway->isOffsite();
+        if (method_exists($gatewayInst, 'isOffsite')) {
+            return !!$gatewayInst->isOffsite();
         }
 
-        if ($gateway instanceof AbstractGateway) {
-            return ($gateway->supportsCompletePurchase() || $gateway->supportsCompleteAuthorize());
+        if ($gatewayInst instanceof AbstractGateway) {
+            return ($gatewayInst->supportsCompletePurchase() || $gatewayInst->supportsCompleteAuthorize());
         }
 
         return false;
@@ -418,16 +422,24 @@ class GatewayInfo
             $fields = $requiredFields;
         }
 
-        //always require the following for on-site gateways (and not manual)
+        // Always require the following for on-site gateways (and not manual), unless a
+        // {@link GatewayFieldsProvider} replaces the default card field list.
         if (!self::isOffsite($gateway) && !self::isManual($gateway)) {
-            $fields = array_merge(
-                $fields,
-                ['name', 'number', 'expiryMonth', 'expiryYear', 'cvv']
-            );
+            $provider = GatewayFieldsFactory::getGatewayFieldsProviderForGateway($gateway);
+            $providerCardFields = $provider?->getRequiredCardFieldsForGateway($gateway);
+            if ($providerCardFields !== null) {
+                $fields = array_merge($fields, $providerCardFields);
+            } else {
+                $fields = array_merge(
+                    $fields,
+                    ['name', 'number', 'expiryMonth', 'expiryYear', 'cvv']
+                );
+            }
         }
 
-        return array_unique($fields);
+        return array_values(array_unique($fields));
     }
+
 
     /**
      * Get the gateway config-parameters.

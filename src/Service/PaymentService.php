@@ -265,10 +265,15 @@ abstract class PaymentService
             if (empty($gatewaydata[$tokenKey])) {
                 $gatewaydata['card'] = $this->getCreditCard($data);
             } elseif ($tokenKey !== 'token') {
-                // some gateways (eg. braintree) use a different key but we need
-                // to normalize that for omnipay
-                $gatewaydata['token'] = $gatewaydata[$tokenKey];
-                unset($gatewaydata[$tokenKey]);
+                // Stripe Payment Intents + Elements: pass `paymentMethod` (pm_xxx) through to Omnipay unchanged
+                if ($this->payment->Gateway === 'Stripe_PaymentIntents' && $tokenKey === 'paymentMethod') {
+                    // leave $gatewaydata['paymentMethod'] as-is for the gateway request
+                } else {
+                    // some gateways (eg. braintree) use a different key but we need
+                    // to normalize that for omnipay
+                    $gatewaydata['token'] = $gatewaydata[$tokenKey];
+                    unset($gatewaydata[$tokenKey]);
+                }
             }
         }
 

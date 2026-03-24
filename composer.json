@@ -32,7 +32,10 @@
     "extra" : {
         "branch-alias": {
             "dev-main": "6.x-dev"
-        }
+        },
+        "expose": [
+            "client"
+        ]
     },
     "scripts": {
         "lint": "phpcs -s src/ tests/",

@@ -10,7 +10,10 @@ use SilverStripe\Forms\HiddenField;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Omnipay\GatewayFieldsFactory;
 use SilverStripe\Omnipay\GatewayFieldsProvider;
+use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\View\Requirements;
+use Stripe\PaymentIntent;
+use Stripe\Stripe;
 
 /**
  * Stripe Payment Element fields for {@link \Omnipay\Stripe\PaymentIntentsGateway}.
@@ -18,9 +21,10 @@ use SilverStripe\View\Requirements;
  * Map this provider to `Stripe_PaymentIntents` in {@link GatewayFieldsFactory} configuration and use
  * {@link GatewayFieldsFactory} with that gateway (Omnipay short name or class name).
  *
- * This class registers Stripe.js ({@link https://docs.stripe.com/js}) and, when both a publishable
- * key and a PaymentIntent `client_secret` are available on the mount node, mounts the Payment
- * Element and fills the hidden `paymentMethod` field on submit.
+ * Creates a Stripe {@link PaymentIntent} server-side (requires `stripe/stripe-php`) and passes
+ * `client_secret` to the mount node for {@link https://docs.stripe.com/js}. Set
+ * {@link GatewayFieldsFactory::setPaymentAmount()} / {@link GatewayFieldsFactory::setPaymentCurrency()}
+ * before {@link GatewayFieldsFactory::getFields()} so the intent amount matches the payable.
  *
  * Configure appearance and mount options on this class in YAML, for example:
  *
@@ -33,8 +37,8 @@ use SilverStripe\View\Requirements;
  *     theme: 'stripe'
  * </code>
  *
- * Supply `data-client-secret` on the mount element (e.g. via `updateStripePaymentElementFields`)
- * with the PaymentIntent client secret for the current payment.
+ * The secret API key is read from `SilverStripe\Omnipay\GatewayInfo` gateway `parameters.apiKey`
+ * (same as Omnipay).
  */
 class StripeGatewayFieldsProvider implements GatewayFieldsProvider
 {
@@ -44,11 +48,6 @@ class StripeGatewayFieldsProvider implements GatewayFieldsProvider
      * Stripe.js v3 bundle URL (see Stripe docs).
      */
     private const STRIPE_JS_URL = 'https://js.stripe.com/v3/';
-
-    /**
-     * @config Stripe publishable key (`pk_live_...` / `pk_test_...`) for Stripe.js on the client.
-     */
-    private static string $stripe_publishable_key = '';
 
     /**
      * @config
@@ -78,18 +77,14 @@ class StripeGatewayFieldsProvider implements GatewayFieldsProvider
 
     private function isStripePaymentIntentsGateway(?string $gateway): bool
     {
-        $isPaymentIntentsGateway = $gateway === self::PAYMENT_INTENTS_SHORT_NAME
+        return $gateway === self::PAYMENT_INTENTS_SHORT_NAME
             || $gateway === self::PAYMENT_INTENTS_GATEWAY_CLASS;
-
-        return $isPaymentIntentsGateway;
     }
-
 
     public function providesCardFields(GatewayFieldsFactory $factory): bool
     {
         return $this->isStripePaymentIntentsGateway($factory->getGateway());
     }
-
 
     public function getRequiredCardFieldsForGateway(string $gateway): ?array
     {
@@ -100,9 +95,43 @@ class StripeGatewayFieldsProvider implements GatewayFieldsProvider
         return ['paymentMethod'];
     }
 
-
     public function getCardFields(GatewayFieldsFactory $factory): FieldList
     {
+        if (!class_exists(Stripe::class)) {
+            return FieldList::create();
+        }
+
+        $gateway = $factory->getGateway();
+
+        if (!$gateway) {
+            return FieldList::create();
+        }
+
+        $params = GatewayInfo::getParameters($gateway) ?? [];
+        $publishableKey = $params['stripe_publishable_key'] ?? null;
+        $privateKey = $params['stripe_secret_key'] ?? null;
+
+        if (!is_string($publishableKey) || $publishableKey === '') {
+            return FieldList::create([
+                LiteralField::create('StripePaymentElementMount', '<div class="alert alert-danger">Stripe publishable key not set</div>'),
+            ]);
+        }
+
+        Stripe::setApiKey($privateKey);
+
+        $paymentIntent = $this->createPaymentIntent($factory, $gateway);
+
+        if ($paymentIntent === null) {
+            return FieldList::create([
+                LiteralField::create('StripePaymentElementMount', '<div class="alert alert-danger">Payment intent could not be created</div>'),
+            ]);
+        }
+
+        $clientSecret = $paymentIntent->client_secret ?? '';
+        if (!is_string($clientSecret) || $clientSecret === '') {
+            return FieldList::create();
+        }
+
         $this->requireStripePaymentElementAssets();
 
         $mountId = self::config()->get('stripe_payment_element_mount_id') ?? 'stripe-payment-element';
@@ -110,24 +139,28 @@ class StripeGatewayFieldsProvider implements GatewayFieldsProvider
 
         $extraClasses = trim((string) (self::config()->get('stripe_payment_element_mount_extra_classes') ?? ''));
 
-        $appearance = (array) (self::config()->get('stripe_payment_element_appearance') ?? []);
-
-        $appearanceJson = json_encode($appearance, JSON_THROW_ON_ERROR);
+        $appearance = self::config()->get('stripe_payment_element_appearance') ?? [];
+        if (!is_array($appearance)) {
+            $appearance = [];
+        }
+        // Stripe Appearance API must be a JSON object {}; PHP's [] encodes as [] which parses as a JS array and breaks stripe.elements().
+        $appearanceJson = $appearance === []
+            ? '{}'
+            : json_encode($appearance, JSON_THROW_ON_ERROR);
         $appearanceAttr = Convert::raw2att($appearanceJson);
 
         $containerClasses = trim('stripe-payment-element__mount ' . $extraClasses);
 
-        $publishableKey = trim((string) (self::config()->get('stripe_publishable_key') ?? ''));
-        $publishableAttr = $publishableKey !== ''
-            ? sprintf(' data-publishable-key="%s"', Convert::raw2att($publishableKey))
-            : '';
+        $publishableAttr = sprintf(' data-publishable-key="%s"', Convert::raw2att($publishableKey));
+        $clientSecretAttr = sprintf(' data-client-secret="%s"', Convert::raw2att($clientSecret));
 
         $html = sprintf(
-            '<div class="%s" id="%s" data-stripe-payment-element="1" data-appearance="%s"%s aria-live="polite"></div>',
+            '<div class="%s" id="%s" data-stripe-payment-element="1" data-appearance="%s"%s%s aria-live="polite"></div>',
             Convert::raw2att($containerClasses),
             Convert::raw2att($mountId),
             $appearanceAttr,
-            $publishableAttr
+            $publishableAttr,
+            $clientSecretAttr
         );
 
         $literal = LiteralField::create('StripePaymentElementMount', $html);
@@ -141,14 +174,49 @@ class StripeGatewayFieldsProvider implements GatewayFieldsProvider
             FieldGroup::create(
                 _t(GatewayFieldsFactory::class . '.StripePaymentElementGroupTitle', 'Payment details'),
                 $literal,
-                $hidden
+                $hidden,
             )->addExtraClass('stripe-payment-element'),
         ]);
 
-        $gateway = $factory->getGateway();
         $factory->extend('updateStripePaymentElementFields', $fields, $gateway);
 
         return $fields;
+    }
+
+    /**
+     * @return \Stripe\PaymentIntent|null
+     */
+    private function createPaymentIntent(GatewayFieldsFactory $factory, string $gateway)
+    {
+        $params = GatewayInfo::getParameters($gateway) ?? [];
+        $secretKey = $params['stripe_secret_key'] ?? null;
+
+        if (!is_string($secretKey) || $secretKey === '') {
+            throw new \Exception('Stripe secret key not set');
+        }
+
+        $amount = $factory->getPaymentAmount();
+        if ($amount === null || $amount <= 0) {
+            throw new \Exception('Payment amount not set');
+        }
+
+        $currency = strtolower(trim((string) ($factory->getPaymentCurrency() ?? 'usd')));
+        if ($currency === '') {
+            $currency = 'usd';
+        }
+
+        $amountCents = (int) round($amount * 100);
+        if ($amountCents < 1) {
+            return null;
+        }
+
+        return PaymentIntent::create([
+            'amount' => $amountCents,
+            'currency' => $currency,
+            'automatic_payment_methods' => [
+                'enabled' => true,
+            ],
+        ]);
     }
 
     /**

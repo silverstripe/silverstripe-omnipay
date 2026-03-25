@@ -24,7 +24,7 @@ use SilverStripe\Forms\TextField;
  * (configure mount/appearance on that class).
  *
  * {@link StripeGatewayFieldsProvider} registers Stripe.js and mounts the Payment Element when
- * `stripe_publishable_key` and a `data-client-secret` on the mount node are set; otherwise supply your own
+ * `stripe_publishable_key` on the mount node are set; otherwise supply your own
  * client-side integration.
  *
  */
@@ -55,6 +55,17 @@ class GatewayFieldsFactory
     ];
 
     protected ?string $gateway = null;
+
+    /**
+     * Optional amount (major units, e.g. dollars) for gateways that create a PaymentIntent when rendering
+     * the payment form (e.g. Stripe Payment Element).
+     */
+    protected ?float $paymentAmount = null;
+
+    /**
+     * Optional ISO 4217 currency code for {@link $paymentAmount}.
+     */
+    protected ?string $paymentCurrency = null;
 
     protected ?GatewayFieldsProvider $gatewayFieldsProvider = null;
 
@@ -146,6 +157,41 @@ class GatewayFieldsFactory
     public function getGateway(): ?string
     {
         return $this->gateway;
+    }
+
+    /**
+     * Set the payment amount for the current form (major currency units). Used when building a Stripe PaymentIntent
+     * for the Payment Element.
+     *
+     * @return $this
+     */
+    public function setPaymentAmount(?float $amount): static
+    {
+        $this->paymentAmount = $amount;
+
+        return $this;
+    }
+
+    public function getPaymentAmount(): ?float
+    {
+        return $this->paymentAmount;
+    }
+
+    /**
+     * Set the payment currency (ISO 4217, e.g. `USD`).
+     *
+     * @return $this
+     */
+    public function setPaymentCurrency(?string $currency): static
+    {
+        $this->paymentCurrency = $currency;
+
+        return $this;
+    }
+
+    public function getPaymentCurrency(): ?string
+    {
+        return $this->paymentCurrency;
     }
 
     /**

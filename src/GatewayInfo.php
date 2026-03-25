@@ -450,6 +450,7 @@ class GatewayInfo
     public static function getParameters(string $gateway): ?array
     {
         $params = self::getConfigSetting($gateway, 'parameters');
+
         if (!is_array($params)) {
             return null;
         }

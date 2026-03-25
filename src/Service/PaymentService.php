@@ -165,6 +165,19 @@ abstract class PaymentService
     }
 
     /**
+     * True when the payment uses {@link \Omnipay\Stripe\PaymentIntentsGateway} (short or FQCN).
+     */
+    protected function isStripePaymentIntentsGateway(): bool
+    {
+        $g = $this->payment->Gateway;
+        if ($g === 'Stripe_PaymentIntents') {
+            return true;
+        }
+
+        return ltrim((string) $g, '\\') === 'Omnipay\\Stripe\\PaymentIntentsGateway';
+    }
+
+    /**
      * Handle a notification via gateway->acceptNotification.
      *
      * This just invokes `acceptNotification` on the gateway (if available) and wraps the return value in
@@ -252,6 +265,12 @@ abstract class PaymentService
             'notifyUrl' => $this->getEndpointUrl("notify")
         ]);
 
+        // Omnipay Stripe Payment Intents: confirm the intent on create, otherwise status stays
+        // requires_confirmation and the gateway reports failure with no message (see PaymentIntents\Response).
+        if ($this->isStripePaymentIntentsGateway() && !isset($gatewaydata['confirm'])) {
+            $gatewaydata['confirm'] = true;
+        }
+
         // Often, the shop will want to pass in a transaction ID (order #, etc), but if there's
         // not one we need to set it as Ominpay requires this.
         if (!isset($gatewaydata['transactionId'])) {
@@ -266,7 +285,7 @@ abstract class PaymentService
                 $gatewaydata['card'] = $this->getCreditCard($data);
             } elseif ($tokenKey !== 'token') {
                 // Stripe Payment Intents + Elements: pass `paymentMethod` (pm_xxx) through to Omnipay unchanged
-                if ($this->payment->Gateway === 'Stripe_PaymentIntents' && $tokenKey === 'paymentMethod') {
+                if ($this->isStripePaymentIntentsGateway() && $tokenKey === 'paymentMethod') {
                     // leave $gatewaydata['paymentMethod'] as-is for the gateway request
                 } else {
                     // some gateways (eg. braintree) use a different key but we need
@@ -428,27 +447,27 @@ abstract class PaymentService
 
         if (is_string($data)) {
             $output = [
-                'Message' => $data
+                'Message' => mb_substr($data, 0, 254)
             ];
         } elseif (is_array($data)) {
             $output = $data;
         } elseif ($data instanceof \Exception) {
             $output = [
-                'Message' => $data->getMessage(),
+                'Message' => mb_substr($data->getMessage() ?? '', 0, 254),
                 'Code' => (string) $data->getCode(),
                 'Exception' => get_class($data),
                 'Backtrace' => $data->getTraceAsString()
             ];
         } elseif ($data instanceof AbstractResponse) {
             $output = [
-                'Message' => $data->getMessage(),
+                'Message' => mb_substr($data->getMessage() ?? '', 0, 254),
                 'Code' => $data->getCode(),
                 'Reference' => $data->getTransactionReference(),
                 'Data' => $data->getData()
             ];
         } elseif ($data instanceof ResponseInterface) {
             $output = [
-                'Message' => $data->getMessage(),
+                'Message' => mb_substr($data->getMessage() ?? '', 0, 254),
                 'Code' => $data->getCode(),
                 'Reference' => $data->getTransactionReference(),
                 'Data' => $data->getData()
@@ -474,7 +493,7 @@ abstract class PaymentService
             ];
         } elseif ($data instanceof NotificationInterface) {
             $output = [
-                'Message' => $data->getMessage(),
+                'Message' => mb_substr($data->getMessage() ?? '', 0, 254),
                 'Code' => $data->getTransactionStatus(),
                 'Reference' => $data->getTransactionReference(),
                 'Data' => $data->getData()

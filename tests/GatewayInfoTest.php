@@ -10,6 +10,7 @@ use SilverStripe\i18n\i18n;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\i18n\Messages\MessageProvider;
 use SilverStripe\Omnipay\Model\Payment;
+require_once __DIR__ . '/I18nTestManifest.php';
 
 class GatewayInfoTest extends SapphireTest
 {

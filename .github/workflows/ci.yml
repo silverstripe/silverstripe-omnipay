@@ -5,9 +5,15 @@ on:
   pull_request:
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   ci:
     name: CI
+    permissions:
+      pull-requests: read
+      contents: read
+      actions: write
     uses: silverstripe/gha-ci/.github/workflows/ci.yml@v1
     with:
       composer_require_extra:

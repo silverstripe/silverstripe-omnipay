@@ -91,4 +91,76 @@ class PurchaseServiceTest extends BasePurchaseServiceTest
     {
         return PurchaseService::create($payment);
     }
+
+    public function testOnBeforePurchaseCanMutateGatewayData(): void
+    {
+        $items = [
+            [
+                'name' => 'item1',
+                'quantity' => 2,
+                'price' => '10.00',
+                'description' => 'some description',
+            ],
+            [
+                'name' => 'item2',
+                'quantity' => 1,
+                'price' => '50.00',
+                'description' => 'some description',
+            ],
+        ];
+
+        $stubRequest = $this->stubRequest();
+        $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
+            ->onlyMethods(['getName'])
+            ->addMethods(['supportsPurchase', 'purchase'])
+            ->getMock();
+        $stubGateway->method('supportsPurchase')->willReturn(true);
+        $stubGateway->expects($this->once())
+            ->method('purchase')
+            ->with($this->callback(function (array $gatewayData) use ($items) {
+                return isset($gatewayData['items']) && $gatewayData['items'] === $items;
+            }))
+            ->willReturn($stubRequest);
+
+        $service = $this->getService($this->payment);
+        $service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
+        $service->initiate();
+    }
+
+    public function testOnBeforeCompletePurchaseCanMutateGatewayData(): void
+    {
+        $items = [
+            [
+                'name' => 'item1',
+                'quantity' => 2,
+                'price' => '10.00',
+                'description' => 'some description',
+            ],
+            [
+                'name' => 'item2',
+                'quantity' => 1,
+                'price' => '50.00',
+                'description' => 'some description',
+            ],
+        ];
+
+        $stubRequest = $this->stubRequest();
+        $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
+            ->onlyMethods(['getName'])
+            ->addMethods(['supportsCompletePurchase', 'completePurchase'])
+            ->getMock();
+        $stubGateway->method('supportsCompletePurchase')->willReturn(true);
+        $stubGateway->expects($this->once())
+            ->method('completePurchase')
+            ->with($this->callback(function (array $gatewayData) use ($items) {
+                return isset($gatewayData['items']) && $gatewayData['items'] === $items;
+            }))
+            ->willReturn($stubRequest);
+
+        $payment = $this->payment;
+        $payment->Status = $this->pendingStatus;
+        $service = $this->getService($payment);
+        $service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
+        $service->complete();
+    }
 }

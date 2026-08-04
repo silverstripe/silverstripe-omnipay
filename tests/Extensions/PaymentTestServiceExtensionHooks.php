@@ -70,7 +70,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeAuthorize($data)
+    public function onBeforeAuthorize(array $data): void
     {
         $this->callStack[] = [
             'method' => 'onBeforeAuthorize',
@@ -78,7 +78,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeCapture($data)
+    public function onBeforeCapture(array $data): void
     {
         $this->callStack[] = [
             'method' => 'onBeforeCapture',
@@ -86,7 +86,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforePurchase(&$data)
+    public function onBeforePurchase(array &$data): void
     {
         $data['items'] = $this->items;
         $this->callStack[] = [
@@ -95,7 +95,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeRefund($data)
+    public function onBeforeRefund(array $data): void
     {
         $this->callStack[] = [
             'method' => 'onBeforeRefund',
@@ -103,7 +103,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeVoid($data)
+    public function onBeforeVoid(array $data): void
     {
         $this->callStack[] = [
             'method' => 'onBeforeVoid',
@@ -111,7 +111,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeCompleteAuthorize($data)
+    public function onBeforeCompleteAuthorize(array $data): void
     {
         $this->callStack[] = [
             'method' => 'onBeforeCompleteAuthorize',
@@ -119,7 +119,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeCompletePurchase(&$data)
+    public function onBeforeCompletePurchase(array &$data): void
     {
         $data['items'] = $this->items;
         $this->callStack[] = [

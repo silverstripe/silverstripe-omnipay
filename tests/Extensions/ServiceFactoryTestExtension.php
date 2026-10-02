@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests\Extensions;
 
 use SilverStripe\Core\Extension;
@@ -8,6 +10,9 @@ use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Service\CaptureService;
 use SilverStripe\Omnipay\Tests\Service\ServiceFactoryTestService;
 
+/**
+ * @extends Extension<static>
+ */
 class ServiceFactoryTestExtension extends Extension implements TestOnly
 {
     // return some different service for testing

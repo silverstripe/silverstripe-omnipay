@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Omnipay\Tests\Service;
 
+use Exception;
 use SilverStripe\Dev\TestOnly;
 use SilverStripe\Security\RandomGenerator;
 
@@ -11,39 +12,26 @@ use SilverStripe\Security\RandomGenerator;
  */
 class TestRandomGenerator extends RandomGenerator implements TestOnly
 {
-    /**
-     * @var array
-     */
-    protected $entropy = [];
+    protected array $entropy = [];
 
-    /**
-     * @var array
-     */
-    protected $randomToken = [];
+    protected array $randomToken = [];
 
-    /**
-     * @param string ...$values
-     */
-    public function addEntropy(...$values)
+    public function addEntropy(string ...$values): void
     {
         $this->entropy = array_merge($this->entropy, $values);
     }
 
-    /**
-     * @param string ...$tokens
-     */
-    public function addRandomTokens(...$tokens)
+    public function addRandomTokens(string ...$tokens): void
     {
         $this->randomToken = array_merge($this->randomToken, $tokens);
     }
 
     /**
-     * @return string
-     * @throws \Exception
+     * @throws Exception
      */
-    public function generateEntropy()
+    public function generateEntropy(): ?string
     {
-        if (!empty($this->entropy)) {
+        if ($this->entropy !== []) {
             return array_shift($this->entropy);
         }
 
@@ -52,11 +40,10 @@ class TestRandomGenerator extends RandomGenerator implements TestOnly
 
     /**
      * @param string $algorithm
-     * @return string
      */
-    public function randomToken($algorithm = 'whirlpool')
+    public function randomToken($algorithm = 'whirlpool'): array|string|null
     {
-        if (!empty($this->randomToken)) {
+        if ($this->randomToken !== []) {
             return array_shift($this->randomToken);
         }
 

@@ -1,9 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Dev\SapphireTest;
-use SilverStripe\Core\Config\Config;
 use SilverStripe\Omnipay\Extensions\Payable;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Tests\Extensions\TestPaymentExtension;
@@ -30,7 +31,7 @@ class PayableTest extends SapphireTest
         ]
     ];
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
 
@@ -40,7 +41,7 @@ class PayableTest extends SapphireTest
     /**
      * Test if the relation from Order to the Payments is correctly established
      */
-    public function testRelation()
+    public function testRelation(): void
     {
         $payments = $this->order->Payments();
 
@@ -51,7 +52,7 @@ class PayableTest extends SapphireTest
     /**
      * Test the total paid amount
      */
-    public function testPaidAmounts()
+    public function testPaidAmounts(): void
     {
         // the captured payments amount USD 30
         $this->assertEquals(30, $this->order->TotalPaid());
@@ -72,7 +73,7 @@ class PayableTest extends SapphireTest
     /**
      * Test pending payment check
      */
-    public function testPendingPayments()
+    public function testPendingPayments(): void
     {
         $this->assertTrue($this->order->HasPendingPayments());
 

@@ -6,7 +6,7 @@
     "keywords": ["silverstripe","payment","omnipay"],
     "require": {
         "php": "^8.3|^8.4",
-        "silverstripe/framework": "^6",
+        "silverstripe/framework": "^6.2.0",
         "omnipay/common": "^3"
     },
     "require-dev": {

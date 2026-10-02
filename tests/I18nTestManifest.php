@@ -27,41 +27,29 @@ trait I18nTestManifest
 {
     /**
      * Fake webroot with a single module /i18ntestmodule which contains some files with _t() calls.
-     *
-     * @var string
      */
-    protected $alternateBasePath;
+    protected string $alternateBasePath = '';
 
     /**
      * Number of test manifests
-     *
-     * @var int
      */
-    protected $manifests = 0;
+    protected int $manifests = 0;
 
     /**
      * Number of module manifests
-     *
-     * @var int
      */
-    protected $moduleManifests = 0;
+    protected int $moduleManifests = 0;
 
-    /**
-     * @var ThemeResourceLoader
-     */
-    protected $oldThemeResourceLoader = null;
+    protected ?ThemeResourceLoader $oldThemeResourceLoader = null;
 
-    /**
-     * @var string
-     */
-    protected $originalLocale = null;
+    protected ?string $originalLocale = null;
 
-    public function setupManifest()
+    public function setupManifest(): void
     {
         // force ScopeManager to cache global template vars before we switch to the
         // test-project class manifest (since it will lose visibility of core classes)
-        $presenter = new ScopeManager(null);
-        unset($presenter);
+        $scopeManager = new ScopeManager(null);
+        unset($scopeManager);
 
         // Switch to test manifest
         $s = DIRECTORY_SEPARATOR;
@@ -78,9 +66,9 @@ trait I18nTestManifest
         ThemeResourceLoader::set_instance($loader = new ThemeResourceLoader($this->alternateBasePath));
         $loader->addSet(
             '$default',
-            $default = new ThemeManifest($this->alternateBasePath, project())
+            $themeManifest = new ThemeManifest($this->alternateBasePath, project())
         );
-        $default->init(true);
+        $themeManifest->init(true);
 
         SSViewer::set_themes([
             'testtheme1',
@@ -99,16 +87,20 @@ trait I18nTestManifest
         // This should pull the module list from the above manifest
         $translator = new Translator('en');
         $translator->setFallbackLocales(['en']);
+
         $loader = new ModuleYamlLoader();
         $loader->setReader(new YamlReader());
+
         $translator->addLoader('ss', $loader); // Standard ss module loader
-        $translator->addLoader('array', new ArrayLoader()); // Note: array loader isn't added by default
-        $provider = SymfonyMessageProvider::create();
-        $provider->setTranslator($translator);
-        Injector::inst()->registerService($provider, MessageProvider::class);
+        // Note: array loader isn't added by default
+        $translator->addLoader('array', new ArrayLoader());
+
+        $symfonyMessageProvider = SymfonyMessageProvider::create();
+        $symfonyMessageProvider->setTranslator($translator);
+        Injector::inst()->registerService($symfonyMessageProvider, MessageProvider::class);
     }
 
-    public function tearDownManifest()
+    public function tearDownManifest(): void
     {
         ThemeResourceLoader::set_instance($this->oldThemeResourceLoader);
         i18n::set_locale($this->originalLocale);
@@ -120,19 +112,17 @@ trait I18nTestManifest
     /**
      * Safely push a new class manifest.
      * These will be cleaned up on tearDown()
-     *
-     * @param ClassManifest $manifest
      */
-    protected function pushManifest(ClassManifest $manifest)
+    protected function pushManifest(ClassManifest $classManifest)
     {
         $this->manifests++;
-        ClassLoader::inst()->pushManifest($manifest);
+        ClassLoader::inst()->pushManifest($classManifest);
     }
 
-    protected function pushModuleManifest(ModuleManifest $manifest)
+    protected function pushModuleManifest(ModuleManifest $moduleManifest)
     {
         $this->moduleManifests++;
-        ModuleLoader::inst()->pushManifest($manifest);
+        ModuleLoader::inst()->pushManifest($moduleManifest);
     }
 
     /**
@@ -145,6 +135,7 @@ trait I18nTestManifest
             ClassLoader::inst()->popManifest();
             $this->manifests--;
         }
+
         while ($this->moduleManifests > 0) {
             ModuleLoader::inst()->popManifest();
             $this->moduleManifests--;

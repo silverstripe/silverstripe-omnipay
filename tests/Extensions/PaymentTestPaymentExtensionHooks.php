@@ -8,10 +8,11 @@ use SilverStripe\Dev\TestOnly;
 /**
  * Extension that can be used to test payment hooks
  * @codeCoverageIgnore
+ * @extends Extension<static>
  */
 class PaymentTestPaymentExtensionHooks extends Extension implements TestOnly
 {
-    protected static $instances = [];
+    protected static array $instances = [];
 
     /**
      * Fint the PaymentTestPaymentExtensionHooks instance for a given payment ID
@@ -27,17 +28,18 @@ class PaymentTestPaymentExtensionHooks extends Extension implements TestOnly
         return self::$instances[$id];
     }
 
-    public static function ResetAll()
+    public static function ResetAll(): void
     {
         foreach (self::$instances as $instance) {
             $instance->Reset();
         }
+
         self::$instances = [];
     }
 
     protected $callStack = [];
 
-    public function setOwner($owner)
+    public function setOwner($owner): void
     {
         parent::setOwner($owner);
 
@@ -46,28 +48,26 @@ class PaymentTestPaymentExtensionHooks extends Extension implements TestOnly
         }
     }
 
-    public function Reset()
+    public function Reset(): void
     {
         $this->callStack = [];
     }
 
     /**
      * Get an array of the extension methods that were called and their arguments
-     * @return array
      */
-    public function getCallStack()
+    public function getCallStack(): array
     {
         return $this->callStack;
     }
 
     /**
      * Get an array of the extension methods that were called
-     * @return array
      */
-    public function getCalledMethods()
+    public function getCalledMethods(): array
     {
         $result = [];
-        array_walk($this->callStack, function ($value, $key) use (&$result) {
+        array_walk($this->callStack, function (array $value, $key) use (&$result): void {
             $result[] = $value['method'];
         });
         return $result;
@@ -75,7 +75,7 @@ class PaymentTestPaymentExtensionHooks extends Extension implements TestOnly
 
 
 
-    public function onAuthorized($serviceResponse)
+    public function onAuthorized($serviceResponse): void
     {
         $this->callStack[] = [
             'method' => 'onAuthorized',
@@ -83,7 +83,7 @@ class PaymentTestPaymentExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAwaitingAuthorized($serviceResponse)
+    public function onAwaitingAuthorized($serviceResponse): void
     {
         $this->callStack[] = [
             'method' => 'onAwaitingAuthorized',
@@ -91,7 +91,7 @@ class PaymentTestPaymentExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onCaptured($serviceResponse)
+    public function onCaptured($serviceResponse): void
     {
         $this->callStack[] = [
             'method' => 'onCaptured',
@@ -99,7 +99,7 @@ class PaymentTestPaymentExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAwaitingCaptured($serviceResponse)
+    public function onAwaitingCaptured($serviceResponse): void
     {
         $this->callStack[] = [
             'method' => 'onAwaitingCaptured',
@@ -107,7 +107,7 @@ class PaymentTestPaymentExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onRefunded($serviceResponse)
+    public function onRefunded($serviceResponse): void
     {
         $this->callStack[] = [
             'method' => 'onRefunded',
@@ -115,7 +115,7 @@ class PaymentTestPaymentExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onVoid($serviceResponse)
+    public function onVoid($serviceResponse): void
     {
         $this->callStack[] = [
             'method' => 'onVoid',
@@ -123,14 +123,15 @@ class PaymentTestPaymentExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onCancelled()
+    public function onCancelled(): void
     {
         $this->callStack[] = [
             'method' => 'onCancelled',
             'args' => []
         ];
     }
-    public function onCardCreated($serviceResponse)
+
+    public function onCardCreated($serviceResponse): void
     {
         $this->callStack[] = [
             'method' => 'onCardCreated',
@@ -138,7 +139,7 @@ class PaymentTestPaymentExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAwaitingCreateCard($serviceResponse)
+    public function onAwaitingCreateCard($serviceResponse): void
     {
         $this->callStack[] = [
             'method' => 'onAwaitingCreateCard',

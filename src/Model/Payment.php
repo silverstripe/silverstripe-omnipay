@@ -339,9 +339,8 @@ final class Payment extends DataObject implements PermissionProvider
 
     /**
      * Get partial payments that have this payment as initial payment.
-     * The list will be sorted from newest to oldest
-     *
-     * @return DataList<Payment>|null
+     * The list will be sorted from newest to oldests
+     * @return DataList<static>
      */
     public function getPartialPayments(): ?DataList
     {

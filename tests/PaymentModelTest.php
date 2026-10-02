@@ -1,21 +1,39 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\i18n\i18n;
+use SilverStripe\i18n\Messages\Symfony\SymfonyMessageProvider;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Tests\Service\TestRandomGenerator;
 use SilverStripe\Security\RandomGenerator;
 
-class PaymentModelTest extends PaymentTest
+class PaymentModelTest extends FunctionalTest
 {
-    public function setUp(): void
+    use PaymentTestTrait;
+
+    protected static $fixture_file = 'PaymentTest.yml';
+
+    protected $autoFollowRedirection = false;
+
+    protected function setUp(): void
     {
         parent::setUp();
+
+        Payment::config()->set('allowed_gateways', [
+            'PayPal_Express',
+            'PaymentExpress_PxPay',
+            'Manual',
+            'Dummy'
+        ]);
+
         Config::modify()->merge(GatewayInfo::class, 'Manual', [
             'can_capture' => true,
             'can_refund' => true,
@@ -23,35 +41,35 @@ class PaymentModelTest extends PaymentTest
         ]);
     }
 
-    public function testParameterSetup()
+    public function testParameterSetup(): void
     {
         $payment = Payment::create()
                     ->init("Manual", 23.56, "NZD");
 
         $this->assertEquals("Created", $payment->Status);
-        $this->assertEquals(23.56, $payment->Amount);
+        $this->assertEqualsWithDelta(23.56, $payment->Amount, PHP_FLOAT_EPSILON);
         $this->assertEquals("NZD", $payment->Currency);
         $this->assertEquals("Manual", $payment->Gateway);
     }
 
 
-    public function testCMSFields()
+    public function testCMSFields(): void
     {
-        $fields = Payment::create()->getCMSFields();
+        $fieldList = Payment::create()->getCMSFields();
 
-        $this->assertInstanceOf(FieldList::class, $fields);
+        $this->assertInstanceOf(FieldList::class, $fieldList);
     }
 
-    public function testTitle()
+    public function testTitle(): void
     {
         $oldLocale = i18n::get_locale();
 
         $payment = $this->objFromFixture(Payment::class, "payment1");
         i18n::set_locale('en_US');
-        $provider = i18n::getMessageProvider();
-        $this->assertInstanceOf(\SilverStripe\i18n\Messages\Symfony\SymfonyMessageProvider::class, $provider);
-        $catalogue = $provider->getTranslator()->getCatalogue('en_US');
-        $catalogue->set('Gateway.Manual', 'Manual');
+        $messageProvider = i18n::getMessageProvider();
+        $this->assertInstanceOf(SymfonyMessageProvider::class, $messageProvider);
+        $messageCatalogue = $messageProvider->getTranslator()->getCatalogue('en_US');
+        $messageCatalogue->set('Gateway.Manual', 'Manual');
 
         $this->assertEquals(
             'Manual NZ$20.23 10/10/2013',
@@ -69,7 +87,7 @@ class PaymentModelTest extends PaymentTest
         i18n::set_locale($oldLocale);
     }
 
-    public function testSupportedGateways()
+    public function testSupportedGateways(): void
     {
         $gateways = GatewayInfo::getSupportedGateways();
         $this->assertArrayHasKey('PayPal_Express', $gateways);
@@ -78,25 +96,25 @@ class PaymentModelTest extends PaymentTest
         $this->assertArrayHasKey('Dummy', $gateways);
     }
 
-    public function testCreateIdentifier()
+    public function testCreateIdentifier(): void
     {
-        $payment = new Payment();
+        $payment = Payment::create();
         $payment->write();
         $this->assertNotNull($payment->Identifier);
         $this->assertNotEquals('', $payment->Identifier);
-        $this->assertEquals(30, strlen($payment->Identifier));
+        $this->assertSame(30, strlen($payment->Identifier));
     }
 
-    public function testChangeIdentifier()
+    public function testChangeIdentifier(): void
     {
         $payment = $this->objFromFixture(Payment::class, 'payment2');
         $payment->Identifier = "somethingelse";
-        $this->assertEquals("UNIQUEHASH23q5123tqasdf", $payment->Identifier);
+        $this->assertSame("UNIQUEHASH23q5123tqasdf", $payment->Identifier);
     }
 
-    public function testTargetUrls()
+    public function testTargetUrls(): void
     {
-        $payment = new Payment();
+        $payment = Payment::create();
         $payment->setSuccessUrl("abc/123");
 
         // setting the success Url should also set the failure url (if not set)
@@ -112,25 +130,25 @@ class PaymentModelTest extends PaymentTest
         $this->assertEquals("xyz/blah/2345235?andstuff=124124#hash", $payment->FailureUrl);
     }
 
-    public function testGatewayMutability()
+    public function testGatewayMutability(): void
     {
         $payment = Payment::create()->init('Manual', 120, 'EUR');
 
-        $this->assertEquals($payment->Gateway, 'Manual');
+        $this->assertEquals('Manual', $payment->Gateway);
 
         $payment->Gateway = 'Dummy';
-        $this->assertEquals($payment->Gateway, 'Dummy');
+        $this->assertSame('Dummy', $payment->Gateway);
 
         $payment->Status = 'Authorized';
         $payment->Gateway = 'Manual';
-        $this->assertEquals(
-            $payment->Gateway,
+        $this->assertSame(
             'Dummy',
-            'Payment status should be immutable once it\'s no longer Created'
+            $payment->Gateway,
+            "Payment status should be immutable once it's no longer Created"
         );
     }
 
-    public function testCanCapture()
+    public function testCanCapture(): void
     {
         $this->logInWithPermission('CAPTURE_PAYMENTS');
 
@@ -172,7 +190,7 @@ class PaymentModelTest extends PaymentTest
         $this->assertFalse($payment->canCapture(null, true));
     }
 
-    public function testCanRefund()
+    public function testCanRefund(): void
     {
         $this->logInWithPermission('REFUND_PAYMENTS');
         $payment = Payment::create()->init('Manual', 120, 'EUR');
@@ -213,7 +231,7 @@ class PaymentModelTest extends PaymentTest
         $this->assertFalse($payment->canRefund(null, true));
     }
 
-    public function testCanVoid()
+    public function testCanVoid(): void
     {
         $this->logInWithPermission('VOID_PAYMENTS');
         $payment = Payment::create()->init('Manual', 120, 'EUR');
@@ -242,7 +260,7 @@ class PaymentModelTest extends PaymentTest
         $this->assertFalse($payment->canVoid());
     }
 
-    public function testMaxCaptureAmount()
+    public function testMaxCaptureAmount(): void
     {
         $payment = Payment::create()->init('Dummy', 120, 'EUR');
         // If payment isn't Authorized, return 0
@@ -298,11 +316,11 @@ class PaymentModelTest extends PaymentTest
     /**
      *
      */
-    public function testDuplicateIdentifiers()
+    public function testDuplicateIdentifiers(): void
     {
-        $randomGenerator = new TestRandomGenerator();
-        $randomGenerator->addRandomTokens('token1', 'token1', 'token1', 'token2');
-        Injector::inst()->registerService($randomGenerator, RandomGenerator::class);
+        $testRandomGenerator = TestRandomGenerator::create();
+        $testRandomGenerator->addRandomTokens('token1', 'token1', 'token1', 'token2');
+        Injector::inst()->registerService($testRandomGenerator, RandomGenerator::class);
 
         $payment1 = Payment::create();
         $payment1->write();
@@ -316,7 +334,7 @@ class PaymentModelTest extends PaymentTest
     /**
      *
      */
-    public function testIdentifierLengthConfig()
+    public function testIdentifierLengthConfig(): void
     {
         Config::modify()->set(Payment::class, 'payment_identifier_length', 20);
         $payment = Payment::create();

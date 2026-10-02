@@ -1,7 +1,20 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Omnipay\Exception\InvalidStateException;
+use Omnipay\Common\AbstractGateway;
+use Omnipay\Common\GatewayFactory;
+use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
+use Omnipay\Common\Exception\RuntimeException;
+use Omnipay\PaymentExpress\Message\Response;
+use Omnipay\PaymentExpress\Message\PxPayPurchaseRequest;
+use Omnipay\PaymentExpress\Message\PxPayCompleteAuthorizeRequest;
+use Omnipay\Common\Message\AbstractResponse;
+use PHPUnit\Framework\MockObject\MockObject;
+use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Http\ClientInterface;
 use SilverStripe\Dev\SapphireTest;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
@@ -12,71 +25,16 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
+use SilverStripe\Omnipay\Tests\Model\TestOffsiteGateway;
 use Closure;
 
 /**
- * Abstract base-class that implements common tests for "authorize" and "purchase".
- * Uses variables that have to be configured to the expected values in the subclass.
+ * Base class that implements common tests for "authorize" and "purchase".
+ * Configure variables in the test class.
  */
-abstract class BasePurchaseServiceTest extends PaymentTest
+trait BasePurchaseServiceTestTrait
 {
-    /** @var string The expected payment complete status, "Captured" or "Authorized" */
-    protected $completeStatus;
-
-    /** @var string The expected payment pending status, "PendingPurchase" or "PendingAuthorization" */
-    protected $pendingStatus;
-
-    /** @var string The omnipay method to call, "purchase" or "authorize" */
-    protected $omnipayMethod;
-
-    /** @var string The omnipay method to call to complete, "completePurchase" or "completeAuthorize" */
-    protected $omnipayCompleteMethod;
-
-    /** @var array expected messages with a successful onsite payment */
-    protected $onsiteSuccessMessages;
-
-    /** @var array expected messages with a failed onsite payment */
-    protected $onsiteFailMessages;
-
-    /** @var array expected messages with a payment that fails because of bad configuration */
-    protected $failMessages;
-
-    /** @var array expected messages for a successful offsite payment */
-    protected $offsiteSuccessMessages;
-
-    /** @var array expected messages for a failed offsite payment */
-    protected $offsiteFailMessages;
-
-    /** @var string {@link \SilverStripe\Omnipay\Model\Message\PaymentMessage::Type} value for the complete-phase failure message */
-    protected $failureMessageType;
-
-    /** @var array expected payment hooks that will be called with a successful payment */
-    protected $successPaymentExtensionHooks;
-
-    /** @var array expected payment hooks that will be called with a notification payment */
-    protected $notifyPaymentExtensionHooks;
-
-    /** @var array expected service hooks that will be called when initiate method finishes */
-    protected $initiateServiceExtensionHooks;
-
-    /** @var array expected service hooks that will be called when initiate method was interrupted by gateway error */
-    protected $initiateFailedServiceExtensionHooks;
-
-    /** @var array expected service hooks that will be called when complete method finishes */
-    protected $completeServiceExtensionHooks;
-
-    /** @var string The ID of the payment (@see payment.yml) */
-    protected $paymentId;
-
-    /**
-     * Create a payment service instance
-     *
-     * @param Payment $payment
-     * @return \SilverStripe\Omnipay\Service\PaymentService
-     */
-    abstract protected function getService(Payment $payment);
-
-    public function testDummyOnSitePayment()
+    public function testDummyOnSitePayment(): void
     {
         $payment = $this->payment;
         $service = $this->getService($payment);
@@ -90,7 +48,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         ]);
 
         $this->assertEquals($this->completeStatus, $payment->Status, "is the status updated");
-        $this->assertEquals(1222, $payment->Amount);
+        $this->assertSame(1222, (int) $payment->Amount);
         $this->assertEquals("GBP", $payment->Currency);
         $this->assertEquals("Dummy", $payment->Gateway);
         $this->assertTrue($response->getOmnipayResponse()->isSuccessful());
@@ -106,9 +64,9 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $payment->Gateway = "XYZ";
         $payment->write();
 
-        $this->assertEquals(1222, $payment->Amount);
-        $this->assertEquals("GBP", $payment->Currency);
-        $this->assertEquals("Dummy", $payment->Gateway);
+        $this->assertSame(1222, (int) $payment->Amount);
+        $this->assertSame("GBP", $payment->Currency);
+        $this->assertSame("Dummy", $payment->Gateway);
 
         //check messaging
         SapphireTest::assertListContains($this->onsiteSuccessMessages, $payment->Messages());
@@ -126,7 +84,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         );
     }
 
-    public function testFailedDummyOnSitePayment()
+    public function testFailedDummyOnSitePayment(): void
     {
         $payment = $this->payment;
         $service = $this->getService($payment);
@@ -160,7 +118,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         );
     }
 
-    public function testOnSitePayment()
+    public function testOnSitePayment(): void
     {
         $payment = $this->payment->setGateway('PaymentExpress_PxPost');
         $service = $this->getService($payment);
@@ -193,7 +151,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         );
     }
 
-    public function testInvalidOnsitePayment()
+    public function testInvalidOnsitePayment(): void
     {
         $payment = $this->payment->setGateway("PaymentExpress_PxPost");
         $service = $this->getService($payment);
@@ -217,7 +175,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         );
     }
 
-    public function testFailedOnSitePayment()
+    public function testFailedOnSitePayment(): void
     {
         $payment = $this->payment->setGateway('PaymentExpress_PxPost');
         $service = $this->getService($payment);
@@ -247,7 +205,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         );
     }
 
-    public function testOffSitePayment()
+    public function testOffSitePayment(): void
     {
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
         $service = $this->getService($payment);
@@ -295,7 +253,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         );
     }
 
-    public function testFailedOffSitePayment()
+    public function testFailedOffSitePayment(): void
     {
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
         $service = $this->getService($payment);
@@ -323,7 +281,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         );
     }
 
-    public function testFailedOffSiteCompletePayment()
+    public function testFailedOffSiteCompletePayment(): void
     {
         $this->setMockHttpResponse(
             'paymentexpress/tests/Mock/PxPayCompletePurchaseFailure.txt'
@@ -340,6 +298,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $payment = Payment::get()
             ->filter('Identifier', $this->paymentId)
             ->first();
+        $this->assertInstanceOf(Payment::class, $payment);
         SapphireTest::assertListContains($this->offsiteFailMessages, $payment->Messages());
 
         $this->assertEquals(
@@ -348,10 +307,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         );
     }
 
-    /**
-     * @expectedException \Omnipay\Common\Exception\RuntimeException
-     */
-    public function testNonExistantGateway()
+    public function testNonExistantGateway(): void
     {
         //exception when trying to run functions that require a gateway
         $payment = $this->payment;
@@ -360,83 +316,75 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         );
 
         // Will throw an exception since the gateway doesn't exist
-        $this->expectException(\Omnipay\Common\Exception\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $service->initiate();
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidStateException
-     */
-    public function testPaymentInvalidStatus()
+    public function testPaymentInvalidStatus(): void
     {
         $payment = $this->payment;
         $payment->Status = 'Void';
+
         $service = $this->getService($payment);
-        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidStateException');
+        $this->expectException(InvalidStateException::class);
         $service->initiate();
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidStateException
-     */
-    public function testCompletePaymentInvalidStatus()
+    public function testCompletePaymentInvalidStatus(): void
     {
         $payment = $this->payment;
         $payment->Status = 'Void';
+
         $service = $this->getService($payment);
-        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidStateException');
+        $this->expectException(InvalidStateException::class);
         $service->complete();
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
-     */
-    public function testGatewayDoesntSupportMethod()
+
+    public function testGatewayDoesntSupportMethod(): void
     {
         // Build the dummy gateway
-        $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
+        $stubGateway = $this->getMockBuilder(AbstractGateway::class)
             ->onlyMethods(['getName'])
             ->getMock();
 
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
         $this->payment->Status = 'Created';
         $service = $this->getService($this->payment);
         // this should throw an exception, because the gateway doesn't support the payment method
-        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
+        $this->expectException(InvalidConfigurationException::class);
         $service->initiate();
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
-     */
-    public function testGatewayDoesntSupportCompleteMethod()
+
+    public function testGatewayDoesntSupportCompleteMethod(): void
     {
         // Build the dummy gateway
-        $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
+        $stubGateway = $this->getMockBuilder(AbstractGateway::class)
             ->onlyMethods(['getName'])
             ->getMock();
 
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
         $this->payment->Status = $this->pendingStatus;
         $service = $this->getService($this->payment);
         // this should throw an exception, because the gateway doesn't support the complete method
-        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
+        $this->expectException(InvalidConfigurationException::class);
         $service->complete();
     }
 
-    public function testGatewayCompleteMethodFailure()
+    public function testGatewayCompleteMethodFailure(): void
     {
         // build a stub gateway with the given endpoint
-        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function () {
+        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function (): true {
             return true;
         }, true);
 
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
         $this->payment->Status = $this->pendingStatus;
         $service = $this->getService($this->payment);
@@ -466,14 +414,14 @@ abstract class BasePurchaseServiceTest extends PaymentTest
     }
 
 
-    public function testTokenGateway()
+    public function testTokenGateway(): void
     {
         Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPost', [
             'token_key' => 'token'
         ]);
-        $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->onlyMethods(['getName'])
-            ->addMethods([$this->omnipayMethod])
+
+        $stubGateway = $this->getMockBuilder(TestOffsiteGateway::class)
+            ->onlyMethods(['getName', $this->omnipayMethod])
             ->getMock();
 
         $stubGateway->expects($this->once())
@@ -481,15 +429,13 @@ abstract class BasePurchaseServiceTest extends PaymentTest
             ->with(
                 $this->logicalAnd(
                     $this->arrayHasKey('token'),
-                    $this->callback(function ($item) {
+                    $this->callback(function (array $item): bool {
                         return $item['token'] == 'ABC123';
                     }),
                     $this->logicalNot($this->arrayHasKey('card'))
                 )
             )
-            ->will(
-                $this->returnValue($this->stubRequest())
-            );
+            ->willReturn($this->stubRequest());
 
         $payment = $this->payment->setGateway('PaymentExpress_PxPost');
 
@@ -499,14 +445,13 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $service->initiate(['token' => 'ABC123']);
     }
 
-    public function testTokenGatewayWithAlternateKey()
+    public function testTokenGatewayWithAlternateKey(): void
     {
         Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPost', [
             'token_key' => 'my_token'
         ]);
-        $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->onlyMethods(['getName'])
-            ->addMethods([$this->omnipayMethod])
+        $stubGateway = $this->getMockBuilder(TestOffsiteGateway::class)
+            ->onlyMethods(['getName', $this->omnipayMethod])
             ->getMock();
 
         $stubGateway->expects($this->once())
@@ -514,15 +459,13 @@ abstract class BasePurchaseServiceTest extends PaymentTest
             ->with(
                 $this->logicalAnd(
                     $this->arrayHasKey('token'), // my_token should get normalized to this
-                    $this->callback(function ($item) {
+                    $this->callback(function (array $item): bool {
                         return $item['token'] == 'ABC123';
                     }),
                     $this->logicalNot($this->arrayHasKey('card'))
                 )
             )
-            ->will(
-                $this->returnValue($this->stubRequest())
-            );
+            ->willReturn($this->stubRequest());
 
         $payment = $this->payment->setGateway('PaymentExpress_PxPost');
 
@@ -532,7 +475,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $service->initiate(['my_token' => 'ABC123']);
     }
 
-    public function testAsyncPaymentConfirmation()
+    public function testAsyncPaymentConfirmation(): void
     {
         Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'use_async_notification' => true
@@ -540,7 +483,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
         // build a stub gateway with the given endpoint
         $isNotification = false;
-        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function () use (&$isNotification) {
+        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function () use (&$isNotification): bool {
             return $isNotification;
         });
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
@@ -554,7 +497,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         // we should get a redirect
         $this->assertTrue($serviceResponse->isRedirect());
         // that redirect should point to the endpoint returned by omnipay
-        $this->assertEquals($serviceResponse->getTargetUrl(), 'https://gateway.tld/endpoint');
+        $this->assertEquals('https://gateway.tld/endpoint', $serviceResponse->getTargetUrl());
         // Payment should be pending
         $this->assertEquals($payment->Status, $this->pendingStatus);
 
@@ -565,7 +508,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         // Our application considers that fact and doesn't mark the service call as an error!
         $this->assertFalse($serviceResponse->isError());
         // We should get redirected to the success page now
-        $this->assertEquals($serviceResponse->getTargetUrl(), 'my/return/url');
+        $this->assertEquals('my/return/url', $serviceResponse->getTargetUrl());
         // Payment status should still be pending
         $this->assertEquals($payment->Status, $this->pendingStatus);
 
@@ -581,8 +524,8 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $this->assertFalse($serviceResponse->isError());
         // We should get an HTTP response with "OK"
         $httpResponse = $serviceResponse->redirectOrRespond();
-        $this->assertEquals($httpResponse->getBody(), 'OK');
-        $this->assertEquals($httpResponse->getStatusCode(), 200);
+        $this->assertEquals('OK', $httpResponse->getBody());
+        $this->assertEquals(200, $httpResponse->getStatusCode());
         // Payment status should be authorized or captured now (completed)
         $this->assertEquals($payment->Status, $this->completeStatus);
 
@@ -605,7 +548,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
     }
 
     // Test an async response that comes in before the user returns from the offsite form
-    public function testAsyncPaymentConfirmationIncomingFirst()
+    public function testAsyncPaymentConfirmationIncomingFirst(): void
     {
         Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'use_async_notification' => true
@@ -613,7 +556,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
         // build a stub gateway with the given endpoint
         $isNotification = true;
-        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function () use (&$isNotification) {
+        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function () use (&$isNotification): true {
             return $isNotification;
         });
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
@@ -639,8 +582,8 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $this->assertFalse($serviceResponse->isError());
         // We should get an HTTP response with "OK"
         $httpResponse = $serviceResponse->redirectOrRespond();
-        $this->assertEquals($httpResponse->getBody(), 'OK');
-        $this->assertEquals($httpResponse->getStatusCode(), 200);
+        $this->assertEquals('OK', $httpResponse->getBody());
+        $this->assertEquals(200, $httpResponse->getStatusCode());
         // Payment status should be captured or authorized (completed)
         $this->assertEquals($payment->Status, $this->completeStatus);
 
@@ -653,7 +596,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         // There's no omnipay response since we no longer need to bother with omnipay at this point
         $this->assertNull($serviceResponse->getOmnipayResponse(), 'No omnipay response, payment already completed');
         // We should get redirected to the success page now
-        $this->assertEquals($serviceResponse->getTargetUrl(), 'my/return/url');
+        $this->assertEquals('my/return/url', $serviceResponse->getTargetUrl());
         // Payment status should still be captured or authorized
         $this->assertEquals($payment->Status, $this->completeStatus);
 
@@ -679,7 +622,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
     // Test an async response that comes in before the user returns from the offsite form.
     // Test via PaymentGatewayController
-    public function testPaymentGatewayControllerConfirmationIncomingFirst()
+    public function testPaymentGatewayControllerConfirmationIncomingFirst(): void
     {
         Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'use_async_notification' => true
@@ -687,7 +630,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
         // build a stub gateway with the given endpoint
         $isNotification = true;
-        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function () use (&$isNotification) {
+        $stubGateway = $this->buildPaymentGatewayStub('https://gateway.tld/endpoint', function () use (&$isNotification): true {
             return $isNotification;
         });
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
@@ -695,7 +638,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         $service = $this->getService($payment);
 
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
         $serviceResponse = $service->initiate();
 
@@ -707,8 +650,8 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         // Notification comes in first!
         $httpResponse = $this->get('paymentendpoint/' . $payment->Identifier . '/notify');
 
-        $this->assertEquals($httpResponse->getBody(), 'OK');
-        $this->assertEquals($httpResponse->getStatusCode(), 200);
+        $this->assertEquals('OK', $httpResponse->getBody());
+        $this->assertEquals(200, $httpResponse->getStatusCode());
 
         // reload payment from DB
         $payment = Payment::get()->byID($payment->ID);
@@ -720,7 +663,7 @@ abstract class BasePurchaseServiceTest extends PaymentTest
 
         // we should be redirected to the success page
         $this->assertStringEndsWith('/my/return/url', $httpResponse->getHeader('Location'));
-        $this->assertEquals($httpResponse->getStatusCode(), 302);
+        $this->assertEquals(302, $httpResponse->getStatusCode());
 
         // reload payment from DB
         $payment = Payment::get()->byID($payment->ID);
@@ -733,85 +676,77 @@ abstract class BasePurchaseServiceTest extends PaymentTest
         //--------------------------------------------------------------------------------------------------------------
         // Payment request and response
 
-        $mockPaymentResponse = $this->getMockBuilder('Omnipay\PaymentExpress\Message\Response')
-            ->disableOriginalConstructor()->getMock();
+        $mockPaymentResponse = $this->createMock(Response::class);
 
-        $mockPaymentResponse->expects($this->any())
-            ->method('isRedirect')->will($this->returnValue(true));
+        $mockPaymentResponse
+            ->method('isRedirect')->willReturn(true);
 
-        $mockPaymentResponse->expects($this->any())
+        $mockPaymentResponse
             ->method('getRedirectResponse')
-            ->will($this->returnValue(new RedirectResponse($endpoint)));
+            ->willReturn(new RedirectResponse($endpoint));
 
-        $mockPaymentRequest = $this->getMockBuilder('Omnipay\PaymentExpress\Message\PxPayPurchaseRequest')
-            ->disableOriginalConstructor()->getMock();
+        $mockPaymentRequest = $this->createMock(PxPayPurchaseRequest::class);
 
         if ($sendMustFail) {
-            $mockPaymentRequest->expects($this->any())->method('send')->will($this->throwException(
-                new \Omnipay\Common\Exception\RuntimeException('Mock Exception')
-            ));
+            $mockPaymentRequest->method('send')->willThrowException(new RuntimeException('Mock Exception'));
         } else {
-            $mockPaymentRequest->expects($this->any())->method('send')->will($this->returnValue($mockPaymentResponse));
+            $mockPaymentRequest->method('send')->willReturn($mockPaymentResponse);
         }
 
         //--------------------------------------------------------------------------------------------------------------
         // Complete Payment request and response
 
-        $mockCompletePaymentResponse = $this->getMockBuilder('Omnipay\PaymentExpress\Message\Response')
-            ->disableOriginalConstructor()->getMock();
+        $mockCompletePaymentResponse = $this->createMock(Response::class);
 
         // not successful, since we're waiting for async callback from the gateway
-        $mockCompletePaymentResponse->expects($this->any())
-            ->method('isSuccessful')->will($this->returnCallback($successFunc));
+        $mockCompletePaymentResponse
+            ->method('isSuccessful')->willReturnCallback($successFunc);
 
-        $mockCompletePaymentRequest = $this->getMockBuilder('Omnipay\PaymentExpress\Message\PxPayCompleteAuthorizeRequest')
-            ->disableOriginalConstructor()->getMock();
+        $mockCompletePaymentRequest = $this->createMock(PxPayCompleteAuthorizeRequest::class);
 
         if ($sendMustFail) {
-            $mockCompletePaymentRequest->expects($this->any())->method('send')->will($this->throwException(
-                new \Omnipay\Common\Exception\RuntimeException('Mock Exception')
-            ));
+            $mockCompletePaymentRequest->method('send')->willThrowException(new RuntimeException('Mock Exception'));
         } else {
-            $mockCompletePaymentRequest->expects($this->any())
-                ->method('send')->will($this->returnValue($mockCompletePaymentResponse));
+            $mockCompletePaymentRequest
+                ->method('send')->willReturn($mockCompletePaymentResponse);
         }
 
         //--------------------------------------------------------------------------------------------------------------
         // Build the gateway
 
-        $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->onlyMethods(['getName'])
-            ->addMethods([$this->omnipayMethod, $this->omnipayCompleteMethod])
-            ->getMock();
+        $stubGateway = $this->getMockBuilder(TestOffsiteGateway::class)
+            ->onlyMethods([
+                'getName',
+                $this->omnipayMethod,
+                $this->omnipayCompleteMethod
+            ])->getMock();
 
         $stubGateway->expects($sendMustFail ? $this->any() : $this->once())
             ->method($this->omnipayMethod)
-            ->will($this->returnValue($mockPaymentRequest));
+            ->willReturn($mockPaymentRequest);
 
-        $stubGateway->expects($this->any())
+        $stubGateway
             ->method($this->omnipayCompleteMethod)
-            ->will($this->returnValue($mockCompletePaymentRequest));
+            ->willReturn($mockCompletePaymentRequest);
 
         return $stubGateway;
     }
 
     /**
-     * @return \PHPUnit\Framework\MockObject\MockObject|\Omnipay\Common\Message\AbstractRequest
+     * @return MockObject&AbstractRequest
      */
     protected function stubRequest()
     {
-        $request = $this->getMockBuilder('Omnipay\Common\Message\AbstractRequest')
+        $request = $this->getMockBuilder(AbstractRequest::class)
             ->setConstructorArgs([
-                $this->createMock(ClientInterface::class),
+                $this->createStub(ClientInterface::class),
                 SymfonyRequest::create('/'),
             ])
             ->onlyMethods(['send', 'sendData', 'getData'])
             ->getMock();
-        $response = $this->getMockBuilder('Omnipay\Common\Message\AbstractResponse')
-            ->disableOriginalConstructor()
-            ->getMock();
-        $response->expects($this->any())->method('isSuccessful')->will($this->returnValue(true));
-        $request->expects($this->any())->method('send')->will($this->returnValue($response));
+        $response = $this->createMock(AbstractResponse::class);
+        $response->method('isSuccessful')->willReturn(true);
+        $request->method('send')->willReturn($response);
         return $request;
     }
 }

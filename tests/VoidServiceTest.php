@@ -1,31 +1,41 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Dev\FunctionalTest;
+use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Service\AuthorizeService;
 use SilverStripe\Omnipay\Service\PaymentService;
 use SilverStripe\Omnipay\Service\VoidService;
-use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 
 /**
  * Test the void service
  */
-class VoidServiceTest extends BaseNotificationServiceTest
+class VoidServiceTest extends FunctionalTest
 {
-    protected $gatewayMethod = 'void';
+    use BaseNotificationServiceTestTrait;
+    use PaymentTestTrait;
 
-    protected $fixtureIdentifier = 'payment6';
+    protected static $fixture_file = 'PaymentTest.yml';
 
-    protected $fixtureReceipt = 'authorizedPaymentReceipt';
+    protected $autoFollowRedirection = false;
 
-    protected $startStatus = 'Authorized';
+    protected string $gatewayMethod = 'void';
 
-    protected $pendingStatus = 'PendingVoid';
+    protected string $fixtureIdentifier = 'payment6';
 
-    protected $endStatus = 'Void';
+    protected string $fixtureReceipt = 'authorizedPaymentReceipt';
 
-    protected $successFromFixtureMessages = [
+    protected string $startStatus = 'Authorized';
+
+    protected string $pendingStatus = 'PendingVoid';
+
+    protected string $endStatus = 'Void';
+
+    protected array $successFromFixtureMessages = [
         [
             'Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE,
             'Reference' => 'authorizedPaymentReceipt'
@@ -40,7 +50,7 @@ class VoidServiceTest extends BaseNotificationServiceTest
         ]
     ];
 
-    protected $successMessages = [
+    protected array $successMessages = [
         [
             'Type' => VoidService::MESSAGE_VOID_REQUEST,
             'Reference' => 'testThisRecipe123'
@@ -51,7 +61,7 @@ class VoidServiceTest extends BaseNotificationServiceTest
         ]
     ];
 
-    protected $failureMessages = [
+    protected array $failureMessages = [
         [
             'Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE,
             'Reference' => 'authorizedPaymentReceipt'
@@ -66,7 +76,7 @@ class VoidServiceTest extends BaseNotificationServiceTest
         ]
     ];
 
-    protected $notificationFailureMessages = [
+    protected array $notificationFailureMessages = [
         [
             'Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE,
             'Reference' => 'authorizedPaymentReceipt'
@@ -81,40 +91,45 @@ class VoidServiceTest extends BaseNotificationServiceTest
         ]
     ];
 
-    protected $errorMessageType = VoidService::MESSAGE_VOID_ERROR;
+    protected string $errorMessageType = VoidService::MESSAGE_VOID_ERROR;
 
-    protected $successPaymentExtensionHooks = [
+    protected array $successPaymentExtensionHooks = [
         'onVoid'
     ];
 
-    protected $initiateServiceExtensionHooks = [
+    protected array $initiateServiceExtensionHooks = [
         'onBeforeVoid',
         'onAfterVoid',
         'onAfterSendVoid',
         'updateServiceResponse'
     ];
 
-    protected $initiateFailedServiceExtensionHooks = [
+    protected array $initiateFailedServiceExtensionHooks = [
         'onBeforeVoid',
         'onAfterVoid',
         'updateServiceResponse'
     ];
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
+        $this->payment = Payment::create()
+            ->setGateway("Dummy")
+            ->setAmount(1222)
+            ->setCurrency("GBP");
+
         $this->logInWithPermission('VOID_PAYMENTS');
 
         VoidService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         parent::tearDown();
         VoidService::remove_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    protected function getService(Payment $payment)
+    protected function getService(Payment $payment): PaymentService
     {
         return VoidService::create($payment);
     }

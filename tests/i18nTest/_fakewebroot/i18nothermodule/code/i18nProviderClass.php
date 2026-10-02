@@ -1,10 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 use SilverStripe\i18n\i18nEntityProvider;
 
 class i18nProviderClass implements i18nEntityProvider
 {
-    public function provideI18nEntities()
+    public function provideI18nEntities(): array
     {
         return [
             'i18nProviderClass.TITLE' => 'My Provider Class',

@@ -1,154 +1,190 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests;
 
+use PHPUnit\Framework\MockObject\MockObject;
+use Omnipay\Common\GatewayFactory;
+use Omnipay\Dummy\Message\CreditCardRequest;
+use Omnipay\Dummy\Gateway;
 use Omnipay\Common\Http\ClientInterface;
-use SilverStripe\Omnipay\Service\CreateCardService;
-use SilverStripe\Omnipay\Model\Payment;
+use Omnipay\Dummy\Message\Response;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Dev\FunctionalTest;
+use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\Service\CreateCardService;
+use SilverStripe\Omnipay\Service\PaymentService;
+use SilverStripe\Omnipay\Service\ServiceFactory;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
+use SilverStripe\Omnipay\Tests\Service\TestGatewayFactory;
 use Symfony\Component\HttpFoundation\Request as SymfonyRequest;
 
-class CreateCardServiceTest extends BasePurchaseServiceTest
+class CreateCardServiceTest extends FunctionalTest
 {
-    protected $completeStatus = 'CardCreated';
-    protected $pendingStatus = 'PendingCreateCard';
+    use BasePurchaseServiceTestTrait;
+    use PaymentTestTrait;
 
-    protected $omnipayMethod = 'createCard';
-    protected $omnipayCompleteMethod = 'completeCreateCard';
+    protected static $fixture_file = 'PaymentTest.yml';
 
-    protected $onsiteSuccessMessages = [
+    protected $autoFollowRedirection = false;
+
+    protected string $completeStatus = 'CardCreated';
+
+    protected string $pendingStatus = 'PendingCreateCard';
+
+    protected string $omnipayMethod = 'createCard';
+
+    protected string $omnipayCompleteMethod = 'completeCreateCard';
+
+    protected array $onsiteSuccessMessages = [
         ['Type' => CreateCardService::MESSAGE_CREATE_CARD_REQUEST],
         ['Type' => CreateCardService::MESSAGE_CREATE_CARD_RESPONSE]
     ];
 
-    protected $onsiteFailMessages = [
+    protected array $onsiteFailMessages = [
         ['Type' => CreateCardService::MESSAGE_CREATE_CARD_REQUEST],
         ['Type' => CreateCardService::MESSAGE_CREATE_CARD_ERROR]
     ];
 
-    protected $failMessages = [
+    protected array $failMessages = [
         ['Type' => CreateCardService::MESSAGE_CREATE_CARD_ERROR]
     ];
 
-    protected $offsiteSuccessMessages = [
+    protected array $offsiteSuccessMessages = [
         ['Type' => CreateCardService::MESSAGE_CREATE_CARD_REQUEST],
         ['Type' => CreateCardService::MESSAGE_CREATE_CARD_REDIRECT_RESPONSE],
         ['Type' => CreateCardService::MESSAGE_COMPLETE_CREATE_CARD_REQUEST],
         ['Type' => CreateCardService::MESSAGE_CREATE_CARD_RESPONSE]
     ];
 
-    protected $offsiteFailMessages = [
+    protected array $offsiteFailMessages = [
         ['Type' => CreateCardService::MESSAGE_CREATE_CARD_RESPONSE],
         ['Type' => CreateCardService::MESSAGE_COMPLETE_CREATE_CARD_REQUEST],
         ['Type' => CreateCardService::MESSAGE_COMPLETE_CREATE_CARD_ERROR]
     ];
 
-    protected $failureMessageType = CreateCardService::MESSAGE_COMPLETE_CREATE_CARD_ERROR;
+    protected string $failureMessageType = CreateCardService::MESSAGE_COMPLETE_CREATE_CARD_ERROR;
 
-    protected $paymentId = '18f2fcac2b8f7549fd0295b251d9e9db';
+    protected string $paymentId = '18f2fcac2b8f7549fd0295b251d9e9db';
 
-    protected $successPaymentExtensionHooks = [
+    protected array $successPaymentExtensionHooks = [
         'onCardCreated'
     ];
 
-    protected $notifyPaymentExtensionHooks = [
+    protected array $notifyPaymentExtensionHooks = [
         'onAwaitingCreateCard'
     ];
 
-    protected $initiateServiceExtensionHooks = [
+    protected array $initiateServiceExtensionHooks = [
         'onBeforeCreateCard',
         'onAfterCreateCard',
         'onAfterSendCreateCard',
         'updateServiceResponse'
     ];
 
-    protected $initiateFailedServiceExtensionHooks = [
+    protected array $initiateFailedServiceExtensionHooks = [
         'onBeforeCreateCard',
         'onAfterCreateCard',
         'updateServiceResponse'
     ];
 
-    protected $completeServiceExtensionHooks = [
+    protected array $completeServiceExtensionHooks = [
         'onBeforeCompleteCreateCard',
         'onAfterCompleteCreateCard',
         'updateServiceResponse'
     ];
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
+
+        PaymentTestPaymentExtensionHooks::ResetAll();
+
+        $this->factory = ServiceFactory::create();
+
+        Payment::config()->set('allowed_gateways', [
+            'PayPal_Express',
+            'PaymentExpress_PxPay',
+            'Manual',
+            'Dummy'
+        ]);
+
+        // clear settings for PaymentExpress_PxPay (don't let user configs bleed into tests)
+        Config::modify()
+            ->remove(GatewayInfo::class, 'PaymentExpress_PxPay')
+            ->set(GatewayInfo::class, 'PaymentExpress_PxPay', [
+                'parameters' => [
+                    'username' => 'EXAMPLEUSER',
+                    'password' => '235llgwxle4tol23l'
+                ]
+            ]);
+
+        //set up a payment here to make tests shorter
+        $this->payment = Payment::create()
+            ->setGateway("Dummy")
+            ->setAmount(1222)
+            ->setCurrency("GBP");
+
+        Config::modify()->set(Injector::class, GatewayFactory::class, [
+            'class' => TestGatewayFactory::class
+        ]);
+
+        TestGatewayFactory::$httpClient = $this->getHttpClient();
+        TestGatewayFactory::$httpRequest = $this->getHttpRequest();
+
         CreateCardService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         parent::tearDown();
         CreateCardService::remove_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    protected function getService(Payment $payment)
+    protected function getService(Payment $payment): PaymentService
     {
         return CreateCardService::create($payment);
     }
 
-    public function testDummyOnSitePayment()
-    {
-        $stubGateway = $this->buildDummyGatewayMock(true);
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
-
-        parent::testDummyOnSitePayment();
-    }
-
-    public function testFailedDummyOnSitePayment()
-    {
-        $stubGateway = $this->buildDummyGatewayMock(false);
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
-
-        parent::testFailedDummyOnSitePayment();
-    }
-
-    protected function buildDummyGatewayMock($successValue)
+    protected function buildDummyGatewayMock($successValue): MockObject
     {
         //--------------------------------------------------------------------------------------------------------------
         // Payment request and response
 
-        $mockPaymentResponse = $this
-            ->getMockBuilder('Omnipay\Dummy\Message\Response')
-            ->disableOriginalConstructor()
-            ->onlyMethods(['isSuccessful'])
-            ->getMock();
+        $mockPaymentResponse = $this->createMock(Response::class);
 
         $mockPaymentResponse
-            ->expects($this->any())
             ->method('isSuccessful')
-            ->will($this->returnValue($successValue));
+            ->willReturn($successValue);
 
         $mockPaymentRequest = $this
-            ->getMockBuilder('Omnipay\Dummy\Message\CreditCardRequest')
+            ->getMockBuilder(CreditCardRequest::class)
             ->setConstructorArgs([
-                $this->createMock(ClientInterface::class),
-                $this->createMock(SymfonyRequest::class),
+                $this->createStub(ClientInterface::class),
+                new SymfonyRequest(),
             ])
             ->onlyMethods(['send'])
             ->getMock();
 
         $mockPaymentRequest
-            ->expects($this->any())
             ->method('send')
-            ->will($this->returnValue($mockPaymentResponse));
+            ->willReturn($mockPaymentResponse);
 
         //--------------------------------------------------------------------------------------------------------------
         // Build the gateway
 
         $stubGateway = $this
-            ->getMockBuilder('Omnipay\Dummy\Gateway')
+            ->getMockBuilder(Gateway::class)
             ->onlyMethods(['createCard', 'getName'])
             ->getMock();
 
         $stubGateway->expects($this->once())
             ->method('createCard')
-            ->will($this->returnValue($mockPaymentRequest));
+            ->willReturn($mockPaymentRequest);
 
         return $stubGateway;
     }

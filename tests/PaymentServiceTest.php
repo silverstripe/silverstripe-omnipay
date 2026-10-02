@@ -1,38 +1,87 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests;
 
+use Omnipay\Common\GatewayFactory;
+use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\AbstractGateway;
-use SilverStripe\Omnipay\Service\ServiceFactory;
-use SilverStripe\Omnipay\Service\ServiceResponse;
-use SilverStripe\Omnipay\Service\PaymentService;
+use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use Omnipay\Common\Message\NotificationInterface;
-use SilverStripe\Core\Config\Config;
-use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Control\HTTPResponse;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Dev\FunctionalTest;
+use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\Omnipay\Service\PaymentService;
+use SilverStripe\Omnipay\Service\ServiceFactory;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\TestNotifyResponseExtension;
+use SilverStripe\Omnipay\Tests\Model\TestOffsiteGateway;
+use SilverStripe\Omnipay\Tests\Service\TestGatewayFactory;
 
-class PaymentServiceTest extends PaymentTest
+class PaymentServiceTest extends FunctionalTest
 {
-    /** @var \SilverStripe\Omnipay\Service\PaymentService */
-    protected $service;
+    use PaymentTestTrait;
 
-    public function setUp(): void
+    protected static $fixture_file = 'PaymentTest.yml';
+
+    protected $autoFollowRedirection = false;
+
+    protected PaymentService $service;
+
+    protected function setUp(): void
     {
         parent::setUp();
+
+        PaymentTestPaymentExtensionHooks::ResetAll();
+
+        $this->factory = ServiceFactory::create();
+
+        Payment::config()->set('allowed_gateways', [
+            'PayPal_Express',
+            'PaymentExpress_PxPay',
+            'Manual',
+            'Dummy'
+        ]);
+
+        // clear settings for PaymentExpress_PxPay (don't let user configs bleed into tests)
+        Config::modify()
+            ->remove(GatewayInfo::class, 'PaymentExpress_PxPay')
+            ->set(GatewayInfo::class, 'PaymentExpress_PxPay', [
+                'parameters' => [
+                    'username' => 'EXAMPLEUSER',
+                    'password' => '235llgwxle4tol23l'
+                ]
+            ]);
+
+        //set up a payment here to make tests shorter
+        $this->payment = Payment::create()
+            ->setGateway("Dummy")
+            ->setAmount(1222)
+            ->setCurrency("GBP");
+
+        Config::modify()->set(Injector::class, GatewayFactory::class, [
+            'class' => TestGatewayFactory::class
+        ]);
+
+        TestGatewayFactory::$httpClient = $this->getHttpClient();
+        TestGatewayFactory::$httpRequest = $this->getHttpRequest();
 
         $this->service = $this->factory->getService($this->payment, ServiceFactory::INTENT_PURCHASE);
     }
 
-    public function testCancel()
+    public function testCancel(): void
     {
-        $response = $this->service->cancel();
+        $serviceResponse = $this->service->cancel();
 
         $this->assertEquals('Void', $this->payment->Status);
-        $this->assertTrue($response->isCancelled());
+        $this->assertTrue($serviceResponse->isCancelled());
     }
 
-    public function testGateway()
+    public function testGateway(): void
     {
         Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', [
             // set some invalid params
@@ -42,13 +91,13 @@ class PaymentServiceTest extends PaymentTest
         ]);
 
         $gateway = $this->service->oGateway();
-        $this->assertEquals($gateway->getShortName(), 'Dummy');
+        $this->assertEquals('Dummy', $gateway->getShortName());
 
         // change the payment gateway
         $this->payment->Gateway = 'PaymentExpress_PxPay';
 
         $gateway = $this->service->oGateway();
-        $this->assertEquals($gateway->getShortName(), 'PaymentExpress_PxPay');
+        $this->assertEquals('PaymentExpress_PxPay', $gateway->getShortName());
 
         $expectedParams = [
             'username' => 'EXAMPLEUSER',
@@ -66,7 +115,7 @@ class PaymentServiceTest extends PaymentTest
     }
 
     // Test a successful notification
-    public function testHandleNotificationSuccess()
+    public function testHandleNotificationSuccess(): void
     {
         $service = $this->buildNotificationService(NotificationInterface::STATUS_COMPLETED);
 
@@ -79,7 +128,7 @@ class PaymentServiceTest extends PaymentTest
         // response should have an instance of the notification attached
         $this->assertNotNull($serviceResponse->getOmnipayResponse());
         $this->assertInstanceOf(
-            '\Omnipay\Common\Message\NotificationInterface',
+            NotificationInterface::class,
             $serviceResponse->getOmnipayResponse()
         );
         $httpResponse = $serviceResponse->redirectOrRespond();
@@ -89,7 +138,7 @@ class PaymentServiceTest extends PaymentTest
     }
 
     // Test notification response modified by extension
-    public function testHandleModifiedNotification()
+    public function testHandleModifiedNotification(): void
     {
         PaymentService::add_extension(TestNotifyResponseExtension::class);
 
@@ -106,7 +155,7 @@ class PaymentServiceTest extends PaymentTest
         // response should have an instance of the notification attached
         $this->assertNotNull($serviceResponse->getOmnipayResponse());
         $this->assertInstanceOf(
-            '\Omnipay\Common\Message\NotificationInterface',
+            NotificationInterface::class,
             $serviceResponse->getOmnipayResponse()
         );
 
@@ -128,7 +177,7 @@ class PaymentServiceTest extends PaymentTest
         // response should have an instance of the notification attached
         $this->assertNotNull($serviceResponse->getOmnipayResponse());
         $this->assertInstanceOf(
-            '\Omnipay\Common\Message\NotificationInterface',
+            NotificationInterface::class,
             $serviceResponse->getOmnipayResponse()
         );
 
@@ -142,7 +191,7 @@ class PaymentServiceTest extends PaymentTest
     }
 
     // Test an error notification
-    public function testHandleNotificationError()
+    public function testHandleNotificationError(): void
     {
         $service = $this->buildNotificationService(NotificationInterface::STATUS_FAILED);
 
@@ -155,13 +204,13 @@ class PaymentServiceTest extends PaymentTest
         // response should have an instance of the notification attached
         $this->assertNotNull($serviceResponse->getOmnipayResponse());
         $this->assertInstanceOf(
-            '\Omnipay\Common\Message\NotificationInterface',
+            NotificationInterface::class,
             $serviceResponse->getOmnipayResponse()
         );
     }
 
     // Test a pending notification
-    public function testHandleNotificationPending()
+    public function testHandleNotificationPending(): void
     {
         $service = $this->buildNotificationService(NotificationInterface::STATUS_PENDING);
 
@@ -176,18 +225,18 @@ class PaymentServiceTest extends PaymentTest
         // response should have an instance of the notification attached
         $this->assertNotNull($serviceResponse->getOmnipayResponse());
         $this->assertInstanceOf(
-            '\Omnipay\Common\Message\NotificationInterface',
+            NotificationInterface::class,
             $serviceResponse->getOmnipayResponse()
         );
     }
 
     // Test a gateway that doesn't return an instance of NotificationInterface
-    public function testHandleNotificationInvalid()
+    public function testHandleNotificationInvalid(): void
     {
         // build a notification that returns an AbstractResponse instead of the expected NotificationInterface
         $service = $this->buildNotificationService(
             NotificationInterface::STATUS_PENDING,
-            'Omnipay\Common\Message\AbstractResponse'
+            AbstractResponse::class
         );
 
         $serviceResponse = $service->handleNotification();
@@ -202,23 +251,22 @@ class PaymentServiceTest extends PaymentTest
 
     /**
      * Test with a gateway that doesn't implement `acceptNotification`.
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
      */
-    public function testHandleNotificationWithIncompatibleGateway()
+    public function testHandleNotificationWithIncompatibleGateway(): void
     {
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
-        $service = $this->factory->getService($payment, ServiceFactory::INTENT_PURCHASE);
+        $paymentService = $this->factory->getService($payment, ServiceFactory::INTENT_PURCHASE);
 
         // build a gateway that doesn't have the `acceptNotification` method
-        $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
+        $stubGateway = $this->getMockBuilder(AbstractGateway::class)
             ->onlyMethods(['getName'])
             ->getMock();
 
-        $service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
+        $paymentService->setGatewayFactory($this->stubGatewayFactory($stubGateway));
 
         // this should throw an exception
-        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
-        $service->handleNotification();
+        $this->expectException(InvalidConfigurationException::class);
+        $paymentService->handleNotification();
     }
 
     /**
@@ -229,7 +277,7 @@ class PaymentServiceTest extends PaymentTest
         string $contract = NotificationInterface::class
     ) {
         $payment = $this->payment->setGateway('PaymentExpress_PxPay');
-        $service = $this->factory->getService($payment, ServiceFactory::INTENT_PURCHASE);
+        $paymentService = $this->factory->getService($payment, ServiceFactory::INTENT_PURCHASE);
 
         //--------------------------------------------------------------------------------------------------------------
         // Notification response
@@ -238,28 +286,25 @@ class PaymentServiceTest extends PaymentTest
             $notificationResponse = $this->getMockBuilder(NotificationInterface::class)
                 ->onlyMethods(['getTransactionStatus', 'getTransactionReference', 'getMessage', 'getData'])
                 ->getMock();
-            $notificationResponse->expects($this->any())
+            $notificationResponse
                 ->method('getTransactionStatus')->willReturn($returnState);
         } else {
-            $notificationResponse = $this->getMockBuilder($contract)
-                ->disableOriginalConstructor()
-                ->getMockForAbstractClass();
+            $notificationResponse = $this->createMock($contract);
         }
 
         //--------------------------------------------------------------------------------------------------------------
         // Build the gateway
 
-        $stubGateway = $this->getMockBuilder(AbstractGateway::class)
-            ->onlyMethods(['getName'])
-            ->addMethods(['acceptNotification'])
+        $stubGateway = $this->getMockBuilder(TestOffsiteGateway::class)
+            ->onlyMethods(['getName', 'acceptNotification'])
             ->getMock();
 
         $stubGateway->expects($this->once())
             ->method('acceptNotification')
-            ->will($this->returnValue($notificationResponse));
+            ->willReturn($notificationResponse);
 
-        $service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
+        $paymentService->setGatewayFactory($this->stubGatewayFactory($stubGateway));
 
-        return $service;
+        return $paymentService;
     }
 }

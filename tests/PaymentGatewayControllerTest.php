@@ -1,21 +1,28 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
+use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\Omnipay\Service\PurchaseService;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\PaymentGatewayController;
+use SilverStripe\Omnipay\Service\PurchaseService;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentGatewayControllerTestExtension;
 
-class PaymentGatewayControllerTest extends PaymentTest
+class PaymentGatewayControllerTest extends FunctionalTest
 {
+    use PaymentTestTrait;
+
     protected static $fixture_file = 'PaymentTest.yml';
 
-    public function testReturnUrlGeneration()
+    protected $autoFollowRedirection = false;
+
+    public function testReturnUrlGeneration(): void
     {
         $url = PaymentGatewayController::getEndpointUrl('action', "UniqueHashHere12345");
         $this->assertEquals(
@@ -25,7 +32,7 @@ class PaymentGatewayControllerTest extends PaymentTest
         );
     }
 
-    public function testStaticUrlGeneration()
+    public function testStaticUrlGeneration(): void
     {
         $url = PaymentGatewayController::getStaticEndpointUrl('Dummy', 'complete');
         $this->assertEquals('', $url);
@@ -38,7 +45,7 @@ class PaymentGatewayControllerTest extends PaymentTest
         $this->assertEquals(Director::absoluteURL("paymentendpoint/gateway/Dummy"), $url);
     }
 
-    public function testCompleteEndpoint()
+    public function testCompleteEndpoint(): void
     {
         $this->setMockHttpResponse(
             'paymentexpress/tests/Mock/PxPayCompletePurchaseSuccess.txt'
@@ -46,15 +53,16 @@ class PaymentGatewayControllerTest extends PaymentTest
         //mock the 'result' get variable into the current request
         $this->getHttpRequest()->query->replace(['result' => 'abc123']);
         //mimic a redirect or request from offsite gateway
-        $response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/complete");
+        $httpResponse = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/complete");
         //redirect works
         $this->assertStringEndsWith(
             '/shop/complete',
-            $response->getHeader('Location')
+            $httpResponse->getHeader('Location')
         );
         $payment = Payment::get()
                         ->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
                         ->first();
+        $this->assertInstanceOf(Payment::class, $payment);
         SapphireTest::assertListContains([
             ['Type' => PurchaseService::MESSAGE_PURCHASE_REQUEST],
             ['Type' => PurchaseService::MESSAGE_PURCHASE_REDIRECT_RESPONSE],
@@ -63,7 +71,7 @@ class PaymentGatewayControllerTest extends PaymentTest
         ], $payment->Messages());
     }
 
-    public function testNotifyEndpoint()
+    public function testNotifyEndpoint(): void
     {
         $this->setMockHttpResponse(
             'paymentexpress/tests/Mock/PxPayCompletePurchaseSuccess.txt'
@@ -71,12 +79,13 @@ class PaymentGatewayControllerTest extends PaymentTest
         //mock the 'result' get variable into the current request
         $this->getHttpRequest()->query->replace(['result' => 'abc123']);
         //mimic a redirect or request from offsite gateway
-        $response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/notify");
+        $httpResponse = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/notify");
         //redirect works
-        $this->assertNull($response->getHeader('Location'));
+        $this->assertNull($httpResponse->getHeader('Location'));
         $payment = Payment::get()
                         ->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
                         ->first();
+        $this->assertInstanceOf(Payment::class, $payment);
         SapphireTest::assertListContains([
             ['Type' => PurchaseService::MESSAGE_PURCHASE_REQUEST],
             ['Type' => PurchaseService::MESSAGE_PURCHASE_REDIRECT_RESPONSE],
@@ -85,58 +94,59 @@ class PaymentGatewayControllerTest extends PaymentTest
         ], $payment->Messages());
     }
 
-    public function testCancelEndpoint()
+    public function testCancelEndpoint(): void
     {
         // mimic a redirect or request from offsite gateway. The user cancelled the payment
-        $response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/cancel");
+        $httpResponse = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/cancel");
 
         // Should redirect to the cancel/failure url which is being loaded from the fixture
         $this->assertStringEndsWith(
             '/shop/incomplete',
-            $response->getHeader('Location')
+            $httpResponse->getHeader('Location')
         );
 
         $payment = Payment::get()
             ->filter('Identifier', 'UNIQUEHASH23q5123tqasdf')
             ->first();
+        $this->assertInstanceOf(Payment::class, $payment);
 
         SapphireTest::assertListContains([
             ['Type' => PurchaseService::MESSAGE_PURCHASE_REQUEST],
             ['Type' => PurchaseService::MESSAGE_PURCHASE_REDIRECT_RESPONSE]
         ], $payment->Messages());
 
-        $this->assertEquals($payment->Status, 'Void', 'Payment should be void');
+        $this->assertEquals('Void', $payment->Status, 'Payment should be void');
     }
 
-    public function testInvalidAction()
+    public function testInvalidAction(): void
     {
         // Try to access a valid payment, but bad action
-        $response = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/bogus");
+        $httpResponse = $this->get("paymentendpoint/UNIQUEHASH23q5123tqasdf/bogus");
 
-        $this->assertEquals($response->getStatusCode(), 404);
+        $this->assertEquals(404, $httpResponse->getStatusCode());
     }
 
-    public function testBadReturnURLs()
+    public function testBadReturnURLs(): void
     {
-        $response = $this->get("paymentendpoint/ASDFHSADFunknonwhash/complete/c2hvcC9jb2");
-        $this->assertEquals(404, $response->getStatusCode());
+        $httpResponse = $this->get("paymentendpoint/ASDFHSADFunknonwhash/complete/c2hvcC9jb2");
+        $this->assertEquals(404, $httpResponse->getStatusCode());
     }
 
-    public function testInvalidStatus()
+    public function testInvalidStatus(): void
     {
         // try to complete a payment that has status "Created"
-        $response = $this->get("paymentendpoint/ce3a0b03349078d8e85d1de8ded3f0/complete");
-        $this->assertEquals($response->getStatusCode(), 403);
+        $httpResponse = $this->get("paymentendpoint/ce3a0b03349078d8e85d1de8ded3f0/complete");
+        $this->assertEquals(403, $httpResponse->getStatusCode());
     }
 
-    public function testStaticRoute()
+    public function testStaticRoute(): void
     {
         Config::nest();
 
         $staticUrl = 'paymentendpoint/gateway/PaymentExpress_PxPay/complete?id=UNIQUEHASH23q5123tqasdf';
         $response = $this->get($staticUrl);
         // should return 404, because static route isn't enabled
-        $this->assertEquals($response->getStatusCode(), 404);
+        $this->assertEquals(404, $response->getStatusCode());
 
         // Configure gateway to use static route
         Config::modify()->set(GatewayInfo::class, 'PaymentExpress_PxPay', [
@@ -149,7 +159,7 @@ class PaymentGatewayControllerTest extends PaymentTest
         $this->getHttpRequest()->query->replace(['result' => 'abc123']);
         $response = $this->get($staticUrl);
         // should return 404, because controller won't be able to find a payment
-        $this->assertEquals($response->getStatusCode(), 404);
+        $this->assertEquals(404, $response->getStatusCode());
 
         // Add extension that will find the paymeng from the request params
         PaymentGatewayController::add_extension(PaymentGatewayControllerTestExtension::class);
@@ -159,7 +169,7 @@ class PaymentGatewayControllerTest extends PaymentTest
         $this->getHttpRequest()->query->replace(['result' => 'abc123']);
         $response = $this->get($staticUrl);
         // We should get a redirect to the complete url (shop/complete)
-        $this->assertEquals($response->getStatusCode(), 302);
+        $this->assertEquals(302, $response->getStatusCode());
         $headers = $response->getHeaders();
         $this->assertStringEndsWith(
             'shop/complete',
@@ -169,7 +179,7 @@ class PaymentGatewayControllerTest extends PaymentTest
         PaymentGatewayController::remove_extension('PaymentGatewayControllerTest_TestExtension');
     }
 
-    public function testStaticRouteWithoutAction()
+    public function testStaticRouteWithoutAction(): void
     {
         PaymentGatewayController::add_extension(PaymentGatewayControllerTestExtension::class);
         // Configure gateway to use static route
@@ -178,15 +188,15 @@ class PaymentGatewayControllerTest extends PaymentTest
 
         $response = $this->get($staticUrl);
         // should return 404, because there's no action
-        $this->assertEquals($response->getStatusCode(), 404);
+        $this->assertEquals(404, $response->getStatusCode());
 
         $response = $this->get($staticUrl . '&action=bogus');
         // should return 404, because the action is invalid
-        $this->assertEquals($response->getStatusCode(), 404);
+        $this->assertEquals(404, $response->getStatusCode());
 
         $response = $this->get($staticUrl . '&action=cancel');
         // We should get a redirect to the cancel url (shop/incomplete)
-        $this->assertEquals($response->getStatusCode(), 302);
+        $this->assertEquals(302, $response->getStatusCode());
         $headers = $response->getHeaders();
         $this->assertStringEndsWith(
             'shop/incomplete',

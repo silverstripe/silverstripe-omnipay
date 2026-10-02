@@ -1,37 +1,48 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Omnipay\Service\AuthorizeService;
+use SilverStripe\Omnipay\Service\CreateCardService;
+use SilverStripe\Omnipay\Service\PurchaseService;
+use SilverStripe\Omnipay\Service\RefundService;
+use SilverStripe\Omnipay\Service\CaptureService;
+use SilverStripe\Omnipay\Service\VoidService;
+use Exception;
+use GuzzleHttp\Client;
+use GuzzleHttp\Handler\MockHandler;
+use GuzzleHttp\Psr7\Message;
+use Omnipay\Common\GatewayFactory;
+use Omnipay\Common\GatewayInterface;
+use PHPUnit\Framework\MockObject\MockObject;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
-use SilverStripe\Omnipay\Service\PaymentService;
-use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Omnipay\Model\Payment;
-use SilverStripe\Dev\FunctionalTest;
-use SilverStripe\Core\Config\Config;
+use SilverStripe\Omnipay\Service\ServiceFactory;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Tests\Service\TestGatewayFactory;
+use Symfony\Component\HttpFoundation\Request;
 
-abstract class PaymentTest extends FunctionalTest
+trait PaymentTestTrait
 {
     protected static $fixture_file = 'PaymentTest.yml';
 
     protected $autoFollowRedirection = false;
 
-    /** @var Payment */
-    protected $payment;
+    protected Payment $payment;
 
-    /** @var \SilverStripe\Omnipay\Service\ServiceFactory */
-    protected $factory;
+    protected ServiceFactory $factory;
 
     protected $httpClient;
 
     protected $httpRequest;
 
-    /** @var \GuzzleHttp\Handler\MockHandler */
-    protected $mockHandler = null;
+    protected ?MockHandler $mockHandler = null;
 
-    protected static $factoryExtensions;
+    protected static array $factoryExtensions = [];
 
     public static function setUpBeforeClass(): void
     {
@@ -41,8 +52,8 @@ abstract class PaymentTest extends FunctionalTest
         static::$factoryExtensions = ServiceFactory::create()->getExtensionInstances();
 
         if (static::$factoryExtensions) {
-            foreach (static::$factoryExtensions as $extension) {
-                ServiceFactory::remove_extension(get_class($extension));
+            foreach (static::$factoryExtensions as $factoryExtension) {
+                ServiceFactory::remove_extension(get_class($factoryExtension));
             }
         }
 
@@ -51,12 +62,12 @@ abstract class PaymentTest extends FunctionalTest
 
         // Create the default service map
         Config::modify()->set(ServiceFactory::class, 'services', [
-            'authorize' => '\SilverStripe\Omnipay\Service\AuthorizeService',
-            'createcard' => '\SilverStripe\Omnipay\Service\CreateCardService',
-            'purchase' => '\SilverStripe\Omnipay\Service\PurchaseService',
-            'refund' => '\SilverStripe\Omnipay\Service\RefundService',
-            'capture' => '\SilverStripe\Omnipay\Service\CaptureService',
-            'void' => '\SilverStripe\Omnipay\Service\VoidService'
+            'authorize' => AuthorizeService::class,
+            'createcard' => CreateCardService::class,
+            'purchase' => PurchaseService::class,
+            'refund' => RefundService::class,
+            'capture' => CaptureService::class,
+            'void' => VoidService::class
         ]);
 
         Payment::add_extension(PaymentTestPaymentExtensionHooks::class);
@@ -68,8 +79,8 @@ abstract class PaymentTest extends FunctionalTest
 
         // Add removed extensions back once the tests have completed
         if (static::$factoryExtensions) {
-            foreach (static::$factoryExtensions as $extension) {
-                ServiceFactory::add_extension(get_class($extension));
+            foreach (static::$factoryExtensions as $factoryExtension) {
+                ServiceFactory::add_extension(get_class($factoryExtension));
             }
         }
 
@@ -84,12 +95,12 @@ abstract class PaymentTest extends FunctionalTest
 
         $this->factory = ServiceFactory::create();
 
-        Payment::config()->allowed_gateways = [
+        Payment::config()->set('allowed_gateways', [
             'PayPal_Express',
             'PaymentExpress_PxPay',
             'Manual',
             'Dummy'
-        ];
+        ]);
 
         // clear settings for PaymentExpress_PxPay (don't let user configs bleed into tests)
         Config::modify()
@@ -107,7 +118,7 @@ abstract class PaymentTest extends FunctionalTest
             ->setAmount(1222)
             ->setCurrency("GBP");
 
-        Config::modify()->set(Injector::class, 'Omnipay\Common\GatewayFactory', [
+        Config::modify()->set(Injector::class, GatewayFactory::class, [
             'class' => TestGatewayFactory::class
         ]);
 
@@ -119,14 +130,14 @@ abstract class PaymentTest extends FunctionalTest
     {
         if (null === $this->httpClient) {
             if ($this->mockHandler === null) {
-                $this->mockHandler = new \GuzzleHttp\Handler\MockHandler();
+                $this->mockHandler = new MockHandler();
             }
 
-            $guzzle = new \GuzzleHttp\Client([
+            $client = new Client([
                 'handler' => $this->mockHandler,
             ]);
 
-            $this->httpClient = new \Omnipay\Common\Http\Client(new \Http\Adapter\Guzzle7\Client($guzzle));
+            $this->httpClient = new \Omnipay\Common\Http\Client(new \Http\Adapter\Guzzle7\Client($client));
         }
 
         return $this->httpClient;
@@ -135,7 +146,7 @@ abstract class PaymentTest extends FunctionalTest
     public function getHttpRequest()
     {
         if (null === $this->httpRequest) {
-            $this->httpRequest = new \Symfony\Component\HttpFoundation\Request;
+            $this->httpRequest = new Request;
         }
 
         return $this->httpRequest;
@@ -144,14 +155,14 @@ abstract class PaymentTest extends FunctionalTest
     protected function setMockHttpResponse($paths)
     {
         if ($this->mockHandler === null) {
-            throw new \Exception('HTTP client not initialised before adding mock response.');
+            throw new Exception('HTTP client not initialised before adding mock response.');
         }
 
         $testspath = BASE_PATH . '/vendor/omnipay'; //TODO: improve?
 
         foreach ((array)$paths as $path) {
             $this->mockHandler->append(
-                \GuzzleHttp\Psr7\Message::parseResponse(file_get_contents("{$testspath}/{$path}"))
+                Message::parseResponse(file_get_contents("{$testspath}/{$path}"))
             );
         }
 
@@ -159,13 +170,13 @@ abstract class PaymentTest extends FunctionalTest
     }
 
     /**
-     * @param \Omnipay\Common\GatewayInterface|\PHPUnit\Framework\MockObject\MockObject $stubGateway
-     * @return \PHPUnit\Framework\MockObject\MockObject|\Omnipay\Common\GatewayFactory
+     * @param GatewayInterface|MockObject $stubGateway
+     * @return MockObject&GatewayFactory
      */
     protected function stubGatewayFactory($stubGateway)
     {
-        $factory = $this->getMockBuilder('Omnipay\Common\GatewayFactory')->getMock();
-        $factory->expects($this->any())->method('create')->will($this->returnValue($stubGateway));
+        $factory = $this->createMock(GatewayFactory::class);
+        $factory->method('create')->willReturn($stubGateway);
         return $factory;
     }
 }

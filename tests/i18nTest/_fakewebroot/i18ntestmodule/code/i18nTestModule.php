@@ -5,11 +5,11 @@ use SilverStripe\Dev\TestOnly;
 
 class i18nTestModule extends DataObject implements TestOnly
 {
-    private static $db = [
+    private static array $db = [
         'MyField' => 'Varchar',
     ];
 
-    public function myMethod()
+    public function myMethod(): void
     {
         _t(
             'i18nTestModule.ENTITY',
@@ -18,9 +18,10 @@ class i18nTestModule extends DataObject implements TestOnly
         );
     }
 }
+
 class i18nTestModule_Addition
 {
-    public function myAdditionalMethod()
+    public function myAdditionalMethod(): void
     {
         _t('i18nTestModule.ADDITION', 'Addition');
     }

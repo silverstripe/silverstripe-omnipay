@@ -1,37 +1,51 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests;
 
+use Omnipay\Common\GatewayFactory;
+use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
+use SilverStripe\Omnipay\Exception\InvalidParameterException;
+use Exception;
+use Omnipay\Common\Message\NotificationInterface;
+use SilverStripe\Core\Config\Config;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Dev\FunctionalTest;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Omnipay\Service\AuthorizeService;
 use SilverStripe\Omnipay\Service\CaptureService;
 use SilverStripe\Omnipay\Service\PaymentService;
-use Omnipay\Common\Message\NotificationInterface;
-use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
-use SilverStripe\Omnipay\Model\Payment;
-use SilverStripe\Core\Config\Config;
-use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 
 /**
  * Test the capture service
  */
-class CaptureServiceTest extends BaseNotificationServiceTest
+class CaptureServiceTest extends FunctionalTest
 {
-    protected $gatewayMethod = 'capture';
+    use BaseNotificationServiceTestTrait;
+    use PaymentTestTrait;
 
-    protected $fixtureIdentifier = 'payment6';
+    protected static $fixture_file = 'PaymentTest.yml';
 
-    protected $fixtureReceipt = 'authorizedPaymentReceipt';
+    protected $autoFollowRedirection = false;
 
-    protected $startStatus = 'Authorized';
+    protected string $gatewayMethod = 'capture';
 
-    protected $pendingStatus = 'PendingCapture';
+    protected string $fixtureIdentifier = 'payment6';
 
-    protected $endStatus = 'Captured';
+    protected string $fixtureReceipt = 'authorizedPaymentReceipt';
 
-    protected $successFromFixtureMessages = [
+    protected string $startStatus = 'Authorized';
+
+    protected string $pendingStatus = 'PendingCapture';
+
+    protected string $endStatus = 'Captured';
+
+    protected array $successFromFixtureMessages = [
         [ // response that was loaded from the fixture
             'Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE,
             'Reference' => 'authorizedPaymentReceipt'
@@ -46,7 +60,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         ]
     ];
 
-    protected $successMessages = [
+    protected array $successMessages = [
         [ // the generated capture request
             'Type' => CaptureService::MESSAGE_CAPTURE_REQUEST,
             'Reference' => 'testThisRecipe123'
@@ -57,7 +71,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         ]
     ];
 
-    protected $failureMessages = [
+    protected array $failureMessages = [
         [ // response that was loaded from the fixture
             'Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE,
             'Reference' => 'authorizedPaymentReceipt'
@@ -72,7 +86,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         ]
     ];
 
-    protected $notificationFailureMessages = [
+    protected array $notificationFailureMessages = [
         [
             'Type' => AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE,
             'Reference' => 'authorizedPaymentReceipt'
@@ -87,56 +101,60 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         ]
     ];
 
-    protected $errorMessageType = CaptureService::MESSAGE_CAPTURE_ERROR;
+    protected string $errorMessageType = CaptureService::MESSAGE_CAPTURE_ERROR;
 
-    protected $successPaymentExtensionHooks = [
+    protected array $successPaymentExtensionHooks = [
         'onCaptured'
     ];
 
-    protected $initiateServiceExtensionHooks = [
+    protected array $initiateServiceExtensionHooks = [
         'onBeforeCapture',
         'onAfterCapture',
         'onAfterSendCapture',
         'updateServiceResponse'
     ];
 
-    protected $initiateFailedServiceExtensionHooks = [
+    protected array $initiateFailedServiceExtensionHooks = [
         'onBeforeCapture',
         'onAfterCapture',
         'updateServiceResponse'
     ];
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
+        $this->payment = Payment::create()
+            ->setGateway("Dummy")
+            ->setAmount(1222)
+            ->setCurrency("GBP");
         $this->logInWithPermission('CAPTURE_PAYMENTS');
         CaptureService::add_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    public function tearDown(): void
+    protected function tearDown(): void
     {
         parent::tearDown();
         CaptureService::remove_extension(PaymentTestServiceExtensionHooks::class);
     }
 
-    protected function getService(Payment $payment)
+    protected function getService(Payment $payment): PaymentService
     {
         return CaptureService::create($payment);
     }
 
-    public function testFullCapture()
+    public function testFullCapture(): void
     {
         // load an authorized payment from fixture
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
-        $service = $this->getService($payment);
+        $paymentService = $this->getService($payment);
 
         // We supply the amount, but specify the full amount here. So this should be equal to a full capture
-        $service->initiate(['amount' => '123.45']);
+        $paymentService->initiate(['amount' => '123.45']);
 
         // there should be NO partial payments
         $this->assertEquals(0, $payment->getPartialPayments()->count());
@@ -157,11 +175,11 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         // ensure the correct service hooks were called
         $this->assertEquals(
             $this->initiateServiceExtensionHooks,
-            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
+            $paymentService->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
 
-    public function testExcessCapture()
+    public function testExcessCapture(): void
     {
         // load an authorized payment from fixture
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
@@ -173,12 +191,12 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
-        $service = $this->getService($payment);
+        $paymentService = $this->getService($payment);
 
         // We capture ~110% of the authorized payment
-        $service->initiate(['amount' => '135.80']);
+        $paymentService->initiate(['amount' => '135.80']);
 
         // there should be a new partial payment
         $this->assertEquals(1, $payment->getPartialPayments()->count());
@@ -204,11 +222,11 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         // ensure the correct service hooks were called
         $this->assertEquals(
             array_merge($this->initiateServiceExtensionHooks, ['updatePartialPayment']),
-            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
+            $paymentService->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
 
-    public function testExcessCaptureViaNotification()
+    public function testExcessCaptureViaNotification(): void
     {
         Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', [
             'max_capture' => '20%'
@@ -225,7 +243,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         $stubGateway = $this->buildPaymentGatewayStub(false, $this->fixtureReceipt);
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
         $service = $this->getService($payment);
 
@@ -264,11 +282,13 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         // Status should be captured
         $this->assertEquals('Captured', $payment->Status);
         $this->assertEquals('148.14', $payment->MoneyAmount);
+        $this->assertInstanceOf(Payment::class, $payment);
 
         // the partial payment should be void
         $partialPayment = $payment->getPartialPayments()->first();
         $this->assertEquals('Void', $partialPayment->Status);
         $this->assertEquals('24.69', $partialPayment->MoneyAmount);
+        $this->assertInstanceOf(Payment::class, $payment);
 
         // check existance of messages
         SapphireTest::assertListContains([
@@ -300,19 +320,19 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertNull($serviceResponse->getOmnipayResponse());
     }
 
-    public function testPartialCapture()
+    public function testPartialCapture(): void
     {
         // load an authorized payment from fixture
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
 
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
-        $service = $this->getService($payment);
+        $paymentService = $this->getService($payment);
 
         // We do a partial capture
-        $service->initiate(['amount' => '23.45']);
+        $paymentService->initiate(['amount' => '23.45']);
 
         // there should be a new partial payment
         $this->assertEquals(1, $payment->getPartialPayments()->count());
@@ -354,11 +374,11 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         // ensure the correct service hooks were called
         $this->assertEquals(
             array_merge($this->initiateServiceExtensionHooks, ['updatePartialPayment']),
-            $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
+            $paymentService->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->getCalledMethods()
         );
     }
 
-    public function testMultiplePartialCaptures()
+    public function testMultiplePartialCaptures(): void
     {
         // load an authorized payment from fixture
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
@@ -370,12 +390,12 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
-        $service = $this->getService($payment);
+        $paymentService = $this->getService($payment);
 
         // We do a partial capture
-        $service->initiate(['amount' => '23.45']);
+        $paymentService->initiate(['amount' => '23.45']);
 
         // there should be a new partial payment
         $this->assertEquals(1, $payment->getPartialPayments()->count());
@@ -391,7 +411,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
 
         // We do another partial capture
-        $service->initiate(['amount' => '90.00']);
+        $paymentService->initiate(['amount' => '90.00']);
 
         // there should be a new partial payment
         $partialPayment = $payment->getPartialPayments()->first();
@@ -402,13 +422,13 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('10.00', $payment->MoneyAmount);
 
         // We do another partial capture for the remaining amount. Here, there's no partial payment involved.
-        $service->initiate(['amount' => '10.00']);
+        $paymentService->initiate(['amount' => '10.00']);
         $this->assertEquals('Captured', $payment->Status);
         $this->assertEquals('10.00', $payment->MoneyAmount);
         $this->assertFalse($payment->canCapture(null, true));
     }
 
-    public function testPartialCaptureViaNotification()
+    public function testPartialCaptureViaNotification(): void
     {
         // load a payment from fixture
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
@@ -421,7 +441,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         $stubGateway = $this->buildPaymentGatewayStub(false, $this->fixtureReceipt);
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
         $service = $this->getService($payment);
         $service->getExtensionInstance(PaymentTestServiceExtensionHooks::class)->Reset();
@@ -460,11 +480,13 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('Authorized', $payment->Status);
         // the payment balance is reduced to 23.00
         $this->assertEquals('23.00', $payment->MoneyAmount);
+        $this->assertInstanceOf(Payment::class, $payment);
 
         // the partial payment should no longer be pending and positive
         $partialPayment = $payment->getPartialPayments()->first();
         $this->assertEquals('Captured', $partialPayment->Status);
         $this->assertEquals('100.45', $partialPayment->MoneyAmount);
+        $this->assertInstanceOf(Payment::class, $payment);
 
         // multiple payments are enabled, thus capturing should still be possible
         $this->assertTrue($payment->canCapture(null, true));
@@ -499,7 +521,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertNull($serviceResponse->getOmnipayResponse());
     }
 
-    public function testMultipleInitiateCallsBeforeNotificationArrives()
+    public function testMultipleInitiateCallsBeforeNotificationArrives(): void
     {
         // load a payment from fixture
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
@@ -511,22 +533,22 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         $stubGateway = $this->buildPaymentGatewayStub(false, $this->fixtureReceipt);
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
-        $service = $this->getService($payment);
+        $paymentService = $this->getService($payment);
 
         // try to initiate two captures without waiting for one to complete
-        $service->initiate(['amount' => '100.00']);
+        $paymentService->initiate(['amount' => '100.00']);
 
         $exception = null;
         try {
             // the second attempt must throw an exception!
-            $service->initiate(['amount' => '23.75']);
-        } catch (\Exception $ex) {
+            $paymentService->initiate(['amount' => '23.75']);
+        } catch (Exception $ex) {
             $exception = $ex;
         }
 
-        $this->assertInstanceOf('SilverStripe\Omnipay\Exception\InvalidConfigurationException', $exception);
+        $this->assertInstanceOf(InvalidConfigurationException::class, $exception);
 
         // there must be a partial payment
         $this->assertEquals(1, $payment->getPartialPayments()->count());
@@ -549,75 +571,63 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         ], $payment->Messages());
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidParameterException
-     */
-    public function testLargerAmount()
+    public function testLargerAmount(): void
     {
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
         // load a captured payment from fixture
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
-        $service = $this->getService($payment);
+        $paymentService = $this->getService($payment);
 
         // We supply the amount, but specify an amount that is way over what was authorized
         // This will throw an InvalidParameterException
-        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
-        $service->initiate(['amount' => '1000000.00']);
+        $this->expectException(InvalidParameterException::class);
+        $paymentService->initiate(['amount' => '1000000.00']);
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidParameterException
-     */
-    public function testInvalidAmount()
+    public function testInvalidAmount(): void
     {
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
         // load a captured payment from fixture
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
-        $service = $this->getService($payment);
+        $paymentService = $this->getService($payment);
 
         // We supply the amount, but specify an amount that is not a number
         // This will throw an InvalidParameterException
-        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
-        $service->initiate(['amount' => 'test']);
+        $this->expectException(InvalidParameterException::class);
+        $paymentService->initiate(['amount' => 'test']);
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidParameterException
-     */
-    public function testNegativeAmount()
+    public function testNegativeAmount(): void
     {
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
         // load a captured payment from fixture
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
-        $service = $this->getService($payment);
+        $paymentService = $this->getService($payment);
 
         // We supply the amount, but specify an amount that is not a positive number
         // This will throw an InvalidParameterException
-        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
-        $service->initiate(['amount' => '-1']);
+        $this->expectException(InvalidParameterException::class);
+        $paymentService->initiate(['amount' => '-1']);
     }
 
-    /**
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidParameterException
-     */
-    public function testPartialCaptureUnsupported()
+    public function testPartialCaptureUnsupported(): void
     {
         $stubGateway = $this->buildPaymentGatewayStub(true, $this->fixtureReceipt);
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
         // load a captured payment from fixture
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
-        $service = $this->getService($payment);
+        $paymentService = $this->getService($payment);
 
         // only allow full capture, thus disabling partial refunds
         Config::modify()->merge(GatewayInfo::class, $payment->Gateway, [
@@ -626,21 +636,21 @@ class CaptureServiceTest extends BaseNotificationServiceTest
 
         // We supply a partial amount
         // This will throw an InvalidParameterException
-        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidParameterException');
-        $service->initiate(['amount' => '10.00']);
+        $this->expectException(InvalidParameterException::class);
+        $paymentService->initiate(['amount' => '10.00']);
     }
 
-    public function testPartialCaptureFailed()
+    public function testPartialCaptureFailed(): void
     {
         $stubGateway = $this->buildPaymentGatewayStub(false, $this->fixtureReceipt);
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
         // load an authorized payment from fixture
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
-        $service = $this->getService($payment);
+        $paymentService = $this->getService($payment);
 
-        $service->initiate(['amount' => '100.00']);
+        $paymentService->initiate(['amount' => '100.00']);
 
         // there should be NO partial payments
         $this->assertEquals(0, $payment->getPartialPayments()->count());
@@ -650,7 +660,7 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('123.45', $payment->MoneyAmount);
     }
 
-    public function testPartialCaptureViaNotificationFailed()
+    public function testPartialCaptureViaNotificationFailed(): void
     {
         // load a payment from fixture
         $payment = $this->objFromFixture(Payment::class, $this->fixtureIdentifier);
@@ -667,11 +677,11 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         );
 
         // register our mock gateway factory as injection
-        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), 'Omnipay\Common\GatewayFactory');
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
 
-        $service = $this->getService($payment);
+        $paymentService = $this->getService($payment);
 
-        $service->initiate(['amount' => '53.45']);
+        $paymentService->initiate(['amount' => '53.45']);
 
         // Now a notification comes in (will fail)
         $this->get('paymentendpoint/' . $payment->Identifier . '/notify');
@@ -683,11 +693,13 @@ class CaptureServiceTest extends BaseNotificationServiceTest
         $this->assertEquals('Authorized', $payment->Status);
         // the payment balance is unaltered
         $this->assertEquals('123.45', $payment->MoneyAmount);
+        $this->assertInstanceOf(Payment::class, $payment);
 
         // the partial payment should be void
         $partialPayment = $payment->getPartialPayments()->first();
         $this->assertEquals('Void', $partialPayment->Status);
         $this->assertEquals('-53.45', $partialPayment->MoneyAmount);
+        $this->assertInstanceOf(Payment::class, $payment);
 
         // check existance of messages
         SapphireTest::assertListContains($this->notificationFailureMessages, $payment->Messages());

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests\Model;
 
 use SilverStripe\Dev\TestOnly;
@@ -11,5 +13,5 @@ use SilverStripe\ORM\DataObject;
  */
 class TestOrder extends DataObject implements TestOnly
 {
-    private static $table_name = 'Omnipay_TestOrder';
+    private static string $table_name = 'Omnipay_TestOrder';
 }

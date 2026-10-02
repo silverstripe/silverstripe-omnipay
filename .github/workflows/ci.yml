@@ -17,5 +17,6 @@ jobs:
     uses: silverstripe/gha-ci/.github/workflows/ci.yml@v1
     with:
       composer_require_extra:
+        silverstripe/installer:^6.2.0
         php-http/discovery:^1.18.1
         squizlabs/php_codesniffer:^3.7.2

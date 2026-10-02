@@ -1,7 +1,12 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests;
 
+use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
+use SilverStripe\Omnipay\Tests\Model\TestOnsiteGateway;
+use SilverStripe\Omnipay\Tests\Model\TestOffsiteGateway;
 use Omnipay\Common\GatewayFactory;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Dev\SapphireTest;
@@ -10,6 +15,7 @@ use SilverStripe\i18n\i18n;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\i18n\Messages\MessageProvider;
 use SilverStripe\Omnipay\Model\Payment;
+
 require_once __DIR__ . '/I18nTestManifest.php';
 
 class GatewayInfoTest extends SapphireTest
@@ -23,7 +29,7 @@ class GatewayInfoTest extends SapphireTest
     }
 
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         $this->setupManifest();
@@ -36,8 +42,8 @@ class GatewayInfoTest extends SapphireTest
             'Dummy'
         ]);
 
-        $provider = Injector::inst()->get(MessageProvider::class);
-        $provider->getTranslator()->addResource(
+        $messageProvider = Injector::inst()->get(MessageProvider::class);
+        $messageProvider->getTranslator()->addResource(
             'array',
             [
                 'Gateway.PayPal_Express' => 'PayPal Express EN',
@@ -47,7 +53,7 @@ class GatewayInfoTest extends SapphireTest
             'en_US'
         );
 
-        $provider->getTranslator()->addResource(
+        $messageProvider->getTranslator()->addResource(
             'array',
             [
                 'Gateway.Dummy' => 'Dummy DE',
@@ -77,53 +83,52 @@ class GatewayInfoTest extends SapphireTest
 
     /**
      * Test the allowed_gateways config
-     * @expectedException \SilverStripe\Omnipay\Exception\InvalidConfigurationException
      */
-    public function testAllowedGateways()
+    public function testAllowedGateways(): void
     {
-        $this->assertFalse(GatewayInfo::isSupported('Manual'), 'Manual isn\'t in the list of allowed gateways');
+        $this->assertFalse(GatewayInfo::isSupported('Manual'), "Manual isn't in the list of allowed gateways");
 
         $this->assertTrue(GatewayInfo::isSupported('PayPal_Express'), 'PayPal_Express is in the list of allowed gateways');
 
         Config::modify()->remove(Payment::class, 'allowed_gateways');
 
         // this should throw an InvalidConfigurationException (no gateways configured)
-        $this->expectException('\SilverStripe\Omnipay\Exception\InvalidConfigurationException');
+        $this->expectException(InvalidConfigurationException::class);
         GatewayInfo::getSupportedGateways();
     }
 
     /**
      * Test the niceTitle method
      */
-    public function testNiceTitle()
+    public function testNiceTitle(): void
     {
         i18n::set_locale('en_US');
 
         $this->assertEquals(
-            GatewayInfo::niceTitle('Dummy'),
             'Dummy EN',
+            GatewayInfo::niceTitle('Dummy'),
             'Gateway info should return localized gateway name'
         );
 
         i18n::set_locale('de_DE');
 
         $this->assertEquals(
-            GatewayInfo::niceTitle('Dummy'),
             'Dummy DE',
+            GatewayInfo::niceTitle('Dummy'),
             'Gateway info should return localized gateway name'
         );
 
-        $factory = new GatewayFactory();
-        $gateway = $factory->create('PaymentExpress_PxPay');
+        $gatewayFactory = new GatewayFactory();
+        $gateway = $gatewayFactory->create('PaymentExpress_PxPay');
 
         $this->assertEquals(
             GatewayInfo::niceTitle('PaymentExpress_PxPay'),
             $gateway->getName(),
-            'niceTitle should return the gateway name if there\'s no localization present'
+            "niceTitle should return the gateway name if there's no localization present"
         );
 
-        $provider = Injector::inst()->get(MessageProvider::class);
-        $provider->getTranslator()->addResource(
+        $messageProvider = Injector::inst()->get(MessageProvider::class);
+        $messageProvider->getTranslator()->addResource(
             'array',
             ['Payment.Dummy' => 'Dummy DE'],
             'de_DE'
@@ -136,7 +141,7 @@ class GatewayInfoTest extends SapphireTest
     /**
      * Test the return value of getSupportedGateways
      */
-    public function testSupportedGateways()
+    public function testSupportedGateways(): void
     {
         i18n::set_locale('en_US');
 
@@ -164,17 +169,17 @@ class GatewayInfoTest extends SapphireTest
     /**
      * Test the different ways a gateway can be detected as offsite
      */
-    public function testIsOffsite()
+    public function testIsOffsite(): void
     {
         Config::modify()->merge(GatewayInfo::class, 'OffsiteGateway', [
             'is_offsite' => true
         ]);
 
         // this gateway doesn't implement `completePurchase`
-        $this->assertFalse(GatewayInfo::isOffsite('\SilverStripe\Omnipay\Tests\Model\TestOnsiteGateway'));
+        $this->assertFalse(GatewayInfo::isOffsite(TestOnsiteGateway::class));
 
         // this gateway does implement `completePurchase`
-        $this->assertTrue(GatewayInfo::isOffsite('\SilverStripe\Omnipay\Tests\Model\TestOffsiteGateway'));
+        $this->assertTrue(GatewayInfo::isOffsite(TestOffsiteGateway::class));
 
         // check a gateway that was configured to be offsite (purely based on config)
         $this->assertTrue(GatewayInfo::isOffsite('OffsiteGateway'));
@@ -183,7 +188,7 @@ class GatewayInfoTest extends SapphireTest
     /**
      * Test if the gateway is manual
      */
-    public function testIsManual()
+    public function testIsManual(): void
     {
         Config::modify()->merge(GatewayInfo::class, 'Dummy', [
             'is_manual' => true
@@ -202,11 +207,11 @@ class GatewayInfoTest extends SapphireTest
     /**
      * Test the use_authorize config
      */
-    public function testUseAuthorize()
+    public function testUseAuthorize(): void
     {
         $this->assertFalse(
             GatewayInfo::shouldUseAuthorize('PaymentExpress_PxPay'),
-            'PaymentExpress_PxPay wasn\'t configured to use authorize!'
+            "PaymentExpress_PxPay wasn't configured to use authorize!"
         );
 
         $this->assertTrue(
@@ -227,11 +232,11 @@ class GatewayInfoTest extends SapphireTest
     /**
      * Test the use_async_notification config
      */
-    public function testUseAsyncNotification()
+    public function testUseAsyncNotification(): void
     {
         $this->assertFalse(
             GatewayInfo::shouldUseAsyncNotifications('PaymentExpress_PxPay'),
-            'PaymentExpress_PxPay wasn\'t configured to use async notifications!'
+            "PaymentExpress_PxPay wasn't configured to use async notifications!"
         );
 
         // update config on manual gateway (should be ignored!)
@@ -258,11 +263,11 @@ class GatewayInfoTest extends SapphireTest
     /**
      * Test the token_key config
      */
-    public function testTokenKey()
+    public function testTokenKey(): void
     {
         $this->assertEquals(
-            GatewayInfo::getTokenKey('PaymentExpress_PxPay', 'TOKEN'),
             'TOKEN',
+            GatewayInfo::getTokenKey('PaymentExpress_PxPay', 'TOKEN'),
             'getTokenKey should return the default token if none was configured'
         );
 
@@ -272,8 +277,8 @@ class GatewayInfoTest extends SapphireTest
         ]);
 
         $this->assertEquals(
-            GatewayInfo::getTokenKey('PaymentExpress_PxPay', 'TOKEN'),
             'MyTokenKey',
+            GatewayInfo::getTokenKey('PaymentExpress_PxPay', 'TOKEN'),
             'getTokenKey should return the configured token if one was configured'
         );
 
@@ -283,8 +288,8 @@ class GatewayInfoTest extends SapphireTest
         ]);
 
         $this->assertEquals(
-            GatewayInfo::getTokenKey('PaymentExpress_PxPay', 'TOKEN'),
             'TOKEN',
+            GatewayInfo::getTokenKey('PaymentExpress_PxPay', 'TOKEN'),
             'getTokenKey should return the default token if config was invalid'
         );
     }
@@ -292,10 +297,10 @@ class GatewayInfoTest extends SapphireTest
     /**
      * Test required fields
      */
-    public function testRequiredFields()
+    public function testRequiredFields(): void
     {
         $this->assertEquals(
-            GatewayInfo::requiredFields('\SilverStripe\Omnipay\Tests\Model\TestOnsiteGateway'),
+            GatewayInfo::requiredFields(TestOnsiteGateway::class),
             ['name', 'number', 'expiryMonth', 'expiryYear', 'cvv'],
             'Onsite gateway must have at least these default required fields'
         );
@@ -306,12 +311,12 @@ class GatewayInfoTest extends SapphireTest
             'Required fields must match the ones defined in config'
         );
 
-        Config::modify()->merge(GatewayInfo::class, '\SilverStripe\Omnipay\Tests\Model\TestOnsiteGateway', [
+        Config::modify()->merge(GatewayInfo::class, TestOnsiteGateway::class, [
             'required_fields' => ['important', 'very_important', 'cvv']
         ]);
 
         $this->assertEquals(
-            GatewayInfo::requiredFields('\SilverStripe\Omnipay\Tests\Model\TestOnsiteGateway'),
+            GatewayInfo::requiredFields(TestOnsiteGateway::class),
             ['important', 'very_important', 'cvv', 'name', 'number', 'expiryMonth', 'expiryYear'],
             'Onsite gateway must merge default and defined required fields'
         );
@@ -320,7 +325,7 @@ class GatewayInfoTest extends SapphireTest
         GatewayInfo::requiredFields('Dummy');
     }
 
-    public function testMaxCapture()
+    public function testMaxCapture(): void
     {
         // Without setting the config, the max Excess amount should always be 0
         $this->assertEquals(0, GatewayInfo::maxExcessCaptureAmount('Dummy'));
@@ -401,7 +406,7 @@ class GatewayInfoTest extends SapphireTest
         $this->assertEquals(20, GatewayInfo::maxExcessCapturePercent('Dummy'));
     }
 
-    public function testAllowedMethods()
+    public function testAllowedMethods(): void
     {
         // a gateway without explicitly disabling void, capture and refund should allow per default
         $this->assertTrue(GatewayInfo::allowCapture('Dummy'));

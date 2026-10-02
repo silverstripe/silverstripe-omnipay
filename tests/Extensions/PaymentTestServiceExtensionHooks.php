@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests\Extensions;
 
 use SilverStripe\Core\Extension;
@@ -7,39 +9,38 @@ use SilverStripe\Dev\TestOnly;
 
 /**
  * Extension that can be used to test hooks on payment services
+ * @extends Extension<static>
  */
 class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
 {
-    protected $callStack = [];
+    protected array $callStack = [];
 
-    public function Reset()
+    public function Reset(): void
     {
         $this->callStack = [];
     }
 
     /**
      * Get an array of the extension methods that were called and their arguments
-     * @return array
      */
-    public function getCallStack()
+    public function getCallStack(): array
     {
         return $this->callStack;
     }
 
     /**
      * Get an array of the extension methods that were called
-     * @return array
      */
-    public function getCalledMethods()
+    public function getCalledMethods(): array
     {
         $result = [];
-        array_walk($this->callStack, function ($value, $key) use (&$result) {
+        array_walk($this->callStack, function (array $value, $key) use (&$result): void {
             $result[] = $value['method'];
         });
         return $result;
     }
 
-    public function updateServiceResponse($serviceResponse)
+    public function updateServiceResponse($serviceResponse): void
     {
         $this->callStack[] = [
             'method' => 'updateServiceResponse',
@@ -47,7 +48,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function updatePartialPayment($newPayment, $originalPayment)
+    public function updatePartialPayment($newPayment, $originalPayment): void
     {
         $this->callStack[] = [
             'method' => 'updatePartialPayment',
@@ -55,7 +56,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeAuthorize($data)
+    public function onBeforeAuthorize($data): void
     {
         $this->callStack[] = [
             'method' => 'onBeforeAuthorize',
@@ -63,7 +64,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeCapture($data)
+    public function onBeforeCapture($data): void
     {
         $this->callStack[] = [
             'method' => 'onBeforeCapture',
@@ -71,7 +72,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforePurchase($data)
+    public function onBeforePurchase($data): void
     {
         $this->callStack[] = [
             'method' => 'onBeforePurchase',
@@ -79,7 +80,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeRefund($data)
+    public function onBeforeRefund($data): void
     {
         $this->callStack[] = [
             'method' => 'onBeforeRefund',
@@ -87,7 +88,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeVoid($data)
+    public function onBeforeVoid($data): void
     {
         $this->callStack[] = [
             'method' => 'onBeforeVoid',
@@ -95,7 +96,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeCompleteAuthorize($data)
+    public function onBeforeCompleteAuthorize($data): void
     {
         $this->callStack[] = [
             'method' => 'onBeforeCompleteAuthorize',
@@ -103,7 +104,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeCompletePurchase($data)
+    public function onBeforeCompletePurchase($data): void
     {
         $this->callStack[] = [
             'method' => 'onBeforeCompletePurchase',
@@ -111,7 +112,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterAuthorize($omnipayRequest)
+    public function onAfterAuthorize($omnipayRequest): void
     {
         $this->callStack[] = [
             'method' => 'onAfterAuthorize',
@@ -119,7 +120,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterCapture($omnipayRequest)
+    public function onAfterCapture($omnipayRequest): void
     {
         $this->callStack[] = [
             'method' => 'onAfterCapture',
@@ -127,7 +128,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterPurchase($omnipayRequest)
+    public function onAfterPurchase($omnipayRequest): void
     {
         $this->callStack[] = [
             'method' => 'onAfterPurchase',
@@ -135,7 +136,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterRefund($omnipayRequest)
+    public function onAfterRefund($omnipayRequest): void
     {
         $this->callStack[] = [
             'method' => 'onAfterRefund',
@@ -143,7 +144,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterVoid($omnipayRequest)
+    public function onAfterVoid($omnipayRequest): void
     {
         $this->callStack[] = [
             'method' => 'onAfterVoid',
@@ -151,7 +152,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterCompletePurchase($omnipayRequest)
+    public function onAfterCompletePurchase($omnipayRequest): void
     {
         $this->callStack[] = [
             'method' => 'onAfterCompletePurchase',
@@ -159,7 +160,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterCompleteAuthorize($omnipayRequest)
+    public function onAfterCompleteAuthorize($omnipayRequest): void
     {
         $this->callStack[] = [
             'method' => 'onAfterCompleteAuthorize',
@@ -167,7 +168,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterSendAuthorize($omnipayRequest, $omnipayResponse)
+    public function onAfterSendAuthorize($omnipayRequest, $omnipayResponse): void
     {
         $this->callStack[] = [
             'method' => 'onAfterSendAuthorize',
@@ -175,7 +176,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterSendCapture($omnipayRequest, $omnipayResponse)
+    public function onAfterSendCapture($omnipayRequest, $omnipayResponse): void
     {
         $this->callStack[] = [
             'method' => 'onAfterSendCapture',
@@ -183,7 +184,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterSendPurchase($omnipayRequest, $omnipayResponse)
+    public function onAfterSendPurchase($omnipayRequest, $omnipayResponse): void
     {
         $this->callStack[] = [
             'method' => 'onAfterSendPurchase',
@@ -191,7 +192,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterSendRefund($omnipayRequest, $omnipayResponse)
+    public function onAfterSendRefund($omnipayRequest, $omnipayResponse): void
     {
         $this->callStack[] = [
             'method' => 'onAfterSendRefund',
@@ -199,7 +200,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterSendVoid($omnipayRequest, $omnipayResponse)
+    public function onAfterSendVoid($omnipayRequest, $omnipayResponse): void
     {
         $this->callStack[] = [
             'method' => 'onAfterSendVoid',
@@ -207,7 +208,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeCreateCard($data)
+    public function onBeforeCreateCard($data): void
     {
         $this->callStack[] = [
             'method' => 'onBeforeCreateCard',
@@ -215,7 +216,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterCreateCard($omnipayRequest)
+    public function onAfterCreateCard($omnipayRequest): void
     {
         $this->callStack[] = [
             'method' => 'onAfterCreateCard',
@@ -223,7 +224,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterSendCreateCard($omnipayRequest, $omnipayResponse)
+    public function onAfterSendCreateCard($omnipayRequest, $omnipayResponse): void
     {
         $this->callStack[] = [
             'method' => 'onAfterSendCreateCard',
@@ -231,7 +232,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeCompleteCreateCard($data)
+    public function onBeforeCompleteCreateCard($data): void
     {
         $this->callStack[] = [
             'method' => 'onBeforeCompleteCreateCard',
@@ -239,7 +240,7 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onAfterCompleteCreateCard($omnipayRequest)
+    public function onAfterCompleteCreateCard($omnipayRequest): void
     {
         $this->callStack[] = [
             'method' => 'onAfterCompleteCreateCard',

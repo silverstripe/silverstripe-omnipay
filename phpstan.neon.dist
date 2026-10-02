@@ -25,9 +25,6 @@ parameters:
         -
             identifier: missingType.parameter
             path: tests/*
-        -
-            identifier: missingType.generics
-            path: tests/*
         # Payments() is added by this extension to the owner; PHPStan only sees DataObject.
         -
             identifier: method.notFound

@@ -1,7 +1,10 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests;
 
+use Omnipay\Common\CreditCard;
 use SilverStripe\Omnipay\GatewayFieldsFactory;
 use SilverStripe\Dev\SapphireTest;
 use SilverStripe\Core\Config\Config;
@@ -10,7 +13,7 @@ use SilverStripe\Omnipay\GatewayInfo;
 class GatewayFieldsFactoryTest extends SapphireTest
 {
     // Expected credit card fields
-    protected $ccFields = [
+    protected array $ccFields = [
         'type',
         'name',
         'number',
@@ -23,7 +26,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
     ];
 
     // expected billing fields
-    protected $billingFields = [
+    protected array $billingFields = [
         'billingAddress1',
         'billingAddress2',
         'billingCity',
@@ -34,7 +37,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
     ];
 
     // expected shipping fields
-    protected $shippingFields = [
+    protected array $shippingFields = [
         'shippingAddress1',
         'shippingAddress2',
         'shippingCity',
@@ -45,36 +48,32 @@ class GatewayFieldsFactoryTest extends SapphireTest
     ];
 
     // expected company fields
-    protected $companyFields = ['company'];
+    protected array $companyFields = ['company'];
 
     // expected email fields
-    protected $emailFields = ['email'];
+    protected array $emailFields = ['email'];
 
-    /** @var GatewayFieldsFactory */
-    protected $factory;
+    protected GatewayFieldsFactory $factory;
 
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         // tests can potentially fail if we just update due to settings already defined persisting, so we'll remove
         // it first
-        Config::modify()->remove('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename');
+        Config::modify()->remove(GatewayFieldsFactory::class, 'rename');
 
-        $this->factory =  new GatewayFieldsFactory(
-            null,
-            [
+        $this->factory =  GatewayFieldsFactory::create(null, [
             'Card',
             'Billing',
             'Shipping',
             'Company',
             'Email'
-            ]
-        );
+        ]);
     }
 
-    public function testAllFieldGroups()
+    public function testAllFieldGroups(): void
     {
-        $fields = $this->factory->getFields();
+        $fieldList = $this->factory->getFields();
 
         // All fields should be returned
         $this->assertEquals(array_merge(
@@ -83,96 +82,77 @@ class GatewayFieldsFactoryTest extends SapphireTest
             $this->shippingFields,
             $this->companyFields,
             $this->emailFields
-        ), array_keys($fields->dataFields()));
+        ), array_keys($fieldList->getDataFields()));
     }
 
-    public function testCCFields()
+    public function testCCFields(): void
     {
         // Create a gateway-factory without a gateway
-        $factory = new GatewayFieldsFactory(
-            null,
-            ['Card']
-        );
+        $gatewayFieldsFactory = GatewayFieldsFactory::create(null, ['Card']);
 
-        $fields = $factory->getFields();
+        $fieldList = $gatewayFieldsFactory->getFields();
 
-        $this->assertEquals($this->ccFields, array_keys($fields->dataFields()));
+        $this->assertEquals($this->ccFields, array_keys($fieldList->getDataFields()));
 
-        $this->assertEquals($this->ccFields, array_keys($this->factory->getCardFields()->dataFields()));
+        $this->assertEquals($this->ccFields, array_keys($this->factory->getCardFields()->getDataFields()));
     }
 
-    public function testBillingFields()
+    public function testBillingFields(): void
     {
         // Create a gateway-factory without a gateway
-        $factory = new GatewayFieldsFactory(
-            null,
-            ['Billing']
-        );
+        $gatewayFieldsFactory = GatewayFieldsFactory::create(null, ['Billing']);
 
-        $fields = $factory->getFields();
+        $fieldList = $gatewayFieldsFactory->getFields();
 
-        $this->assertEquals($this->billingFields, array_keys($fields->dataFields()));
+        $this->assertEquals($this->billingFields, array_keys($fieldList->getDataFields()));
 
-        $this->assertEquals($this->billingFields, array_keys($this->factory->getBillingFields()->dataFields()));
+        $this->assertEquals($this->billingFields, array_keys($this->factory->getBillingFields()->getDataFields()));
     }
 
-    public function testShippingFields()
+    public function testShippingFields(): void
     {
         // Create a gateway-factory without a gateway
-        $factory = new GatewayFieldsFactory(
-            null,
-            ['Shipping']
-        );
+        $gatewayFieldsFactory = GatewayFieldsFactory::create(null, ['Shipping']);
 
-        $fields = $factory->getFields();
+        $fieldList = $gatewayFieldsFactory->getFields();
 
-        $this->assertEquals($this->shippingFields, array_keys($fields->dataFields()));
+        $this->assertEquals($this->shippingFields, array_keys($fieldList->getDataFields()));
 
-        $this->assertEquals($this->shippingFields, array_keys($this->factory->getShippingFields()->dataFields()));
+        $this->assertEquals($this->shippingFields, array_keys($this->factory->getShippingFields()->getDataFields()));
     }
 
-    public function testCompanyFields()
+    public function testCompanyFields(): void
     {
         // Create a gateway-factory without a gateway
-        $factory = new GatewayFieldsFactory(
-            null,
-            ['Company']
-        );
+        $gatewayFieldsFactory = GatewayFieldsFactory::create(null, ['Company']);
 
-        $fields = $factory->getFields();
+        $fieldList = $gatewayFieldsFactory->getFields();
 
-        $this->assertEquals($this->companyFields, array_keys($fields->dataFields()));
+        $this->assertEquals($this->companyFields, array_keys($fieldList->getDataFields()));
 
-        $this->assertEquals($this->companyFields, array_keys($this->factory->getCompanyFields()->dataFields()));
+        $this->assertEquals($this->companyFields, array_keys($this->factory->getCompanyFields()->getDataFields()));
     }
 
-    public function testEmailFields()
+    public function testEmailFields(): void
     {
         // Create a gateway-factory without a gateway
-        $factory = new GatewayFieldsFactory(
-            null,
-            ['Email']
-        );
+        $gatewayFieldsFactory = GatewayFieldsFactory::create(null, ['Email']);
 
-        $fields = $factory->getFields();
+        $fieldList = $gatewayFieldsFactory->getFields();
 
-        $this->assertEquals($this->emailFields, array_keys($fields->dataFields()));
+        $this->assertEquals($this->emailFields, array_keys($fieldList->getDataFields()));
 
-        $this->assertEquals($this->emailFields, array_keys($this->factory->getEmailFields()->dataFields()));
+        $this->assertEquals($this->emailFields, array_keys($this->factory->getEmailFields()->getDataFields()));
     }
 
-    public function testCardTypes()
+    public function testCardTypes(): void
     {
         $types = $this->factory->getCardTypes();
-
-        $this->assertIsArray($types);
-
-        $card = new \Omnipay\Common\CreditCard();
-
-        $this->assertEquals(array_keys($card->getSupportedBrands()), array_keys($types));
+        $creditCard = new CreditCard();
+        $this->assertEquals(array_keys($creditCard->getSupportedBrands()), array_keys($types));
     }
 
-    public function testRequiredFields()
+    public function testRequiredFields(): void
     {
         Config::modify()->merge(GatewayInfo::class, 'Dummy', [
             'required_fields' => [
@@ -195,7 +175,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
             ]
         ]);
 
-        $factory = new GatewayFieldsFactory('Dummy', [
+        $factory = GatewayFieldsFactory::create('Dummy', [
             'Card',
             'Billing',
             'Shipping',
@@ -222,11 +202,11 @@ class GatewayFieldsFactoryTest extends SapphireTest
             'email'
         ];
 
-        $this->assertEquals($this->factory->getFieldName($defaults), array_keys($fields->dataFields()));
+        $this->assertEquals($this->factory->getFieldName($defaults), array_keys($fields->getDataFields()));
 
         // Same procedure with offsite gateway should not return the CC fields
 
-        $factory = new GatewayFieldsFactory('PayPal_Express', [
+        $factory = GatewayFieldsFactory::create('PayPal_Express', [
             'Card',
             'Billing',
             'Shipping',
@@ -246,16 +226,16 @@ class GatewayFieldsFactoryTest extends SapphireTest
             'email'
         ];
 
-        $this->assertEquals($this->factory->getFieldName($pxDefaults), array_keys($fields->dataFields()));
+        $this->assertEquals($this->factory->getFieldName($pxDefaults), array_keys($fields->getDataFields()));
     }
 
-    public function testRenamedFields()
+    public function testRenamedFields(): void
     {
         Config::modify()->merge(GatewayInfo::class, 'Dummy', [
             'is_offsite' => false
         ]);
 
-        Config::modify()->merge('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename', [
+        Config::modify()->merge(GatewayFieldsFactory::class, 'rename', [
             'prefix' => 'prefix_',
             'name' => 'testName',
             'number' => 'testNumber',
@@ -267,7 +247,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
             ]
         ]);
 
-        $factory = new GatewayFieldsFactory(null, [
+        $factory = GatewayFieldsFactory::create(null, [
             'Card'
         ]);
 
@@ -285,9 +265,9 @@ class GatewayFieldsFactoryTest extends SapphireTest
             'prefix_issueNumber'
         ];
 
-        $this->assertEquals($expected, array_keys($fields->dataFields()));
+        $this->assertEquals($expected, array_keys($fields->getDataFields()));
 
-        $factory = new GatewayFieldsFactory('Dummy', [
+        $factory = GatewayFieldsFactory::create('Dummy', [
             'Card'
         ]);
 
@@ -301,12 +281,12 @@ class GatewayFieldsFactoryTest extends SapphireTest
             'dummy_cvv',
         ];
 
-        $this->assertEquals($expected, array_keys($fields->dataFields()));
+        $this->assertEquals($expected, array_keys($fields->getDataFields()));
     }
 
-    public function testNormalizeFormData()
+    public function testNormalizeFormData(): void
     {
-        Config::modify()->set('SilverStripe\Omnipay\GatewayFieldsFactory', 'rename', [
+        Config::modify()->set(GatewayFieldsFactory::class, 'rename', [
             'prefix' => 'prefix_',
             'name' => 'testName',
             'number' => 'testNumber',
@@ -319,7 +299,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
         ]);
 
         // Test global rename
-        $factory = new GatewayFieldsFactory();
+        $factory = GatewayFieldsFactory::create();
         $this->assertEquals(
             $factory->normalizeFormData(
                 [
@@ -342,7 +322,7 @@ class GatewayFieldsFactoryTest extends SapphireTest
             ]
         );
         // Test gateway specific rename
-        $factory = new GatewayFieldsFactory('Dummy');
+        $factory = GatewayFieldsFactory::create('Dummy');
 
         $this->assertEquals(
             $factory->normalizeFormData(

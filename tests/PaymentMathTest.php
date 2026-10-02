@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests;
 
 use SilverStripe\Omnipay\Helper\PaymentMath;
@@ -11,7 +13,7 @@ use SilverStripe\Core\Config\Config;
  */
 class PaymentMathTest extends SapphireTest
 {
-    public function setUp(): void
+    protected function setUp(): void
     {
         parent::setUp();
         Config::modify()->set(PaymentMath::class, 'precision', 2);
@@ -19,7 +21,7 @@ class PaymentMathTest extends SapphireTest
     }
 
 
-    public function testPrecision()
+    public function testPrecision(): void
     {
         if (!function_exists('bcsub')) {
             $this->markTestIncomplete('BCMath extension not available');
@@ -43,7 +45,7 @@ class PaymentMathTest extends SapphireTest
     }
 
 
-    public function testPrecisionFloat()
+    public function testPrecisionFloat(): void
     {
         Config::modify()->set(PaymentMath::class, 'useBcMath', false);
 
@@ -69,7 +71,7 @@ class PaymentMathTest extends SapphireTest
     }
 
 
-    public function testSubtraction()
+    public function testSubtraction(): void
     {
         if (!function_exists('bcsub')) {
             $this->markTestIncomplete('BCMath extension not available');
@@ -90,7 +92,7 @@ class PaymentMathTest extends SapphireTest
         }
     }
 
-    public function testSubtractionFloat()
+    public function testSubtractionFloat(): void
     {
         Config::modify()->set(PaymentMath::class, 'useBcMath', false);
 
@@ -110,7 +112,7 @@ class PaymentMathTest extends SapphireTest
     }
 
 
-    public function testAddition()
+    public function testAddition(): void
     {
         if (!function_exists('bcadd')) {
             $this->markTestIncomplete('BCMath extension not available');
@@ -131,7 +133,7 @@ class PaymentMathTest extends SapphireTest
         }
     }
 
-    public function testAdditionFloat()
+    public function testAdditionFloat(): void
     {
         Config::modify()->set(PaymentMath::class, 'useBcMath', false);
 
@@ -150,7 +152,7 @@ class PaymentMathTest extends SapphireTest
         $this->assertEquals('100000.1010', $result);
     }
 
-    public function testMultiply()
+    public function testMultiply(): void
     {
         $this->assertEquals('0.00', PaymentMath::multiply('0.0001', '10'));
         $this->assertEquals('19.99', PaymentMath::multiply('0.0199999', '1000'));
@@ -169,7 +171,7 @@ class PaymentMathTest extends SapphireTest
         $this->assertEquals('912345678000000000.0000', PaymentMath::multiply('912345678', '1000000000'));
     }
 
-    public function testMultiplyFloat()
+    public function testMultiplyFloat(): void
     {
         Config::modify()->set(PaymentMath::class, 'useBcMath', false);
 
@@ -190,7 +192,7 @@ class PaymentMathTest extends SapphireTest
         $this->assertEquals('912345678000000000.0000', PaymentMath::multiply('912345678', '1000000000'));
     }
 
-    public function testCompare()
+    public function testCompare(): void
     {
         $this->assertEquals(1, PaymentMath::compare('10', '0'));
         $this->assertEquals(-1, PaymentMath::compare('-10', '0'));
@@ -217,7 +219,7 @@ class PaymentMathTest extends SapphireTest
         $this->assertEquals(0, PaymentMath::compare('1.11112', '1.11113'));
     }
 
-    public function testCompareFloat()
+    public function testCompareFloat(): void
     {
         Config::modify()->set(PaymentMath::class, 'useBcMath', false);
 

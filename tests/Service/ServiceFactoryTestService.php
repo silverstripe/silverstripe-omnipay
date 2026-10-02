@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace SilverStripe\Omnipay\Tests\Service;
 
 use SilverStripe\Omnipay\Service\PurchaseService;

@@ -165,8 +165,7 @@ class PurchaseServiceTest extends FunctionalTest
 
         $stubRequest = $this->stubRequest();
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->onlyMethods(['getName'])
-            ->addMethods(['supportsPurchase', 'purchase'])
+            ->onlyMethods(['getName', 'supportsPurchase', 'purchase'])
             ->getMock();
         $stubGateway->method('supportsPurchase')->willReturn(true);
         $stubGateway->expects($this->once())
@@ -200,8 +199,7 @@ class PurchaseServiceTest extends FunctionalTest
 
         $stubRequest = $this->stubRequest();
         $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->onlyMethods(['getName'])
-            ->addMethods(['supportsCompletePurchase', 'completePurchase'])
+            ->onlyMethods(['getName', 'supportsCompletePurchase', 'completePurchase'])
             ->getMock();
         $stubGateway->method('supportsCompletePurchase')->willReturn(true);
         $stubGateway->expects($this->once())

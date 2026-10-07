@@ -15,6 +15,7 @@ use SilverStripe\Omnipay\Service\PurchaseService;
 use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
+use SilverStripe\Omnipay\Tests\Model\TestOffsiteGateway;
 use SilverStripe\Omnipay\Tests\Service\TestGatewayFactory;
 
 class PurchaseServiceTest extends FunctionalTest
@@ -164,10 +165,9 @@ class PurchaseServiceTest extends FunctionalTest
         ];
 
         $stubRequest = $this->stubRequest();
-        $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->onlyMethods(['getName', 'supportsPurchase', 'purchase'])
+        $stubGateway = $this->getMockBuilder(TestOffsiteGateway::class)
+            ->onlyMethods(['getName', 'purchase'])
             ->getMock();
-        $stubGateway->method('supportsPurchase')->willReturn(true);
         $stubGateway->expects($this->once())
             ->method('purchase')
             ->with($this->callback(function (array $gatewayData) use ($items) {
@@ -198,10 +198,9 @@ class PurchaseServiceTest extends FunctionalTest
         ];
 
         $stubRequest = $this->stubRequest();
-        $stubGateway = $this->getMockBuilder('Omnipay\Common\AbstractGateway')
-            ->onlyMethods(['getName', 'supportsCompletePurchase', 'completePurchase'])
+        $stubGateway = $this->getMockBuilder(TestOffsiteGateway::class)
+            ->onlyMethods(['getName', 'completePurchase'])
             ->getMock();
-        $stubGateway->method('supportsCompletePurchase')->willReturn(true);
         $stubGateway->expects($this->once())
             ->method('completePurchase')
             ->with($this->callback(function (array $gatewayData) use ($items) {

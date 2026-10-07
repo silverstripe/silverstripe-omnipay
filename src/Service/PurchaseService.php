@@ -57,7 +57,7 @@ class PurchaseService extends PaymentService
 
         $gatewayData = $this->gatherGatewayData($data);
 
-        $this->extend('onBeforePurchase', $gatewayData);
+        $this->beforePurchase($gatewayData);
         $request = $this->oGateway()->purchase($gatewayData);
         $this->extend('onAfterPurchase', $request);
 
@@ -121,7 +121,7 @@ class PurchaseService extends PaymentService
         // purchase and completePurchase should use the same data
         $gatewayData = $this->gatherGatewayData($data);
 
-        $this->extend('onBeforeCompletePurchase', $gatewayData);
+        $this->beforeCompletePurchase($gatewayData);
         $request = $gateway->completePurchase($gatewayData);
         $this->extend('onAfterCompletePurchase', $request);
 
@@ -152,5 +152,17 @@ class PurchaseService extends PaymentService
         parent::markCompleted($endStatus, $serviceResponse, $gatewayMessage);
         $this->createMessage(self::MESSAGE_PURCHASED_RESPONSE, $gatewayMessage);
         ErrorHandling::safeExtend($this->payment, 'onCaptured', $serviceResponse);
+    }
+
+    /** @param array<string, mixed> $gatewayData */
+    protected function beforePurchase(array &$gatewayData): void
+    {
+        $this->extend('onBeforePurchase', $gatewayData);
+    }
+
+    /** @param array<string, mixed> $gatewayData */
+    protected function beforeCompletePurchase(array &$gatewayData): void
+    {
+        $this->extend('onBeforeCompletePurchase', $gatewayData);
     }
 }

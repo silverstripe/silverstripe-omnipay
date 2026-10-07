@@ -15,6 +15,21 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
 {
     protected array $callStack = [];
 
+    protected array $items = [
+        [
+            'name' => 'item1',
+            'quantity' => 2,
+            'price' => '10.00',
+            'description' => 'some description',
+        ],
+        [
+            'name' => 'item2',
+            'quantity' => 1,
+            'price' => '50.00',
+            'description' => 'some description',
+        ],
+    ];
+
     public function Reset(): void
     {
         $this->callStack = [];
@@ -72,8 +87,9 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforePurchase($data): void
+    public function onBeforePurchase(&$data): void
     {
+        $data['items'] = $this->items;
         $this->callStack[] = [
             'method' => 'onBeforePurchase',
             'args' => [$data]
@@ -104,8 +120,9 @@ class PaymentTestServiceExtensionHooks extends Extension implements TestOnly
         ];
     }
 
-    public function onBeforeCompletePurchase($data): void
+    public function onBeforeCompletePurchase(&$data): void
     {
+        $data['items'] = $this->items;
         $this->callStack[] = [
             'method' => 'onBeforeCompletePurchase',
             'args' => [$data]

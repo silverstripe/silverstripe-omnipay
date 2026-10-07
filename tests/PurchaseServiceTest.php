@@ -15,6 +15,7 @@ use SilverStripe\Omnipay\Service\PurchaseService;
 use SilverStripe\Omnipay\Service\ServiceFactory;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
+use SilverStripe\Omnipay\Tests\Model\TestOffsiteGateway;
 use SilverStripe\Omnipay\Tests\Service\TestGatewayFactory;
 
 class PurchaseServiceTest extends FunctionalTest
@@ -144,5 +145,73 @@ class PurchaseServiceTest extends FunctionalTest
     protected function getService(Payment $payment): PaymentService
     {
         return PurchaseService::create($payment);
+    }
+
+    public function testOnBeforePurchaseCanMutateGatewayData(): void
+    {
+        $items = [
+            [
+                'name' => 'item1',
+                'quantity' => 2,
+                'price' => '10.00',
+                'description' => 'some description',
+            ],
+            [
+                'name' => 'item2',
+                'quantity' => 1,
+                'price' => '50.00',
+                'description' => 'some description',
+            ],
+        ];
+
+        $stubRequest = $this->stubRequest();
+        $stubGateway = $this->getMockBuilder(TestOffsiteGateway::class)
+            ->onlyMethods(['getName', 'purchase'])
+            ->getMock();
+        $stubGateway->expects($this->once())
+            ->method('purchase')
+            ->with($this->callback(function (array $gatewayData) use ($items) {
+                return isset($gatewayData['items']) && $gatewayData['items'] === $items;
+            }))
+            ->willReturn($stubRequest);
+
+        $service = $this->getService($this->payment);
+        $service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
+        $service->initiate();
+    }
+
+    public function testOnBeforeCompletePurchaseCanMutateGatewayData(): void
+    {
+        $items = [
+            [
+                'name' => 'item1',
+                'quantity' => 2,
+                'price' => '10.00',
+                'description' => 'some description',
+            ],
+            [
+                'name' => 'item2',
+                'quantity' => 1,
+                'price' => '50.00',
+                'description' => 'some description',
+            ],
+        ];
+
+        $stubRequest = $this->stubRequest();
+        $stubGateway = $this->getMockBuilder(TestOffsiteGateway::class)
+            ->onlyMethods(['getName', 'completePurchase'])
+            ->getMock();
+        $stubGateway->expects($this->once())
+            ->method('completePurchase')
+            ->with($this->callback(function (array $gatewayData) use ($items) {
+                return isset($gatewayData['items']) && $gatewayData['items'] === $items;
+            }))
+            ->willReturn($stubRequest);
+
+        $payment = $this->payment;
+        $payment->Status = $this->pendingStatus;
+        $service = $this->getService($payment);
+        $service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
+        $service->complete();
     }
 }

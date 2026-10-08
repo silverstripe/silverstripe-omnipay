@@ -6,6 +6,7 @@ use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\CreditCard;
 use Omnipay\Common\Exception\OmnipayException;
 use Omnipay\Common\GatewayFactory;
+use Omnipay\Common\Helper;
 use Omnipay\Common\Message\AbstractRequest;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\Message\NotificationInterface;
@@ -13,6 +14,7 @@ use Omnipay\Common\Message\RequestInterface;
 use Omnipay\Common\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Controller;
+use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
@@ -34,6 +36,7 @@ use SilverStripe\Omnipay\PaymentGatewayController;
  */
 abstract class PaymentService
 {
+    use Configurable;
     use Extensible;
     use Injectable;
 
@@ -47,6 +50,19 @@ abstract class PaymentService
     public const NOTIFICATION_ERROR_MESSAGE_TYPES = [
         self::MESSAGE_NOTIFICATION_ERROR,
     ];
+
+    /**
+     * When true, keys in the data passed to a service that match a gateway parameter (eg. `username`,
+     * `password`, `signature`, `testMode` or anything set in the gateway `parameters` config) are removed
+     * before the data is sent to the gateway. This prevents (user supplied) data, such as a form submission
+     * containing a "Password" field, from overriding gateway credentials and settings.
+     *
+     * Set to false to allow gateway parameters to be overridden from service data. Extensions can still
+     * modify gateway data via the `onBefore…` hooks, which run after this filtering.
+     *
+     * @config
+     */
+    private static bool $protect_gateway_parameters = true;
 
     /**
      * @var array<string, string>
@@ -238,6 +254,10 @@ abstract class PaymentService
      */
     protected function gatherGatewayData(array $data = [], bool $includeCardOrToken = true): array
     {
+        if (static::config()->get('protect_gateway_parameters')) {
+            $data = $this->removeGatewayParameters($data);
+        }
+
         //set the client IP address, if not already set
         if (!isset($data['clientIp'])) {
             $data['clientIp'] = Controller::curr()->getRequest()->getIP();
@@ -273,6 +293,39 @@ abstract class PaymentService
         }
 
         return $gatewaydata;
+    }
+
+    /**
+     * Remove all entries from the given data that would override a parameter of the gateway.
+     *
+     * Omnipay applies request data via setters (eg. a "Password" key calls `setPassword`), with keys
+     * matched case-insensitively. Gateway parameters are the gateway defaults plus configured parameters.
+     *
+     * @param array<string, mixed> $data
+     * @return array<string, mixed>
+     */
+    protected function removeGatewayParameters(array $data): array
+    {
+        $normalize = fn ($key) => strtolower(Helper::camelCase((string) $key));
+
+        $gatewayKeys = array_merge(
+            array_keys($this->oGateway()->getDefaultParameters()),
+            array_keys(GatewayInfo::getParameters($this->payment->Gateway) ?? [])
+        );
+        $protected = array_flip(array_map($normalize, $gatewayKeys));
+
+        foreach (array_keys($data) as $key) {
+            if (isset($protected[$normalize($key)])) {
+                unset($data[$key]);
+                $this->logger?->notice(sprintf(
+                    'Removed "%s" from data for gateway "%s": it would override a gateway parameter',
+                    $key,
+                    $this->payment->Gateway
+                ));
+            }
+        }
+
+        return $data;
     }
 
     /**

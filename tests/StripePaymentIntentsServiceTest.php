@@ -21,6 +21,10 @@ class StripePaymentIntentsServiceTest extends FunctionalTest
         setUp as paymentTestSetUp;
     }
 
+    protected static $fixture_file = 'PaymentTest.yml';
+
+    protected $autoFollowRedirection = false;
+
     protected function setUp(): void
     {
         $this->paymentTestSetUp();

@@ -58,6 +58,13 @@ class PaymentModelTest extends FunctionalTest
         $fieldList = Payment::create()->getCMSFields();
 
         $this->assertInstanceOf(FieldList::class, $fieldList);
+        foreach (['PaymentStatus', 'Identifier', 'TransactionReference'] as $name) {
+            $this->assertNotNull($fieldList->dataFieldByName($name), "$name should be shown in the CMS");
+        }
+
+        $summaryFields = Payment::singleton()->summaryFields();
+        $this->assertArrayHasKey('Identifier', $summaryFields);
+        $this->assertArrayHasKey('TransactionReference', $summaryFields);
     }
 
     public function testTitle(): void

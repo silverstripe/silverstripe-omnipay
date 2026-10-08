@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Omnipay;
 
+use SilverStripe\Omnipay\Forms\GatewayFieldsValidator;
 use Omnipay\Common\CreditCard;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
@@ -113,6 +114,21 @@ class GatewayFieldsFactory
         $this->gateway = $gateway;
         $this->buildRenameMap();
         return $this;
+    }
+
+    public function getGateway(): ?string
+    {
+        return $this->gateway;
+    }
+
+    /**
+     * Get a validator for a form built with the fields of this factory.
+     *
+     * @param list<string> $required additional required fields (using form field names)
+     */
+    public function getValidator(array $required = []): GatewayFieldsValidator
+    {
+        return GatewayFieldsValidator::create($this, $required);
     }
 
     /**

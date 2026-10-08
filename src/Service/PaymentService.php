@@ -227,6 +227,64 @@ abstract class PaymentService
     }
 
     /**
+     * Complete a pending payment for an offsite gateway that doesn't implement the matching
+     * "complete…" method (eg. `completePurchase`), see issue #186.
+     *
+     * Such gateways don't send any data back with the customer, so the customer returning to the site
+     * is no proof of payment. Instead:
+     * * An incoming notification is processed via `acceptNotification` and completes the payment.
+     * * A returning customer gets a pending response if the gateway is configured to use
+     *   async notifications (`use_async_notification`). The notification will complete the payment.
+     *
+     * @param bool $isNotification whether this is a notification from the gateway
+     * @param string $endStatus the payment status to set once the payment has been completed
+     * @param string $errorMessageType message type to log on errors
+     * @param string $method name of the unsupported gateway method (for error messages)
+     * @throws InvalidConfigurationException when the payment can't be completed with this gateway
+     */
+    protected function completeWithoutGatewayMethod(
+        bool $isNotification,
+        string $endStatus,
+        string $errorMessageType,
+        string $method
+    ): ServiceResponse {
+        $gatewayName = $this->payment->Gateway;
+
+        if ($isNotification && $this->oGateway()->supportsAcceptNotification()) {
+            $serviceResponse = $this->handleNotification();
+
+            if ($serviceResponse->isError() || $serviceResponse->isAwaitingNotification()) {
+                return $serviceResponse;
+            }
+
+            $notification = $serviceResponse->getOmnipayResponse();
+            $reference = $notification ? $notification->getTransactionReference() : null;
+            if ($this->payment->TransactionReference && $reference != $this->payment->TransactionReference) {
+                $serviceResponse->addFlag(ServiceResponse::SERVICE_ERROR);
+                $this->createMessage($errorMessageType, 'Transaction references do not match!');
+                return $serviceResponse;
+            }
+
+            if ($serviceResponse->isSuccessful()) {
+                $this->markCompleted($endStatus, $serviceResponse, $notification);
+            }
+
+            return $serviceResponse;
+        }
+
+        if (!$isNotification && GatewayInfo::shouldUseAsyncNotifications($gatewayName)) {
+            return $this->generateServiceResponse(ServiceResponse::SERVICE_PENDING);
+        }
+
+        throw new InvalidConfigurationException(sprintf(
+            'The gateway "%s" doesn\'t support %s. Enable "use_async_notification" for gateways that '
+            . 'confirm payments with notifications only.',
+            $gatewayName,
+            $method
+        ));
+    }
+
+    /**
      * Collect common data parameters to pass to the gateway.
      * This method should merge in common data that is required by all services.
      *

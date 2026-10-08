@@ -109,8 +109,11 @@ class AuthorizeService extends PaymentService
 
         $gateway = $this->oGateway();
         if (!$gateway->supportsCompleteAuthorize()) {
-            throw new InvalidConfigurationException(
-                sprintf('The gateway "%s" doesn\'t support completeAuthorize', $this->payment->Gateway)
+            return $this->completeWithoutGatewayMethod(
+                $isNotification,
+                'Authorized',
+                self::MESSAGE_COMPLETE_AUTHORIZE_ERROR,
+                'completeAuthorize'
             );
         }
 

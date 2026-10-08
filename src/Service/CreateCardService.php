@@ -110,8 +110,11 @@ class CreateCardService extends PaymentService
 
         $gateway = $this->oGateway();
         if (!method_exists($gateway, "completeCreateCard")) {
-            throw new InvalidConfigurationException(
-                sprintf('The gateway "%s" doesn\'t support completeCreateCard', $this->payment->Gateway)
+            return $this->completeWithoutGatewayMethod(
+                $isNotification,
+                'CardCreated',
+                self::MESSAGE_COMPLETE_CREATE_CARD_ERROR,
+                'completeCreateCard'
             );
         }
 

@@ -26,6 +26,9 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestServiceExtensionHooks;
 use SilverStripe\Omnipay\Tests\Extensions\PaymentTestPaymentExtensionHooks;
 use SilverStripe\Omnipay\Tests\Model\TestOffsiteGateway;
+use SilverStripe\Omnipay\Tests\Model\TestNotifyOnlyGateway;
+use Omnipay\Common\Message\NotificationInterface;
+use PHPUnit\Framework\Attributes\DataProvider;
 use Closure;
 
 /**
@@ -374,6 +377,66 @@ trait BasePurchaseServiceTestTrait
         // this should throw an exception, because the gateway doesn't support the complete method
         $this->expectException(InvalidConfigurationException::class);
         $service->complete();
+    }
+
+    public function testCompleteWithoutCompleteMethodAwaitsNotification(): void
+    {
+        $stubGateway = $this->getMockBuilder(TestNotifyOnlyGateway::class)
+            ->onlyMethods(['getName', 'acceptNotification'])
+            ->getMock();
+        $stubGateway->expects($this->never())->method('acceptNotification');
+
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
+        Config::modify()->merge(GatewayInfo::class, $this->payment->Gateway, ['use_async_notification' => true]);
+
+        $this->payment->Status = $this->pendingStatus;
+        $serviceResponse = $this->getService($this->payment)->complete();
+
+        // the customer returned, but only the notification can confirm the payment
+        $this->assertTrue($serviceResponse->isAwaitingNotification());
+        $this->assertFalse($serviceResponse->isError());
+        $this->assertEquals($this->pendingStatus, $this->payment->Status);
+    }
+
+    #[DataProvider('notifyOnlyGatewayProvider')]
+    public function testNotificationWithoutCompleteMethod(
+        string $transactionStatus,
+        ?string $storedReference,
+        bool $expectError,
+        bool $expectCompleted
+    ): void {
+        $notification = $this->createMock(NotificationInterface::class);
+        $notification->method('getTransactionStatus')->willReturn($transactionStatus);
+        $notification->method('getTransactionReference')->willReturn('ref-123');
+
+        $stubGateway = $this->getMockBuilder(TestNotifyOnlyGateway::class)
+            ->onlyMethods(['getName', 'acceptNotification'])
+            ->getMock();
+        $stubGateway->expects($this->once())->method('acceptNotification')->willReturn($notification);
+
+        Injector::inst()->registerService($this->stubGatewayFactory($stubGateway), GatewayFactory::class);
+
+        $this->payment->Status = $this->pendingStatus;
+        $this->payment->TransactionReference = $storedReference;
+        $serviceResponse = $this->getService($this->payment)->complete([], true);
+
+        $this->assertTrue($serviceResponse->isNotification());
+        $this->assertSame($expectError, $serviceResponse->isError());
+        $this->assertEquals($expectCompleted ? $this->completeStatus : $this->pendingStatus, $this->payment->Status);
+        if ($expectCompleted) {
+            $this->assertEquals('ref-123', $this->payment->TransactionReference);
+        }
+    }
+
+    public static function notifyOnlyGatewayProvider(): array
+    {
+        return [
+            'completed' => [NotificationInterface::STATUS_COMPLETED, null, false, true],
+            'completed, matching reference' => [NotificationInterface::STATUS_COMPLETED, 'ref-123', false, true],
+            'completed, other reference' => [NotificationInterface::STATUS_COMPLETED, 'ref-999', true, false],
+            'pending' => [NotificationInterface::STATUS_PENDING, null, false, false],
+            'failed' => [NotificationInterface::STATUS_FAILED, null, true, false],
+        ];
     }
 
     public function testGatewayCompleteMethodFailure(): void

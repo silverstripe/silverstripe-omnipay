@@ -4,6 +4,7 @@ namespace SilverStripe\Omnipay;
 
 use SilverStripe\Omnipay\Forms\GatewayFieldsValidator;
 use Omnipay\Common\CreditCard;
+use Omnipay\Common\Helper;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
@@ -19,15 +20,9 @@ use SilverStripe\Forms\TextField;
 /**
  * Helper for generating gateway fields, based on best practices.
  *
- * For Omnipay {@link \Omnipay\Stripe\PaymentIntentsGateway} (`Stripe_PaymentIntents`), map
- * {@link StripeGatewayFieldsProvider} in `gateway_fields_providers` to render a Stripe Payment Element
- * mount container and a hidden `paymentMethod` field per https://docs.stripe.com/payments/payment-element
- * (configure mount/appearance on that class).
- *
- * {@link StripeGatewayFieldsProvider} registers Stripe.js and mounts the Payment Element when
- * `stripe_publishable_key` on the mount node are set; otherwise supply your own
- * client-side integration.
- *
+ * Gateways that collect payment details client-side (eg. with a hosted card widget) can replace the standard
+ * card fields with a {@link GatewayFieldsProvider}, configured via `gateway_fields_providers`. Out of the box,
+ * {@link StripeGatewayFieldsProvider} renders a Stripe Payment Element for `Stripe_PaymentIntents`.
  */
 class GatewayFieldsFactory
 {
@@ -36,14 +31,17 @@ class GatewayFieldsFactory
     use Injectable;
 
     /**
-     * @config Map of Omnipay gateway class name (as stored on {@link Payment}) to
-     * {@link GatewayFieldsProvider} implementation.
+     * @config Map of gateways to the {@link GatewayFieldsProvider} that supplies their card fields.
      *
-     * @var array<string, class-string<GatewayFieldsProvider>>
+     * Keys can be a gateway name (as configured in {@link GatewayInfo}), an Omnipay short name
+     * (eg. `Stripe_PaymentIntents`) or an Omnipay gateway class name. Gateways configured with a
+     * `gateway_class` use the provider of that class, unless they have an entry of their own.
+     * Set an entry to `null` to disable a provider.
+     *
+     * @var array<string, class-string<GatewayFieldsProvider>|null>
      */
     private static array $gateway_fields_providers = [
         'Stripe_PaymentIntents' => StripeGatewayFieldsProvider::class,
-        '\Omnipay\Stripe\PaymentIntentsGateway' => StripeGatewayFieldsProvider::class,
     ];
 
     /** @var list<string> */
@@ -214,7 +212,7 @@ class GatewayFieldsFactory
     }
 
     /**
-     * Resolve a {@link GatewayFieldsProvider} for the given Omnipay gateway identifier (short name or class name).
+     * Resolve the {@link GatewayFieldsProvider} for the given gateway, see {@link self::$gateway_fields_providers}.
      */
     public static function getGatewayFieldsProviderForGateway(?string $gateway): ?GatewayFieldsProvider
     {
@@ -223,17 +221,37 @@ class GatewayFieldsFactory
         }
 
         $map = self::config()->get('gateway_fields_providers');
-        if (!is_array($map) || !isset($map[$gateway])) {
+        if (!is_array($map)) {
             return null;
         }
 
-        $class = $map[$gateway];
-        if (!is_string($class) || !class_exists($class) || !is_subclass_of($class, GatewayFieldsProvider::class)) {
+        if (array_key_exists($gateway, $map)) {
+            $class = $map[$gateway];
+        } else {
+            $class = null;
+            $gatewayClass = self::normalizeGatewayClass(GatewayInfo::getGatewayClass($gateway));
+            foreach ($map as $key => $value) {
+                if (self::normalizeGatewayClass((string) $key) === $gatewayClass) {
+                    $class = $value;
+                    break;
+                }
+            }
+        }
+
+        if (!is_string($class) || !is_subclass_of($class, GatewayFieldsProvider::class)) {
             return null;
         }
 
         /** @var GatewayFieldsProvider */
         return Injector::inst()->get($class);
+    }
+
+    /**
+     * Get the fully qualified class name (without leading backslash) of an Omnipay gateway short name or class name.
+     */
+    public static function normalizeGatewayClass(string $gateway): string
+    {
+        return ltrim(Helper::getGatewayClassName($gateway), '\\');
     }
 
     /**
@@ -254,8 +272,7 @@ class GatewayFieldsFactory
         $fields = FieldList::create();
 
         foreach ($this->fieldGroups as $group) {
-            if (
-                $group === 'Card'
+            if ($group === 'Card'
                 && $this->gatewayFieldsProvider
                 && $this->gatewayFieldsProvider->providesCardFields($this)
             ) {

@@ -6,7 +6,6 @@ use Omnipay\Common\AbstractGateway;
 use Omnipay\Common\GatewayFactory;
 use SilverStripe\Core\Environment;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
-use SilverStripe\Omnipay\GatewayFieldsFactory;
 use SilverStripe\Omnipay\Model\Payment;
 use SilverStripe\Core\Config\Configurable;
 
@@ -447,24 +446,21 @@ class GatewayInfo
             $fields = $requiredFields;
         }
 
-        // Always require the following for on-site gateways (and not manual), unless a
-        // {@link GatewayFieldsProvider} replaces the default card field list.
-        if (!self::isOffsite($gateway) && !self::isManual($gateway)) {
-            $provider = GatewayFieldsFactory::getGatewayFieldsProviderForGateway($gateway);
-            $providerCardFields = $provider?->getRequiredCardFieldsForGateway($gateway);
-            if ($providerCardFields !== null) {
-                $fields = array_merge($fields, $providerCardFields);
-            } else {
-                $fields = array_merge(
-                    $fields,
-                    ['name', 'number', 'expiryMonth', 'expiryYear', 'cvv']
-                );
-            }
+        // A GatewayFieldsProvider (eg. Stripe Payment Element) defines its own required card fields.
+        // Otherwise, always require the standard card fields for on-site gateways (and not manual).
+        $provider = GatewayFieldsFactory::getGatewayFieldsProviderForGateway($gateway);
+        $providerCardFields = $provider?->getRequiredCardFieldsForGateway($gateway);
+        if ($providerCardFields !== null) {
+            $fields = array_merge($fields, $providerCardFields);
+        } elseif (!self::isOffsite($gateway) && !self::isManual($gateway)) {
+            $fields = array_merge(
+                $fields,
+                ['name', 'number', 'expiryMonth', 'expiryYear', 'cvv']
+            );
         }
 
         return array_values(array_unique($fields));
     }
-
 
     /**
      * Get the gateway config-parameters.

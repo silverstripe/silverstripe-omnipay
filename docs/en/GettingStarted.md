@@ -106,6 +106,10 @@ Fields have been appropriately grouped, in case you only want to retrieve the cr
 checks the card number (Luhn checksum), expiry date and security code if those fields are in the form. Pass extra
 required field names as an array: `$factory->getValidator(['company'])`.
 
+Some gateways collect card details with a client-side widget instead of regular form fields. For these, a
+`GatewayFieldsProvider` replaces the card fields. The module includes one for the
+[Stripe Payment Element](StripePaymentElementSetup.md) (`Stripe_PaymentIntents`).
+
 ### Required Fields
 
 Required fields can be configured in the YAML config file, as this information is unfortunately not provided by Omnipay:

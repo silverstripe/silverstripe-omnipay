@@ -21,6 +21,7 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Stripe\StripeGatewayFieldsProvider;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
 use SilverStripe\Omnipay\Helper\Logging;
 use SilverStripe\Omnipay\Model\Message\PaymentMessage;
@@ -181,16 +182,11 @@ abstract class PaymentService
     }
 
     /**
-     * True when the payment uses {@link \Omnipay\Stripe\PaymentIntentsGateway} (short or FQCN).
+     * True when the payment uses {@link \Omnipay\Stripe\PaymentIntentsGateway}.
      */
     protected function isStripePaymentIntentsGateway(): bool
     {
-        $g = $this->payment->Gateway;
-        if ($g === 'Stripe_PaymentIntents') {
-            return true;
-        }
-
-        return ltrim((string) $g, '\\') === 'Omnipay\\Stripe\\PaymentIntentsGateway';
+        return StripeGatewayFieldsProvider::isPaymentIntentsGateway($this->payment->Gateway);
     }
 
     /**
@@ -362,12 +358,9 @@ abstract class PaymentService
             if (empty($gatewaydata[$tokenKey])) {
                 $gatewaydata['card'] = $this->getCreditCard($data);
             } elseif ($tokenKey !== 'token') {
-                // Stripe Payment Intents + Elements: pass `paymentMethod` (pm_xxx) through to Omnipay unchanged
-                if ($this->isStripePaymentIntentsGateway() && $tokenKey === 'paymentMethod') {
-                    // leave $gatewaydata['paymentMethod'] as-is for the gateway request
-                } else {
-                    // some gateways (eg. braintree) use a different key but we need
-                    // to normalize that for omnipay
+                // some gateways (eg. braintree) use a different key but we need to normalize that for omnipay.
+                // Stripe Payment Intents expects the payment method ID (pm_…) as `paymentMethod`, so leave it as is.
+                if (!($tokenKey === 'paymentMethod' && $this->isStripePaymentIntentsGateway())) {
                     $gatewaydata['token'] = $gatewaydata[$tokenKey];
                     unset($gatewaydata[$tokenKey]);
                 }
@@ -564,7 +557,7 @@ abstract class PaymentService
             $output = $data;
         } elseif ($data instanceof \Exception) {
             $output = [
-                'Message' => mb_substr($data->getMessage() ?? '', 0, 254),
+                'Message' => mb_substr($data->getMessage(), 0, 254),
                 'Code' => (string) $data->getCode(),
                 'Exception' => get_class($data),
                 'Backtrace' => $data->getTraceAsString()

@@ -21,7 +21,7 @@ use Symfony\Component\Console\Input\InputOption;
  */
 class CleanupAbandonedPaymentsTask extends BuildTask
 {
-    private static string $segment = 'CleanupAbandonedPaymentsTask';
+    protected static string $commandName = 'CleanupAbandonedPaymentsTask';
 
     protected string $title = 'Clean up abandoned payments';
 

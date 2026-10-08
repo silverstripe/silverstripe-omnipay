@@ -185,6 +185,29 @@ class GatewayInfoTest extends SapphireTest
         $this->assertTrue(GatewayInfo::isOffsite('OffsiteGateway'));
     }
 
+    public function testGatewayClass(): void
+    {
+        Config::modify()->merge(GatewayInfo::class, 'PxPay_Donations', [
+            'gateway_class' => 'PaymentExpress_PxPay',
+        ]);
+        Config::modify()->merge(GatewayInfo::class, 'Offsite_Two', [
+            'gateway_class' => TestOffsiteGateway::class,
+        ]);
+
+        // without config, the gateway name is the gateway class
+        $this->assertEquals('PaymentExpress_PxPay', GatewayInfo::getGatewayClass('PaymentExpress_PxPay'));
+        $this->assertEquals('PaymentExpress_PxPay', GatewayInfo::getGatewayClass('PxPay_Donations'));
+        $this->assertEquals(TestOffsiteGateway::class, GatewayInfo::getGatewayClass('Offsite_Two'));
+
+        // aliases are resolved when inspecting the gateway
+        $this->assertTrue(GatewayInfo::isOffsite('Offsite_Two'));
+        $gatewayFactory = new GatewayFactory();
+        $this->assertEquals(
+            $gatewayFactory->create('PaymentExpress_PxPay')->getName(),
+            GatewayInfo::niceTitle('PxPay_Donations')
+        );
+    }
+
     /**
      * Test if the gateway is manual
      */

@@ -157,6 +157,27 @@ class PaymentServiceTest extends FunctionalTest
         $this->assertArrayHasKey('Password', $gatewayData);
     }
 
+    public function testGatewayWithGatewayClass(): void
+    {
+        Config::modify()->set(GatewayInfo::class, 'PxPay_Donations', [
+            'gateway_class' => 'PaymentExpress_PxPay',
+            'parameters' => [
+                'username' => 'DONATIONS',
+                'password' => 'donations-key'
+            ]
+        ]);
+
+        $this->payment->Gateway = 'PxPay_Donations';
+        $gateway = $this->service->oGateway();
+        $this->assertEquals('PaymentExpress_PxPay', $gateway->getShortName());
+        $this->assertEquals('DONATIONS', $gateway->getParameters()['username']);
+        $this->assertEquals('donations-key', $gateway->getParameters()['password']);
+
+        // the regular configuration for the same gateway class is unaffected
+        $this->payment->Gateway = 'PaymentExpress_PxPay';
+        $this->assertEquals('EXAMPLEUSER', $this->service->oGateway()->getParameters()['username']);
+    }
+
     // Test a successful notification
     public function testHandleNotificationSuccess(): void
     {

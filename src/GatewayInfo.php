@@ -24,6 +24,8 @@ use SilverStripe\Core\Config\Configurable;
  * </code>
  *
  * The following config settings are allowed per gateway:
+ * * `gateway_class` *string*: Omnipay gateway (short name or class) to use. Defaults to the config key, so the same
+ *      Omnipay gateway can be configured several times under different names (eg. with different accounts)
  * * `is_manual` *boolean*: Set this to true if this gateway should be considered a "Manual" Payment (eg. Invoice)
  * * `is_offsite` *boolean*: Set this to true if this gateway is an offsite gateway (you can force this setting if the automatic detection fails)
  * * `use_authorize` *boolean*: Whether or not this Gateway should prefer authorize over purchase
@@ -99,6 +101,29 @@ class GatewayInfo
     }
 
     /**
+     * Get the Omnipay gateway that should be instantiated for the given gateway name.
+     *
+     * By default this is the gateway name itself. Use the `gateway_class` setting to configure the same
+     * Omnipay gateway several times under different names:
+     *
+     * <code>
+     * SilverStripe\Omnipay\GatewayInfo:
+     *   Paystation_Donations:
+     *     gateway_class: Paystation_Hosted
+     *     parameters:
+     *       paystationId: '`PAYSTATION_DONATIONS_ID`'
+     * </code>
+     *
+     * @param string $gateway gateway name, as used in `allowed_gateways`
+     * @return string Omnipay gateway short name or fully qualified class name
+     */
+    public static function getGatewayClass(string $gateway): string
+    {
+        $class = self::getConfigSetting($gateway, 'gateway_class');
+        return is_string($class) && $class !== '' ? $class : $gateway;
+    }
+
+    /**
      * Get a locale aware title for the given gateway.
      *
      * @param string $name gateway short name
@@ -115,7 +140,7 @@ class GatewayInfo
 
         try {
             $factory = new GatewayFactory();
-            $gateway = $factory->create($name);
+            $gateway = $factory->create(self::getGatewayClass($name));
         } catch (\Exception $e) {
             /** do nothing */
         }
@@ -156,7 +181,7 @@ class GatewayInfo
         }
 
         $factory = new GatewayFactory();
-        $gateway = $factory->create($gateway);
+        $gateway = $factory->create(self::getGatewayClass($gateway));
 
         // Some offsite gateways don't separate between authorize and complete requests,
         // so we need a different way to determine they're off site in the first place

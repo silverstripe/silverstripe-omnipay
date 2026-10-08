@@ -13,6 +13,7 @@ Each Gateway can have the following settings:
 
 | Setting                  | Type             | Description
 | ------------------------ | ---------------- | ---
+| `gateway_class`          | *string*         | The Omnipay gateway (short name or class name) to use. Defaults to the name of the config entry. See **Using the same gateway more than once** below
 | `is_manual`              | *boolean*        | Set this to true if this gateway should be considered a "Manual" gateway (eg. Invoice)
 | `use_authorize`          | *boolean*        | Whether or not this gateway should prefer authorize over purchase
 | `use_async_notification` | *boolean*        | When set to true, this gateway will receive asynchronous notifications from the payment provider to confirm status changes. Required for offsite gateways that don't implement `completePurchase`/`completeAuthorize`: the payment is then completed by the notification, and the customer returning from the gateway sees it as pending
@@ -82,6 +83,31 @@ SilverStripe\Omnipay\GatewayInfo:
 ```
 
 The [SilverStripe documentation](https://docs.silverstripe.org/en/4/developer_guides/configuration/configuration/) explains more about YAML config files.
+
+### Using the same gateway more than once
+
+To use one Omnipay gateway with different settings, e.g. a separate merchant account for donations, add an extra
+config entry under a name of your choice and point it at the Omnipay gateway with `gateway_class`:
+
+```yaml
+SilverStripe\Omnipay\Model\Payment:
+  allowed_gateways:
+    - 'Paystation_Hosted'
+    - 'Paystation_Donations'
+
+SilverStripe\Omnipay\GatewayInfo:
+  Paystation_Hosted:
+    parameters:
+      paystationId: '`PAYSTATION_ID`'
+  Paystation_Donations:
+    gateway_class: 'Paystation_Hosted'
+    parameters:
+      paystationId: '`PAYSTATION_DONATIONS_ID`'
+```
+
+Each payment stores the name of the config entry (e.g. `Paystation_Donations`), so it keeps using the right
+settings for captures, refunds and notifications. Both entries show the Omnipay gateway name by default. You can give
+them distinct titles with translations, see [Translating](Translating.md).
 
 ### The `max_capture` config setting
 

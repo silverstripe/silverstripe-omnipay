@@ -260,6 +260,20 @@ class PaymentModelTest extends FunctionalTest
         $this->assertFalse($payment->canVoid());
     }
 
+    public function testMaxCaptureAmountUsesCurrencyPrecision(): void
+    {
+        // JPY has no minor unit, so the excess amount is rounded down to whole yen
+        $payment = Payment::create()->init('Dummy', 1005, 'JPY');
+        $payment->Status = 'Authorized';
+        Config::modify()->merge(GatewayInfo::class, 'Dummy', ['max_capture' => '15%']);
+        $this->assertSame('1155', $payment->getMaxCaptureAmount());
+
+        // KWD has three decimals
+        $payment = Payment::create()->init('Dummy', 10.005, 'KWD');
+        $payment->Status = 'Authorized';
+        $this->assertSame('11.505', $payment->getMaxCaptureAmount());
+    }
+
     public function testMaxCaptureAmount(): void
     {
         $payment = Payment::create()->init('Dummy', 120, 'EUR');

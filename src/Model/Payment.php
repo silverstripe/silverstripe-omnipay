@@ -3,7 +3,8 @@
 namespace SilverStripe\Omnipay\Model;
 
 use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\Omnipay\Helper\PaymentMath;
+use Money\Money;
+use SilverStripe\Omnipay\Helper\PaymentMoney;
 use SilverStripe\ORM\DataList;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\FieldType\DBMoney;
@@ -390,27 +391,26 @@ final class Payment extends DataObject implements PermissionProvider
         $percent = GatewayInfo::maxExcessCapturePercent($this->Gateway);
         $fixedAmount = GatewayInfo::maxExcessCaptureAmount($this->Gateway, $this->getCurrency());
 
+        $currency = (string) $this->getCurrency();
+        $amount = PaymentMoney::toMoney($this->MoneyAmount, $currency);
+
         // -1 will only be returned if there's a fixed amount, but no percentage.
         // We can safely return the fixed amount here
         if ($percent === -1) {
-            return PaymentMath::add($this->MoneyAmount, $fixedAmount);
+            return PaymentMoney::toDecimal($amount->add(PaymentMoney::toMoney($fixedAmount, $currency)));
         }
 
-        // calculate what amount the percentage will result in
-        $percentAmount = PaymentMath::multiply(PaymentMath::multiply($percent, '0.01'), $this->MoneyAmount);
+        // calculate what amount the percentage will result in (rounded down, as this is a maximum)
+        $percentAmount = $amount->multiply(bcdiv((string) $percent, '100', 12), Money::ROUND_DOWN);
 
         // if there's no fixed amount and only the percentage is set, we can return the percentage amount right away.
         if ($fixedAmount === -1) {
-            return PaymentMath::add($this->MoneyAmount, $percentAmount);
+            return PaymentMoney::toDecimal($amount->add($percentAmount));
         }
 
-        // If the amount from the percentage is smaller, use the percentage
-        if (PaymentMath::compare($fixedAmount, $percentAmount) > 0) {
-            return PaymentMath::add($this->MoneyAmount, $percentAmount);
-        }
-
-        // otherwise use the fixed amount
-        return PaymentMath::add($this->MoneyAmount, $fixedAmount);
+        // use whichever excess amount is smaller
+        $fixed = PaymentMoney::toMoney($fixedAmount, $currency);
+        return PaymentMoney::toDecimal($amount->add(Money::min($fixed, $percentAmount)));
     }
 
     /**

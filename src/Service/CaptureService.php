@@ -8,7 +8,7 @@ use SilverStripe\Omnipay\Exception\InvalidParameterException;
 use SilverStripe\Omnipay\Exception\MissingParameterException;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
-use SilverStripe\Omnipay\Helper\PaymentMath;
+use SilverStripe\Omnipay\Helper\PaymentMoney;
 use SilverStripe\Omnipay\Model\Payment;
 
 /**
@@ -108,11 +108,13 @@ class CaptureService extends NotificationCompleteService
             }
 
             // check if the amount exceeds the max. amount that can be captured
-            if (PaymentMath::compare($this->payment->getMaxCaptureAmount(), $amount) === -1) {
+            $currency = (string) $this->payment->getCurrency();
+            $requested = PaymentMoney::toMoney($amount, $currency);
+            if (PaymentMoney::toMoney($this->payment->getMaxCaptureAmount(), $currency)->lessThan($requested)) {
                 throw new InvalidParameterException('The "amount" given exceeds the amount that can be captured.');
             }
 
-            $diff = PaymentMath::subtract($amount, $authorized);
+            $diff = PaymentMoney::toDecimal($requested->subtract(PaymentMoney::toMoney($authorized, $currency)));
         }
 
         if ($diff < 0 && !$this->payment->canCapture(null, true)) {
@@ -150,7 +152,7 @@ class CaptureService extends NotificationCompleteService
             $this->createMessage($this->errorMessageType, $response);
         } elseif ($serviceResponse->isRedirect() || $serviceResponse->isAwaitingNotification()) {
             if ($diff < 0) {
-                $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
+                $this->createPartialPayment($this->negate($amount), $this->pendingState);
             } elseif ($diff > 0) {
                 $this->createPartialPayment($diff, $this->pendingState);
             }
@@ -158,7 +160,7 @@ class CaptureService extends NotificationCompleteService
             $this->payment->write();
         } elseif ($serviceResponse->isSuccessful()) {
             if ($diff < 0) {
-                $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
+                $this->createPartialPayment($this->negate($amount), $this->pendingState);
             } elseif ($diff > 0) {
                 $this->createPartialPayment($diff, $this->pendingState);
             }
@@ -180,12 +182,12 @@ class CaptureService extends NotificationCompleteService
             foreach ($partials as $payment) {
                 // only the first, eg. most recent payment should be considered valid. All others should be set to void
                 if ($i === 0) {
-                    $total = PaymentMath::add($total, $payment->MoneyAmount);
+                    $total = $this->sum($total, $payment->MoneyAmount);
 
                     // deal with partial capture
                     if ($payment->MoneyAmount < 0) {
                         $payment->Status = 'Created';
-                        $payment->setAmount(PaymentMath::multiply($payment->MoneyAmount, '-1'));
+                        $payment->setAmount($this->negate($payment->MoneyAmount));
                         $payment->Status = 'Captured';
                     } else {
                         // void excess amounts

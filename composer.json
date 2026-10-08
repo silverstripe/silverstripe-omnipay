@@ -7,7 +7,8 @@
     "require": {
         "php": "^8.3|^8.4",
         "silverstripe/framework": "^6.2.0",
-        "omnipay/common": "^3"
+        "omnipay/common": "^3",
+        "moneyphp/money": "^4.5"
     },
     "require-dev": {
         "guzzlehttp/psr7": "^2.5",
@@ -17,7 +18,6 @@
         "omnipay/paypal": "^3",
         "omnipay/dummy": "^3",
         "omnipay/paymentexpress": "^3.1.1",
-        "moneyphp/money": "^4.5",
         "squizlabs/php_codesniffer": "^4.0",
         "cambis/silverstan": "^2.1",
         "phpstan/phpstan": "^2.1",

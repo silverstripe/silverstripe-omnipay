@@ -7,6 +7,9 @@ use SilverStripe\Core\Config\Configurable;
 /**
  * Helper class to deal with payment arithmetic.
  *
+ * @deprecated 6.x Payment arithmetic uses moneyphp/money via {@link PaymentMoney}. This class will be removed in a
+ *   future major release. Its `precision` config is still used for currencies that aren't part of ISO 4217.
+ *
  * Note of advice: If PHP wasn't compiled with BC Math (http://php.net/manual/en/book.bc.php), you can run into
  * number-overflow issues quickly when dealing with high precision and/or multiplication of large numbers.
  */

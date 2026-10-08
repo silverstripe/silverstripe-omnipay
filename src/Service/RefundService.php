@@ -8,7 +8,7 @@ use SilverStripe\Omnipay\Exception\InvalidParameterException;
 use SilverStripe\Omnipay\Exception\MissingParameterException;
 use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
-use SilverStripe\Omnipay\Helper\PaymentMath;
+use SilverStripe\Omnipay\Helper\PaymentMoney;
 use SilverStripe\Omnipay\Model\Payment;
 
 class RefundService extends NotificationCompleteService
@@ -99,7 +99,9 @@ class RefundService extends NotificationCompleteService
                 throw new InvalidParameterException('The "amount" parameter has to be positive.');
             }
 
-            $compare = PaymentMath::compare($this->payment->MoneyAmount, $amount);
+            $currency = (string) $this->payment->getCurrency();
+            $compare = PaymentMoney::toMoney($this->payment->MoneyAmount, $currency)
+                ->compare(PaymentMoney::toMoney($amount, $currency));
             if ($compare === -1) {
                 throw new InvalidParameterException('The "amount" to refund cannot exceed the captured amount.');
             }
@@ -142,13 +144,13 @@ class RefundService extends NotificationCompleteService
             $this->createMessage($this->errorMessageType, $response);
         } elseif ($serviceResponse->isRedirect() || $serviceResponse->isAwaitingNotification()) {
             if ($isPartial) {
-                $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
+                $this->createPartialPayment($this->negate($amount), $this->pendingState);
             }
             $this->payment->Status = $this->pendingState;
             $this->payment->write();
         } elseif ($serviceResponse->isSuccessful()) {
             if ($isPartial) {
-                $this->createPartialPayment(PaymentMath::multiply($amount, '-1'), $this->pendingState);
+                $this->createPartialPayment($this->negate($amount), $this->pendingState);
             }
 
             $this->markCompleted($this->endState, $serviceResponse, $response);
@@ -169,9 +171,9 @@ class RefundService extends NotificationCompleteService
             foreach ($partials as $payment) {
                 // only the first, eg. most recent payment should be considered valid. All others should be set to void
                 if ($i === 0) {
-                    $total = PaymentMath::add($total, $payment->MoneyAmount);
+                    $total = $this->sum($total, $payment->MoneyAmount);
                     $payment->Status = 'Created';
-                    $payment->setAmount(PaymentMath::multiply($payment->MoneyAmount, '-1'));
+                    $payment->setAmount($this->negate($payment->MoneyAmount));
                     $payment->Status = 'Refunded';
                 } else {
                     $payment->Status = 'Void';

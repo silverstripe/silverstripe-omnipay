@@ -13,12 +13,8 @@ use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\GatewayFieldsFactory;
 use SilverStripe\Omnipay\GatewayFieldsProvider;
 use SilverStripe\Omnipay\GatewayInfo;
-use SilverStripe\Omnipay\Helper\Logging;
 use SilverStripe\Omnipay\Helper\PaymentMoney;
 use SilverStripe\View\Requirements;
-use Stripe\Exception\ApiErrorException;
-use Stripe\PaymentIntent;
-use Stripe\StripeClient;
 
 /**
  * Stripe Payment Element fields for {@link \Omnipay\Stripe\PaymentIntentsGateway} (`Stripe_PaymentIntents`).
@@ -28,7 +24,10 @@ use Stripe\StripeClient;
  * field. When the form is submitted, `client/js/stripe-payment-element.js` creates a payment method from the
  * Payment Element and stores its ID (`pm_…`) in the hidden field, which is then passed to Omnipay.
  *
- * Requires `omnipay/stripe` and `stripe/stripe-php`. The gateway is configured in {@link GatewayInfo}:
+ * The Payment Element is initialised without a PaymentIntent (Stripe's "deferred intent" mode). The only
+ * PaymentIntent is the one Omnipay creates and confirms when the payment is initiated.
+ *
+ * Requires `omnipay/stripe`. The gateway is configured in {@link GatewayInfo}:
  *
  * <code>
  * SilverStripe\Omnipay\GatewayInfo:
@@ -39,8 +38,8 @@ use Stripe\StripeClient;
  * </code>
  *
  * Set {@link GatewayFieldsFactory::setPaymentAmount()} and {@link GatewayFieldsFactory::setPaymentCurrency()}
- * before calling {@link GatewayFieldsFactory::getFields()}; they're used to create the PaymentIntent that
- * initialises the Payment Element.
+ * before calling {@link GatewayFieldsFactory::getFields()}. The Payment Element uses them to show the payment
+ * methods that are available for the payment.
  *
  * The mount node and the Appearance API options can be configured on this class:
  *
@@ -114,42 +113,14 @@ class StripeGatewayFieldsProvider implements GatewayFieldsProvider
     }
 
     /**
-     * @throws InvalidConfigurationException when keys, amount or currency are missing
+     * @throws InvalidConfigurationException when the publishable key, amount or currency are missing
      */
     public function getCardFields(GatewayFieldsFactory $factory): FieldList
     {
         $gateway = (string) $factory->getGateway();
 
         $publishableKey = $this->getPublishableKey($gateway);
-        $secretKey = $this->getSecretKey($gateway);
-
-        try {
-            $paymentIntent = $this->createPaymentIntent(
-                $this->getPaymentIntentParameters($factory, $gateway),
-                $secretKey
-            );
-        } catch (ApiErrorException $e) {
-            if ($logger = Logging::getExceptionLogger()) {
-                $logger->error('Stripe PaymentIntent could not be created: ' . $e->getMessage(), [
-                    'exception' => $e,
-                    'gateway' => $gateway,
-                ]);
-            }
-            $paymentIntent = null;
-        }
-
-        $clientSecret = $paymentIntent?->client_secret;
-        if (!is_string($clientSecret) || $clientSecret === '') {
-            return FieldList::create(
-                LiteralField::create('StripePaymentElementMount', sprintf(
-                    '<p class="message bad">%s</p>',
-                    Convert::raw2xml(_t(
-                        GatewayFieldsFactory::class . '.StripePaymentElementUnavailable',
-                        'Payment details can\'t be entered at the moment. Please try again later.'
-                    ))
-                ))
-            );
-        }
+        $options = $this->getPaymentElementOptions($factory, $gateway);
 
         $this->requireStripePaymentElementAssets();
 
@@ -158,20 +129,13 @@ class StripeGatewayFieldsProvider implements GatewayFieldsProvider
 
         $extraClasses = trim((string) self::config()->get('stripe_payment_element_mount_extra_classes'));
 
-        $appearance = self::config()->get('stripe_payment_element_appearance');
-        // The Appearance API expects a JSON object; an empty PHP array would be encoded as a JS array.
-        $appearanceJson = is_array($appearance) && $appearance !== []
-            ? json_encode($appearance, JSON_THROW_ON_ERROR)
-            : '{}';
-
         $html = sprintf(
-            '<div class="%s" id="%s" data-stripe-payment-element="1" data-appearance="%s"'
-            . ' data-publishable-key="%s" data-client-secret="%s" aria-live="polite"></div>',
+            '<div class="%s" id="%s" data-stripe-payment-element="1" data-publishable-key="%s"'
+            . ' data-options="%s" aria-live="polite"></div>',
             Convert::raw2att(trim('stripe-payment-element__mount ' . $extraClasses)),
             Convert::raw2att($mountId),
-            Convert::raw2att($appearanceJson),
             Convert::raw2att($publishableKey),
-            Convert::raw2att($clientSecret)
+            Convert::raw2att(json_encode($options, JSON_THROW_ON_ERROR))
         );
 
         $fields = FieldList::create(
@@ -189,12 +153,12 @@ class StripeGatewayFieldsProvider implements GatewayFieldsProvider
     }
 
     /**
-     * Parameters for the PaymentIntent that initialises the Payment Element.
+     * Options for `stripe.elements()`, see https://docs.stripe.com/js/elements_object/create_without_intent
      *
      * @return array<string, mixed>
      * @throws InvalidConfigurationException when amount or currency aren't set
      */
-    public function getPaymentIntentParameters(GatewayFieldsFactory $factory, string $gateway): array
+    public function getPaymentElementOptions(GatewayFieldsFactory $factory, string $gateway): array
     {
         $amount = $factory->getPaymentAmount();
         $currency = strtoupper(trim((string) $factory->getPaymentCurrency()));
@@ -206,43 +170,29 @@ class StripeGatewayFieldsProvider implements GatewayFieldsProvider
             );
         }
 
-        $params = [
+        $options = [
+            'mode' => 'payment',
             // Stripe expects the amount in the smallest currency unit (eg. cents, or yen for JPY)
             'amount' => (int) PaymentMoney::toMoney($amount, $currency)->getAmount(),
             'currency' => strtolower($currency),
-            'automatic_payment_methods' => [
-                'enabled' => true,
-            ],
+            // The payment method is created in the browser and the PaymentIntent is confirmed by Omnipay
+            'paymentMethodCreation' => 'manual',
         ];
 
-        $factory->extend('updateStripePaymentIntentParameters', $params, $gateway);
-
-        return $params;
-    }
-
-    /**
-     * Create the PaymentIntent with the Stripe API.
-     *
-     * @param array<string, mixed> $params
-     * @throws ApiErrorException
-     */
-    protected function createPaymentIntent(array $params, string $secretKey): ?PaymentIntent
-    {
-        return $this->createStripeClient($secretKey)->paymentIntents->create($params);
-    }
-
-    /**
-     * @throws InvalidConfigurationException when stripe/stripe-php isn't installed
-     */
-    protected function createStripeClient(string $secretKey): StripeClient
-    {
-        if (!class_exists(StripeClient::class)) {
-            throw new InvalidConfigurationException(
-                'The Stripe Payment Element requires stripe/stripe-php. Install it with composer.'
-            );
+        // Omnipay authorizes with capture_method "manual", which the Payment Element needs to know about to only
+        // offer payment methods that support it
+        if (GatewayInfo::shouldUseAuthorize($gateway)) {
+            $options['captureMethod'] = 'manual';
         }
 
-        return new StripeClient($secretKey);
+        $appearance = self::config()->get('stripe_payment_element_appearance');
+        if (is_array($appearance) && $appearance !== []) {
+            $options['appearance'] = $appearance;
+        }
+
+        $factory->extend('updateStripePaymentElementOptions', $options, $gateway);
+
+        return $options;
     }
 
     /**
@@ -256,26 +206,6 @@ class StripeGatewayFieldsProvider implements GatewayFieldsProvider
         if (!is_string($key) || $key === '') {
             throw new InvalidConfigurationException(sprintf(
                 'Gateway "%s" requires the "stripe_publishable_key" parameter for the Stripe Payment Element.',
-                $gateway
-            ));
-        }
-
-        return $key;
-    }
-
-    /**
-     * The secret key is the `apiKey` parameter that's also used by Omnipay.
-     *
-     * @throws InvalidConfigurationException when the secret key isn't configured
-     */
-    protected function getSecretKey(string $gateway): string
-    {
-        $params = GatewayInfo::getParameters($gateway) ?? [];
-        $key = $params['apiKey'] ?? null;
-
-        if (!is_string($key) || $key === '') {
-            throw new InvalidConfigurationException(sprintf(
-                'Gateway "%s" requires the "apiKey" parameter for the Stripe Payment Element.',
                 $gateway
             ));
         }

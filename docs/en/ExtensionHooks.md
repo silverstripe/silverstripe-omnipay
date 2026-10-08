@@ -18,7 +18,7 @@ Here's a list of all hooks available to extensions.
 ### GatewayFieldsFactory
 
  - `updateStripePaymentElementFields` called when the [Stripe Payment Element](StripePaymentElementSetup.md) fields have been created. You'll get the `FieldList` as first and the gateway name as second parameter.
- - `updateStripePaymentIntentParameters` called before the PaymentIntent for the [Stripe Payment Element](StripePaymentElementSetup.md) is created. You'll get the parameters for the Stripe API (an array, passed by reference) as first and the gateway name as second parameter.
+ - `updateStripePaymentElementOptions` called when the options for `stripe.elements()` of the [Stripe Payment Element](StripePaymentElementSetup.md) have been created. You'll get the options (an array, passed by reference) as first and the gateway name as second parameter.
 
 ### PaymentGatewayController
 

@@ -190,6 +190,24 @@ abstract class PaymentService
     }
 
     /**
+     * Remember the PaymentIntent of a Stripe Payment Intents response that redirects the customer (eg. for
+     * 3-D Secure), so the PaymentIntent can be confirmed when the customer returns. Doesn't write the payment.
+     */
+    protected function storeStripePaymentIntentReference(mixed $response): void
+    {
+        if (!$this->isStripePaymentIntentsGateway() || !is_object($response)
+            || !method_exists($response, 'getPaymentIntentReference')
+        ) {
+            return;
+        }
+
+        $reference = $response->getPaymentIntentReference();
+        if (is_string($reference) && $reference !== '') {
+            $this->payment->TransactionReference = $reference;
+        }
+    }
+
+    /**
      * Handle a notification via gateway->acceptNotification.
      *
      * This just invokes `acceptNotification` on the gateway (if available) and wraps the return value in
@@ -339,10 +357,21 @@ abstract class PaymentService
             'notifyUrl' => $this->getEndpointUrl("notify")
         ]);
 
-        // Omnipay Stripe Payment Intents: confirm the intent on create, otherwise status stays
-        // requires_confirmation and the gateway reports failure with no message (see PaymentIntents\Response).
-        if ($this->isStripePaymentIntentsGateway() && !isset($gatewaydata['confirm'])) {
-            $gatewaydata['confirm'] = true;
+        if ($this->isStripePaymentIntentsGateway()) {
+            // Confirm the PaymentIntent when it's created, otherwise its status stays requires_confirmation and
+            // the gateway reports a failure without a message (see Omnipay\Stripe\Message\PaymentIntents\Response)
+            if (!isset($gatewaydata['confirm'])) {
+                $gatewaydata['confirm'] = true;
+            }
+
+            // completePurchase/completeAuthorize confirm the PaymentIntent that was stored when the customer was
+            // redirected (see storeStripePaymentIntentReference). Never take it from the incoming data, so a
+            // PaymentIntent of another payment can't be used to complete this one.
+            unset($gatewaydata['paymentIntentReference']);
+            $reference = (string) $this->payment->TransactionReference;
+            if (str_starts_with($reference, 'pi_')) {
+                $gatewaydata['paymentIntentReference'] = $reference;
+            }
         }
 
         // Often, the shop will want to pass in a transaction ID (order #, etc), but if there's

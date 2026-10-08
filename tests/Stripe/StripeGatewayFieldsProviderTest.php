@@ -21,12 +21,11 @@ class StripeGatewayFieldsProviderTest extends SapphireTest
     {
         parent::setUp();
 
-        TestStripeGatewayFieldsProvider::reset();
         Requirements::clear();
 
         Config::modify()->remove(GatewayFieldsFactory::class, 'rename');
         Config::modify()->set(GatewayFieldsFactory::class, 'gateway_fields_providers', [
-            'Stripe_PaymentIntents' => TestStripeGatewayFieldsProvider::class,
+            'Stripe_PaymentIntents' => StripeGatewayFieldsProvider::class,
         ]);
         Config::modify()->set(GatewayInfo::class, 'Stripe_PaymentIntents', [
             'parameters' => [
@@ -59,16 +58,16 @@ class StripeGatewayFieldsProviderTest extends SapphireTest
         ]);
 
         $this->assertInstanceOf(
-            TestStripeGatewayFieldsProvider::class,
+            StripeGatewayFieldsProvider::class,
             GatewayFieldsFactory::getGatewayFieldsProviderForGateway('Stripe_PaymentIntents')
         );
         $this->assertInstanceOf(
-            TestStripeGatewayFieldsProvider::class,
+            StripeGatewayFieldsProvider::class,
             GatewayFieldsFactory::getGatewayFieldsProviderForGateway('\Omnipay\Stripe\PaymentIntentsGateway'),
             'Omnipay class names resolve to the provider of the short name'
         );
         $this->assertInstanceOf(
-            TestStripeGatewayFieldsProvider::class,
+            StripeGatewayFieldsProvider::class,
             GatewayFieldsFactory::getGatewayFieldsProviderForGateway('Stripe_Donations'),
             'Gateways with a gateway_class use the provider of that class'
         );
@@ -80,18 +79,6 @@ class StripeGatewayFieldsProviderTest extends SapphireTest
             'Stripe_Donations' => null,
         ]);
         $this->assertNull(GatewayFieldsFactory::getGatewayFieldsProviderForGateway('Stripe_Donations'));
-    }
-
-    public function testDefaultProviderConfig(): void
-    {
-        Config::modify()->set(GatewayFieldsFactory::class, 'gateway_fields_providers', [
-            'Stripe_PaymentIntents' => StripeGatewayFieldsProvider::class,
-        ]);
-
-        $this->assertInstanceOf(
-            StripeGatewayFieldsProvider::class,
-            GatewayFieldsFactory::getGatewayFieldsProviderForGateway('Stripe_PaymentIntents')
-        );
     }
 
     public function testRequiredFields(): void
@@ -125,16 +112,13 @@ class StripeGatewayFieldsProviderTest extends SapphireTest
         $html = $this->getMountHtml($fields);
         $this->assertStringContainsString('id="stripe-payment-element"', $html);
         $this->assertStringContainsString('data-publishable-key="pk_test_publishable"', $html);
-        $this->assertStringContainsString('data-client-secret="pi_123_secret_abc"', $html);
-        $this->assertStringContainsString('data-appearance="{}"', $html);
         $this->assertStringNotContainsString('sk_test_secret', $html, 'The secret key must never be rendered');
-
-        $this->assertSame('sk_test_secret', TestStripeGatewayFieldsProvider::$lastSecretKey);
         $this->assertSame([
+            'mode' => 'payment',
             'amount' => 1050,
             'currency' => 'nzd',
-            'automatic_payment_methods' => ['enabled' => true],
-        ], TestStripeGatewayFieldsProvider::$lastParams);
+            'paymentMethodCreation' => 'manual',
+        ], $this->getOptions($html));
 
         $scripts = array_keys(Requirements::backend()->getJavascript());
         $this->assertContains('https://js.stripe.com/v3/', $scripts);
@@ -163,7 +147,19 @@ class StripeGatewayFieldsProviderTest extends SapphireTest
         $html = $this->getMountHtml($fields);
         $this->assertStringContainsString('id="my-mount"', $html);
         $this->assertStringContainsString('class="stripe-payment-element__mount big"', $html);
-        $this->assertStringContainsString('data-appearance="{&quot;theme&quot;:&quot;night&quot;}"', $html);
+        $this->assertSame(['theme' => 'night'], $this->getOptions($html)['appearance']);
+    }
+
+    public function testAuthorizeUsesManualCapture(): void
+    {
+        Config::modify()->merge(GatewayInfo::class, 'Stripe_PaymentIntents', ['use_authorize' => true]);
+
+        $options = StripeGatewayFieldsProvider::create()->getPaymentElementOptions(
+            GatewayFieldsFactory::create()->setPaymentAmount(10)->setPaymentCurrency('USD'),
+            'Stripe_PaymentIntents'
+        );
+
+        $this->assertSame('manual', $options['captureMethod']);
     }
 
     public function testCardFieldsForOtherGatewaysAreUnchanged(): void
@@ -174,25 +170,43 @@ class StripeGatewayFieldsProviderTest extends SapphireTest
 
         $this->assertNotNull($fields->dataFieldByName('number'));
         $this->assertNull($fields->dataFieldByName('paymentMethod'));
-        $this->assertNull(TestStripeGatewayFieldsProvider::$lastParams);
+        $this->assertEmpty(Requirements::backend()->getJavascript());
     }
 
-    public function testPaymentIntentAmountUsesMinorUnitsOfCurrency(): void
+    public function testAmountUsesMinorUnitsOfCurrency(): void
     {
         $provider = StripeGatewayFieldsProvider::create();
 
-        $params = $provider->getPaymentIntentParameters(
+        $options = $provider->getPaymentElementOptions(
             GatewayFieldsFactory::create()->setPaymentAmount(1500)->setPaymentCurrency('jpy'),
             'Stripe_PaymentIntents'
         );
-        $this->assertSame(1500, $params['amount']);
-        $this->assertSame('jpy', $params['currency']);
+        $this->assertSame(1500, $options['amount']);
+        $this->assertSame('jpy', $options['currency']);
+        $this->assertArrayNotHasKey('captureMethod', $options);
 
-        $params = $provider->getPaymentIntentParameters(
+        $options = $provider->getPaymentElementOptions(
             GatewayFieldsFactory::create()->setPaymentAmount(19.99)->setPaymentCurrency('USD'),
             'Stripe_PaymentIntents'
         );
-        $this->assertSame(1999, $params['amount']);
+        $this->assertSame(1999, $options['amount']);
+    }
+
+    public function testExtensionHooks(): void
+    {
+        GatewayFieldsFactory::add_extension(TestStripePaymentElementExtension::class);
+
+        try {
+            $fields = GatewayFieldsFactory::create('Stripe_PaymentIntents', ['Card'])
+                ->setPaymentAmount(10)
+                ->setPaymentCurrency('USD')
+                ->getFields();
+        } finally {
+            GatewayFieldsFactory::remove_extension(TestStripePaymentElementExtension::class);
+        }
+
+        $this->assertNotNull($fields->fieldByName('StripeNotice'));
+        $this->assertSame(['card'], $this->getOptions($this->getMountHtml($fields))['paymentMethodTypes']);
     }
 
     public function testMissingAmountThrows(): void
@@ -228,43 +242,19 @@ class StripeGatewayFieldsProviderTest extends SapphireTest
             ->getFields();
     }
 
-    public function testMissingSecretKeyThrows(): void
-    {
-        Config::modify()->set(GatewayInfo::class, 'Stripe_PaymentIntents', [
-            'parameters' => ['stripe_publishable_key' => 'pk_test_publishable'],
-        ]);
-
-        $this->expectException(InvalidConfigurationException::class);
-        $this->expectExceptionMessage('apiKey');
-
-        GatewayFieldsFactory::create('Stripe_PaymentIntents', ['Card'])
-            ->setPaymentAmount(10)
-            ->setPaymentCurrency('USD')
-            ->getFields();
-    }
-
-    public function testStripeApiErrorShowsMessage(): void
-    {
-        TestStripeGatewayFieldsProvider::$failRequest = true;
-
-        $fields = GatewayFieldsFactory::create('Stripe_PaymentIntents', ['Card'])
-            ->setPaymentAmount(10)
-            ->setPaymentCurrency('USD')
-            ->getFields();
-
-        $this->assertInstanceOf(FieldList::class, $fields);
-        $this->assertNull($fields->dataFieldByName('paymentMethod'));
-        $this->assertStringContainsString(
-            'Please try again later',
-            $this->getMountHtml($fields)
-        );
-        $this->assertEmpty(Requirements::backend()->getJavascript());
-    }
-
     private function getMountHtml(FieldList $fields): string
     {
         $mount = $fields->flattenFields()->fieldByName('StripePaymentElementMount');
         $this->assertInstanceOf(LiteralField::class, $mount);
         return (string) $mount->getContent();
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function getOptions(string $html): array
+    {
+        $this->assertSame(1, preg_match('/data-options="([^"]*)"/', $html, $matches));
+        return json_decode(html_entity_decode($matches[1]), true, 512, JSON_THROW_ON_ERROR);
     }
 }

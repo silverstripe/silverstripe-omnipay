@@ -1,8 +1,12 @@
 /**
- * Mounts Stripe Payment Element when the mount node has data-publishable-key and data-client-secret.
+ * Mounts the Stripe Payment Element when the mount node has data-publishable-key and data-options.
  * Expects Stripe.js to be loaded first (registered separately via Requirements).
- * Passes clientSecret into stripe.elements({ clientSecret, appearance, paymentMethodCreation: 'manual' })
- * so createPaymentMethod({ elements }) is allowed with the Payment Element.
+ *
+ * data-options holds the options for stripe.elements() without a PaymentIntent ("deferred intent" mode:
+ * mode, amount, currency, paymentMethodCreation: 'manual', ...), see
+ * https://docs.stripe.com/js/elements_object/create_without_intent
+ * On submit, a payment method is created with createPaymentMethod({ elements }) and its ID is stored in the
+ * hidden payment method field. The PaymentIntent is created and confirmed server-side.
  *
  * Submit controls stay disabled until the Payment Element is usable and `change` reports
  * `event.complete` (see https://docs.stripe.com/js/custom_checkout/element_events ).
@@ -57,28 +61,24 @@
     }
 
     var pk = mount.getAttribute("data-publishable-key");
-    var clientSecret = mount.getAttribute("data-client-secret");
-
-    if (!pk || !clientSecret) {
-      console.error(
-        "[stripe-payment-element] Missing data-publishable-key or data-client-secret on the mount node.",
-        { hasPublishableKey: !!pk, hasClientSecret: !!clientSecret },
-      );
-      return;
+    var options = null;
+    try {
+      options = JSON.parse(mount.getAttribute("data-options") || "null");
+    } catch (e) {
+      options = null;
     }
 
-    var appearance = {};
-    try {
-      var parsed = JSON.parse(mount.getAttribute("data-appearance") || "{}");
-      if (
-        parsed !== null &&
-        typeof parsed === "object" &&
-        !Array.isArray(parsed)
-      ) {
-        appearance = parsed;
-      }
-    } catch (e) {
-      appearance = {};
+    if (
+      !pk ||
+      options === null ||
+      typeof options !== "object" ||
+      Array.isArray(options)
+    ) {
+      console.error(
+        "[stripe-payment-element] Missing data-publishable-key or invalid data-options on the mount node.",
+        { hasPublishableKey: !!pk, hasOptions: !!options },
+      );
+      return;
     }
 
     var stripeOptions = {};
@@ -93,11 +93,7 @@
     }
 
     var stripe = Stripe(pk, stripeOptions);
-    var elements = stripe.elements({
-      clientSecret: clientSecret,
-      appearance: appearance,
-      paymentMethodCreation: "manual",
-    });
+    var elements = stripe.elements(options);
 
     var paymentElement = elements.create("payment");
 

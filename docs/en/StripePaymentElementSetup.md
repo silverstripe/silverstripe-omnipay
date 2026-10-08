@@ -7,11 +7,10 @@ in an iframe hosted by Stripe and never reach your server. Your form only receiv
 
 ## Installation
 
-Install the Omnipay Stripe gateway and the Stripe PHP SDK (used to create the PaymentIntent that initialises the
-Payment Element):
+Install the Omnipay Stripe gateway:
 
 ```bash
-composer require omnipay/stripe stripe/stripe-php
+composer require omnipay/stripe
 ```
 
 The module exposes `client/js/stripe-payment-element.js`. Run `composer vendor-expose` if your project doesn't
@@ -41,7 +40,7 @@ SilverStripe\Omnipay\GatewayInfo:
   Stripe_PaymentIntents:
     token_key: 'paymentMethod'
     parameters:
-      # The secret key, used by Omnipay and to create the PaymentIntent for the Payment Element
+      # The secret key, used by Omnipay
       apiKey: '`STRIPE_SECRET_KEY`'
       # The publishable key, used by Stripe.js in the browser
       stripe_publishable_key: '`STRIPE_PUBLISHABLE_KEY`'
@@ -59,8 +58,8 @@ to accept payments into more than one Stripe account (see [Configuration](Config
 ## Building the payment form
 
 Use the `GatewayFieldsFactory` as you would for any other gateway, but set the amount and currency of the payment
-before calling `getFields()`. They're used to create the PaymentIntent that initialises the Payment Element, and
-should match the amount of the `Payment`.
+before calling `getFields()`. The Payment Element uses them to show the payment methods that are available for the
+payment, so they should match the amount of the `Payment`.
 
 ```php
 use SilverStripe\Control\Controller;
@@ -114,9 +113,12 @@ class CheckoutController extends Controller
 
 What happens:
 
-1. `getFields()` creates a PaymentIntent with the Stripe API and replaces the card fields with a mount node for the
-   Payment Element (carrying the publishable key and the PaymentIntent's client secret) and a hidden `paymentMethod`
-   field. Stripe.js and `client/js/stripe-payment-element.js` are added to the page via `Requirements`.
+1. `getFields()` replaces the card fields with a mount node for the Payment Element and a hidden `paymentMethod`
+   field. The mount node carries the publishable key and the options for
+   [`stripe.elements()`](https://docs.stripe.com/js/elements_object/create_without_intent): `mode`, `amount`,
+   `currency` and `paymentMethodCreation: 'manual'` (plus `captureMethod: 'manual'` for gateways with
+   `use_authorize`). Stripe.js and `client/js/stripe-payment-element.js` are added to the page via `Requirements`.
+   No request is made to Stripe at this point.
 2. The script mounts the Payment Element. Submit buttons of the form stay disabled until the details entered are
    complete.
 3. When the form is submitted, the script creates a payment method from the Payment Element, stores its ID in the
@@ -124,13 +126,22 @@ What happens:
    `stripe-payment-element--submitting` class, which you can use to show a loading state.
 4. The `PaymentService` passes `paymentMethod` to Omnipay unchanged and sets `confirm: true`, so the PaymentIntent is
    created and confirmed in a single request. Pass `confirm` in the data given to `initiate()` to override this.
+   This is the only PaymentIntent for the payment.
 
 With a test publishable key (`pk_test_…`) the [Stripe.js testing assistant](https://docs.stripe.com/sdks/stripejs-testing-assistant)
 is enabled, which helps you fill in [test cards](https://docs.stripe.com/testing).
 
-If the PaymentIntent can't be created (eg. the Stripe API can't be reached), the error is logged and a message is
-shown in place of the Payment Element. A missing API key, amount or currency throws an
-`InvalidConfigurationException`.
+A missing publishable key, amount or currency throws an `InvalidConfigurationException`.
+
+### 3-D Secure and other customer actions
+
+Some payments need further action from the customer, such as 3-D Secure authentication or a bank redirect. In that
+case Stripe returns a redirect: the payment becomes `PendingPurchase` (or `PendingAuthorization`), the ID of the
+PaymentIntent (`pi_…`) is stored as the payment's `TransactionReference`, and the customer is redirected to Stripe.
+
+When the customer returns, `PaymentGatewayController` completes the payment: the stored PaymentIntent is confirmed
+and the payment becomes `Captured` (or `Authorized`). If the customer failed authentication, the payment stays
+pending and an error message is logged. The PaymentIntent is always taken from the payment, never from request data.
 
 ## Customising the Payment Element
 
@@ -149,7 +160,7 @@ SilverStripe\Omnipay\Stripe\StripeGatewayFieldsProvider:
 The hidden field can be renamed like any other field with the `GatewayFieldsFactory` `rename` config. Use
 `normalizeFormData()` (as in the example above) to map it back to `paymentMethod`.
 
-Two extension hooks on `GatewayFieldsFactory` let you change the fields and the PaymentIntent, see
+Two extension hooks on `GatewayFieldsFactory` let you change the fields and the options of the Payment Element, see
 [Extension hooks](ExtensionHooks.md#gatewayfieldsfactory):
 
 ```php
@@ -157,9 +168,10 @@ use SilverStripe\Core\Extension;
 
 class StripePaymentElementExtension extends Extension
 {
-    public function updateStripePaymentIntentParameters(array &$params, string $gateway): void
+    public function updateStripePaymentElementOptions(array &$options, string $gateway): void
     {
-        $params['description'] = 'Online order';
+        // Only offer card payments
+        $options['paymentMethodTypes'] = ['card'];
     }
 }
 ```
@@ -170,13 +182,9 @@ SilverStripe\Omnipay\GatewayFieldsFactory:
     - StripePaymentElementExtension
 ```
 
-## Limitations
-
-* The PaymentIntent created for the Payment Element isn't the one that's charged: Omnipay creates and confirms a new
-  PaymentIntent with the submitted payment method. The PaymentIntent created when rendering the form stays
-  incomplete in your Stripe dashboard.
-* Payments that need further customer action (such as 3-D Secure) redirect the customer to Stripe. Completing these
-  payments when the customer returns isn't supported yet.
+Options that restrict the payment methods (such as `paymentMethodTypes`) must also be accepted by the PaymentIntent
+that Omnipay creates. Use the `onBeforePurchase` / `onBeforeAuthorize` [extension hooks](ExtensionHooks.md) to change
+the data sent to Omnipay, eg. to add a `description` or `metadata` to the PaymentIntent.
 
 ## Using a different gateway fields provider
 

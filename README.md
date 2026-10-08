@@ -2,11 +2,7 @@
 
 [![CI](https://github.com/silverstripe/silverstripe-omnipay/actions/workflows/ci.yml/badge.svg)](https://github.com/silverstripe/silverstripe-omnipay/actions/workflows/ci.yml)
 [![Code Coverage](https://codecov.io/gh/silverstripe/silverstripe-omnipay/branch/master/graph/badge.svg)](https://codecov.io/gh/silverstripe/silverstripe-omnipay)
-[![Latest Stable Version](https://poser.pugx.org/silverstripe/silverstripe-omnipay/v/stable.png)](https://packagist.org/packages/silverstripe/silverstripe-omnipay)
 [![Total Downloads](https://poser.pugx.org/silverstripe/silverstripe-omnipay/downloads.png)](https://packagist.org/packages/silverstripe/silverstripe-omnipay)
-[![Latest Unstable Version](https://poser.pugx.org/silverstripe/silverstripe-omnipay/v/unstable.png)](https://packagist.org/packages/silverstripe/silverstripe-omnipay)
-
-Live chat: [![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/silverstripe/silverstripe-omnipay?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 The aim of this module is to make it easy for developers to add online payments to their SilverStripe application. In a
 nutshell, it wraps the PHP Omnipay payments library and provides some additional functionality. To understand more about

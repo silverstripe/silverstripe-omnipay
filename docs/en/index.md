@@ -6,6 +6,7 @@
  * Data Model
  * Gateway Features
  * Logging
+ * Payment messages
  * Payment Scenarios
  * Security
 
@@ -29,7 +30,7 @@ Use this module to provide payment for things like:
 
 `Payment` is the main data model. It contains information such as the gateway (being) used to make the payment, the monetary amount (amount + currency), and the status of the payment.
 
-`Payment` has many `Messages`. These represent all the types of logging / transaction messages associated with a single payment.
+`Payment` has many `Messages` (`PaymentMessage`). Together they form a log of every request, response, error and notification exchanged with the gateway for that payment. See [Payment messages](#payment-messages) below.
 
 ### Payment state machine
 
@@ -160,52 +161,80 @@ This module logs as much information to the database as possible. This includes:
   * Gateway-specific data
   * Who performed actions / made changes
 
-Purchase messages
+## Payment messages
 
- * PurchaseRequest
- * AwaitingPurchaseResponse
- * PurchasedResponse
- * PurchaseRedirectResponse
- * PurchaseError
- * CompletePurchaseRequest
- * CompletePurchaseError
+Every message is a `SilverStripe\Omnipay\Model\Message\PaymentMessage`, stored in a single `Omnipay_PaymentMessage` table.
+The kind of message is stored in the indexed `Type` column:
 
-Authorize messages
+| Field                      | Contents                                                                   |
+|----------------------------|----------------------------------------------------------------------------|
+| `Type`                     | Message type, eg. `PurchaseRequest` (see below)                            |
+| `Message`                  | Human readable message returned by the gateway, or the error message       |
+| `Code`                     | Gateway response or error code                                             |
+| `Reference`                | Gateway transaction reference                                              |
+| `Gateway`                  | Gateway the payment used                                                   |
+| `ClientIp`                 | IP address of the client that triggered the request                        |
+| `SuccessURL`, `FailureURL` | Return/cancel URLs (request messages only)                                 |
+| `User`                     | Member who was logged in when the message was written                      |
 
- * AuthorizeRequest
- * AwaitingAuthorizeResponse
- * AuthorizedResponse
- * AuthorizeRedirectResponse
- * AuthorizeError
- * CompleteAuthorizeRequest
- * CompleteAuthorizeError
+Message types are defined as constants on the service that creates them. Each service also has an
+`ERROR_MESSAGE_TYPES` constant listing its error types (`PaymentService::NOTIFICATION_ERROR_MESSAGE_TYPES` for
+notifications).
 
-Capture messages
+| Type | Constant |
+|------|----------|
+| `AuthorizeRequest` | `AuthorizeService::MESSAGE_AUTHORIZE_REQUEST` |
+| `AuthorizeError` | `AuthorizeService::MESSAGE_AUTHORIZE_ERROR` |
+| `AuthorizeRedirectResponse` | `AuthorizeService::MESSAGE_AUTHORIZE_REDIRECT_RESPONSE` |
+| `AwaitingAuthorizeResponse` | `AuthorizeService::MESSAGE_AWAITING_AUTHORIZE_RESPONSE` |
+| `CompleteAuthorizeRequest` | `AuthorizeService::MESSAGE_COMPLETE_AUTHORIZE_REQUEST` |
+| `CompleteAuthorizeError` | `AuthorizeService::MESSAGE_COMPLETE_AUTHORIZE_ERROR` |
+| `AuthorizedResponse` | `AuthorizeService::MESSAGE_AUTHORIZED_RESPONSE` |
+| `CaptureRequest` | `CaptureService::MESSAGE_CAPTURE_REQUEST` |
+| `CaptureError` | `CaptureService::MESSAGE_CAPTURE_ERROR` |
+| `CapturedResponse` | `CaptureService::MESSAGE_CAPTURED_RESPONSE` |
+| `PartiallyCapturedResponse` | `CaptureService::MESSAGE_PARTIALLY_CAPTURED_RESPONSE` |
+| `CreateCardRequest` | `CreateCardService::MESSAGE_CREATE_CARD_REQUEST` |
+| `CreateCardError` | `CreateCardService::MESSAGE_CREATE_CARD_ERROR` |
+| `CreateCardRedirectResponse` | `CreateCardService::MESSAGE_CREATE_CARD_REDIRECT_RESPONSE` |
+| `AwaitingCreateCardResponse` | `CreateCardService::MESSAGE_AWAITING_CREATE_CARD_RESPONSE` |
+| `CompleteCreateCardRequest` | `CreateCardService::MESSAGE_COMPLETE_CREATE_CARD_REQUEST` |
+| `CompleteCreateCardError` | `CreateCardService::MESSAGE_COMPLETE_CREATE_CARD_ERROR` |
+| `CreateCardResponse` | `CreateCardService::MESSAGE_CREATE_CARD_RESPONSE` |
+| `NotificationError` | `PaymentService::MESSAGE_NOTIFICATION_ERROR` |
+| `NotificationSuccessful` | `PaymentService::MESSAGE_NOTIFICATION_SUCCESSFUL` |
+| `NotificationPending` | `PaymentService::MESSAGE_NOTIFICATION_PENDING` |
+| `PurchaseRequest` | `PurchaseService::MESSAGE_PURCHASE_REQUEST` |
+| `PurchaseError` | `PurchaseService::MESSAGE_PURCHASE_ERROR` |
+| `PurchaseRedirectResponse` | `PurchaseService::MESSAGE_PURCHASE_REDIRECT_RESPONSE` |
+| `AwaitingPurchaseResponse` | `PurchaseService::MESSAGE_AWAITING_PURCHASE_RESPONSE` |
+| `CompletePurchaseRequest` | `PurchaseService::MESSAGE_COMPLETE_PURCHASE_REQUEST` |
+| `CompletePurchaseError` | `PurchaseService::MESSAGE_COMPLETE_PURCHASE_ERROR` |
+| `PurchasedResponse` | `PurchaseService::MESSAGE_PURCHASED_RESPONSE` |
+| `RefundRequest` | `RefundService::MESSAGE_REFUND_REQUEST` |
+| `RefundError` | `RefundService::MESSAGE_REFUND_ERROR` |
+| `RefundedResponse` | `RefundService::MESSAGE_REFUNDED_RESPONSE` |
+| `PartiallyRefundedResponse` | `RefundService::MESSAGE_PARTIALLY_REFUNDED_RESPONSE` |
+| `VoidRequest` | `VoidService::MESSAGE_VOID_REQUEST` |
+| `VoidError` | `VoidService::MESSAGE_VOID_ERROR` |
+| `VoidedResponse` | `VoidService::MESSAGE_VOIDED_RESPONSE` |
 
- * CaptureRequest
- * CapturedResponse
- * PartiallyCapturedResponse
- * CaptureError
+Use the constants rather than string literals when querying messages:
 
-Refund messages
+```php
+use SilverStripe\Omnipay\Service\PurchaseService;
 
- * RefundRequest
- * RefundedResponse
- * PartiallyRefundedResponse
- * RefundError
+// All failed purchase attempts for a payment
+$errors = $payment->Messages()->filter('Type', PurchaseService::ERROR_MESSAGE_TYPES);
 
-Void messages
+// The most recent successful purchase response
+$response = $payment->getLatestMessageOfType(PurchaseService::MESSAGE_PURCHASED_RESPONSE);
+```
 
- * VoidRequest
- * VoidedResponse
- * VoidError
+Message titles in the CMS are translated via `SilverStripe\Omnipay\Model\Message\PaymentMessage.TYPE_<Type>` keys.
 
-Notification messages
-
- * NotificationSuccessful
- * NotificationPending
- * NotificationError
-
+Up to 5.x every message type was a separate `DataObject` subclass. If you are upgrading from 5.x or older, see
+[Upgrading](Upgrading.md).
 
 ## Payment scenarios
 

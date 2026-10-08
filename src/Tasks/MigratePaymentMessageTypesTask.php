@@ -3,52 +3,54 @@
 namespace SilverStripe\Omnipay\Tasks;
 
 use SilverStripe\Dev\BuildTask;
-use SilverStripe\Omnipay\Model\Message\PaymentMessage;
+use SilverStripe\Omnipay\Migration\PaymentMessageMigrator;
 use SilverStripe\PolyExecution\PolyOutput;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
+use Symfony\Component\Console\Input\InputOption;
 
 /**
- * One-off upgrade: populate {@link PaymentMessage::Type} from legacy subclass ClassName values.
+ * Upgrades payment messages written by omnipay 5.x or older to the single-table message model.
  *
- * Run once after upgrading from versions that used one DataObject subclass per message kind.
- * Safe to run multiple times (skips rows that already have Type set).
+ * The same migration runs automatically on `dev/build` (see
+ * {@link \SilverStripe\Omnipay\Model\Message\PaymentMessage::$migrate_legacy_messages_on_build}). Use this task to
+ * preview the changes with `--dry-run`, or to run the migration manually when the automatic one is disabled.
+ *
+ * Safe to run multiple times.
  */
 class MigratePaymentMessageTypesTask extends BuildTask
 {
-    private static string $segment = 'MigratePaymentMessageTypesTask';
+    protected static string $commandName = 'MigratePaymentMessageTypesTask';
 
-    protected string $title = 'Migrate payment message types';
+    protected string $title = 'Migrate legacy payment messages';
 
-    protected static string $description = 'Fills the Type column on payment messages from legacy ClassName values';
+    protected static string $description = 'Upgrades payment messages from omnipay 5.x or older to the single-table model';
+
+    public function getOptions(): array
+    {
+        return [
+            new InputOption(
+                'dry-run',
+                null,
+                InputOption::VALUE_NONE,
+                'Only report what would be migrated, without changing the database'
+            ),
+        ];
+    }
 
     protected function execute(InputInterface $input, PolyOutput $output): int
     {
-        $count = 0;
-        /** @var PaymentMessage $message */
-        foreach (PaymentMessage::get() as $message) {
-            if ($message->Type) {
-                continue;
-            }
-            $class = $message->ClassName;
-            if (!$class) {
-                continue;
-            }
-            if ($class === PaymentMessage::class
-                || $class === 'SilverStripe\\Omnipay\\Model\\Message\\PaymentRequestMessage'
-            ) {
-                continue;
-            }
-            $pos = strrpos($class, '\\');
-            $shortName = $pos === false ? $class : substr($class, $pos + 1);
-            if ($shortName === '') {
-                $shortName = $class;
-            }
-            $message->Type = $shortName;
-            $message->write();
-            $count++;
+        $dryRun = (bool) $input->getOption('dry-run');
+        $results = PaymentMessageMigrator::create()->migrate($dryRun);
+
+        if (!$results) {
+            $output->writeln('Nothing to migrate.');
+            return Command::SUCCESS;
         }
-        $output->writeln("Updated {$count} payment message(s).");
+
+        foreach ($results as $step => $count) {
+            $output->writeln(sprintf('%s%s: %d', $dryRun ? '[dry run] ' : '', $step, $count));
+        }
 
         return Command::SUCCESS;
     }

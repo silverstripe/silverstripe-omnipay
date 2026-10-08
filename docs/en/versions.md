@@ -4,6 +4,21 @@ This document is targeted at developers who already use the omnipay-module but n
 
 New users should use the latest stable release!
 
+For step-by-step instructions, see [Upgrading](Upgrading.md).
+
+
+## 6.1
+
+ - Adds a complete migration for payment message data from 5.x and older that runs on `db:build`. It also repairs
+   sites that already upgraded to 6.0. See [Upgrading](Upgrading.md).
+ - Deprecated `PaymentMessage::classForMessageType()`.
+
+## 6.0
+
+ - Requires Silverstripe CMS 6 and PHP 8.3+.
+ - Replaced the per-type payment message classes (`PurchaseRequest`, `RefundError`, …) with a single
+   `PaymentMessage` class and `Type` field. Message type constants live on the service classes.
+
 
 ## 2.0-rc1
 

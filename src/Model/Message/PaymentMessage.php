@@ -2,7 +2,9 @@
 
 namespace SilverStripe\Omnipay\Model\Message;
 
+use SilverStripe\Omnipay\Migration\PaymentMessageMigrator;
 use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\DB;
 use SilverStripe\Security\Security;
 use SilverStripe\Security\Member;
 use SilverStripe\Omnipay\Model\Payment;
@@ -59,6 +61,12 @@ class PaymentMessage extends DataObject
 
     private static string $table_name = 'Omnipay_PaymentMessage';
 
+    /**
+     * Upgrade messages written by omnipay 5.x or older on every `dev/build`. See {@link PaymentMessageMigrator}.
+     * The check is cheap once there is nothing left to migrate, but you may disable it after upgrading.
+     */
+    private static bool $migrate_legacy_messages_on_build = true;
+
     public function getCMSFields()
     {
         return parent::getCMSFields()->makeReadOnly();
@@ -72,6 +80,19 @@ class PaymentMessage extends DataObject
             if ($member = Security::getCurrentUser()) {
                 $this->UserID = $member->ID;
             }
+        }
+    }
+
+    public function requireDefaultRecords(): void
+    {
+        parent::requireDefaultRecords();
+
+        if (!static::config()->get('migrate_legacy_messages_on_build')) {
+            return;
+        }
+
+        foreach (PaymentMessageMigrator::create()->migrate() as $step => $count) {
+            DB::alteration_message("Payment messages: {$step} ({$count})", 'changed');
         }
     }
 
@@ -97,6 +118,7 @@ class PaymentMessage extends DataObject
     }
 
     /**
+     * @deprecated 6.1.0 Always returns {@link PaymentMessage}. Use PaymentMessage::create() instead.
      * @return class-string<self>
      */
     public static function classForMessageType(string $type): string

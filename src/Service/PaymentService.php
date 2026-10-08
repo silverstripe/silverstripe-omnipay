@@ -592,7 +592,6 @@ abstract class PaymentService
             'Type' => $type,
         ]);
 
-        $recordClass = PaymentMessage::classForMessageType($type);
         if (PaymentMessage::isRequestMessageType($type)) {
             if (isset($output['ReturnUrl'])) {
                 $output['SuccessURL'] = $output['ReturnUrl'];
@@ -611,7 +610,7 @@ abstract class PaymentService
         }
 
         /** @var PaymentMessage $message */
-        $message = Injector::inst()->create($recordClass)->update($output);
+        $message = PaymentMessage::create()->update($output);
         $message->write();
 
         $this->payment->Messages()->add($message);

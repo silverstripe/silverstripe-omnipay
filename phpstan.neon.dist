@@ -8,7 +8,6 @@ parameters:
         disallowNewInstanceOnInjectable:
             enabled: false
     ignoreErrors:
-        - '#SilverStripe\\Omnipay\\Service\\PaymentService::\$dependencies#'
         - '#SilverStripe\\Omnipay\\Tests\\ServiceFactoryTest::\$dependencies#'
         - '#Call to an undefined method SilverStripe\\Core\\Extension::getCalledMethods#'
         - '#Call to an undefined method SilverStripe\\Core\\Extension::Reset#'

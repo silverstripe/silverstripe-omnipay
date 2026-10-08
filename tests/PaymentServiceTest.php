@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SilverStripe\Omnipay\Tests;
 
 use Omnipay\Common\GatewayFactory;
+use Omnipay\PayPal\Message\AbstractRequest as PayPalAbstractRequest;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\AbstractGateway;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
@@ -145,6 +146,7 @@ class PaymentServiceTest extends FunctionalTest
         $this->assertSame('Fred', $gatewayData['card']->getFirstName());
 
         $request = $this->service->oGateway()->purchase($gatewayData);
+        $this->assertInstanceOf(PayPalAbstractRequest::class, $request);
         $this->assertSame('api.user', $request->getUsername());
         $this->assertSame('api-password', $request->getPassword());
         $this->assertFalse($request->getTestMode());

@@ -153,7 +153,7 @@ class GatewayInfo
             $gateway ? $gateway->getName() : $name
         );
 
-        return ($title) ? $title : $gateway->getName();
+        return $title ?: ($gateway ? $gateway->getName() : $name);
     }
 
     /**

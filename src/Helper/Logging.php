@@ -17,7 +17,7 @@ class Logging
 
     /**
      * The Gateway-Data logging style. Can be one of the following:
-     *  - 'full': Verbose logging, log all information. This will automatically turn into 'verbose' on a live environment!
+     *  - 'full': Verbose logging, log all information. Only honoured in dev; other environments use 'verbose'!
      *  - 'verbose': Verbose logging, but strips out sensitive information
      *  - 'simple': Simplified messages
      * @var string
@@ -34,6 +34,11 @@ class Logging
     private static array $loggingBlacklist = [
         'card', 'token', 'cvv'
     ];
+
+    /**
+     * Value used in place of sanitized data
+     */
+    const SANITIZED = '(sanitized)';
 
     /**
      * Get a logger
@@ -87,25 +92,36 @@ class Logging
             ]);
         }
 
-        if (Director::isLive() || self::config()->get('logStyle') == self::LOGSTYLE_VERBOSE) {
-            self::sanitize($data);
+        // Full (unsanitized) logging is only permitted in dev environments
+        if (!Director::isDev() || self::config()->get('logStyle') != self::LOGSTYLE_FULL) {
+            $data = self::sanitize($data);
         }
 
         return $data;
     }
 
     /**
-     * Clean out sensitive data, such as credit-card numbers
-     * @param array<string, mixed> $data
+     * Clean out sensitive data, such as credit-card numbers.
+     * Keys are matched case-insensitively, and the whole value of a matching key is replaced (including nested
+     * arrays and objects).
+     * @param array<int|string, mixed> $data
+     * @return array<int|string, mixed>
      */
-    private static function sanitize(array &$data): void
+    private static function sanitize(array $data): array
     {
-        $loggingBlacklist = self::config()->get('loggingBlacklist');
-        $blackList = array_combine($loggingBlacklist, $loggingBlacklist);
-        array_walk_recursive($data, function (&$value, $key) use ($blackList) {
-            if (isset($blackList[$key])) {
-                $value = '(sanitized)';
+        $blackList = array_flip(array_map('strtolower', (array) self::config()->get('loggingBlacklist')));
+
+        $walk = function (array $data) use (&$walk, $blackList): array {
+            foreach ($data as $key => $value) {
+                if (is_string($key) && isset($blackList[strtolower($key)])) {
+                    $data[$key] = self::SANITIZED;
+                } elseif (is_array($value)) {
+                    $data[$key] = $walk($value);
+                }
             }
-        });
+            return $data;
+        };
+
+        return $walk($data);
     }
 }

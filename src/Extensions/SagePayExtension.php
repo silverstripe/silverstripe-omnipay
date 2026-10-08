@@ -87,7 +87,9 @@ class SagePayExtension extends Extension
                 : PurchaseService::MESSAGE_PURCHASE_REDIRECT_RESPONSE;
 
             $message = $payment->getLatestMessageOfType($type);
-            $gatewayData['transactionReference'] = $message->Reference;
+            if ($message) {
+                $gatewayData['transactionReference'] = $message->Reference;
+            }
         }
     }
 

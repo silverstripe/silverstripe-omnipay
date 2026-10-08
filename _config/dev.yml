@@ -3,8 +3,7 @@ Name: OmnipayDevelopmentAdmin
 After: DevelopmentAdmin
 ---
 SilverStripe\Dev\DevelopmentAdmin:
-  registered_controllers:
+  controllers:
     payment:
-      controller: SilverStripe\Omnipay\Admin\PaymentDevelopmentAdmin
-      links:
-        payment: 'Show Payment configuration information'
+      class: SilverStripe\Omnipay\Admin\PaymentDevelopmentAdmin
+      description: 'Show Payment configuration information'

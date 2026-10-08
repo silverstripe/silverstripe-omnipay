@@ -7,6 +7,7 @@ use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPRequest;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Omnipay\Model\Payment;
+use SilverStripe\ORM\DB;
 use SilverStripe\Omnipay\Service\ServiceFactory;
 
 /**
@@ -23,6 +24,12 @@ class PaymentGatewayController extends Controller
     private static array $allowed_actions = [
         'gateway'
     ];
+
+    /**
+     * Seconds to wait for another request processing the same payment to finish.
+     * @config
+     */
+    private static int $payment_lock_timeout = 10;
 
     /** @var array<string, string> */
     private static array $url_handlers = [
@@ -110,6 +117,11 @@ class PaymentGatewayController extends Controller
 
         $payment = $this->getPaymentFromRequest($this->request, $gateway);
 
+        // Don't let a static route for one gateway act on another gateway's payment
+        if ($payment && $payment->Gateway !== $gateway) {
+            $payment = null;
+        }
+
         return $this->createPaymentResponse($payment);
     }
 
@@ -172,6 +184,44 @@ class PaymentGatewayController extends Controller
             );
         }
 
+        // Serialise processing per payment, so a browser return and a gateway notification arriving at the
+        // same time can't both complete the payment (and fire the completion hooks twice).
+        $db = DB::get_conn();
+        if (!$payment->isInDB() || !$db->supportsLocks()) {
+            return $this->processPayment($payment);
+        }
+
+        $lockName = 'omnipay-payment-' . $payment->ID;
+        if (!$db->getLock($lockName, static::config()->get('payment_lock_timeout'))) {
+            return $this->httpError(503, 'Payment is currently being processed.');
+        }
+
+        try {
+            // Reload, as another request may have changed the payment while we were waiting for the lock
+            $payment = Payment::get()->byID($payment->ID);
+            if (!$payment) {
+                return $this->httpError(
+                    404,
+                    _t('SilverStripe\Omnipay\Model\Payment.NotFound', 'Payment could not be found.')
+                );
+            }
+            return $this->processPayment($payment);
+        } finally {
+            $db->releaseLock($lockName);
+        }
+    }
+
+    /**
+     * Run the requested action (complete, notify or cancel) on the given payment.
+     *
+     * @param Payment $payment the payment that should be processed
+     * @return HTTPResponse
+     * @throws Exception\InvalidConfigurationException
+     * @throws Exception\InvalidStateException
+     * @throws \SilverStripe\Control\HTTPResponse_Exception
+     */
+    protected function processPayment(Payment $payment)
+    {
         $intent = $this->getPaymentIntent($payment);
         if (!$intent) {
             return $this->httpError(

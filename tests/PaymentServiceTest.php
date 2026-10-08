@@ -10,6 +10,7 @@ use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\AbstractGateway;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use Omnipay\Common\Message\NotificationInterface;
+use SilverStripe\Control\Director;
 use SilverStripe\Control\HTTPResponse;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Injector\Injector;
@@ -80,6 +81,40 @@ class PaymentServiceTest extends FunctionalTest
 
         $this->assertEquals('Void', $this->payment->Status);
         $this->assertTrue($serviceResponse->isCancelled());
+    }
+
+    public function testCancelRefusedForAuthorizedPayment(): void
+    {
+        $this->payment->Status = 'Authorized';
+        $serviceResponse = $this->service->cancel();
+
+        $this->assertEquals('Authorized', $this->payment->Status);
+        $this->assertTrue($serviceResponse->isError());
+    }
+
+    public function testExternalReturnUrlIsReplaced(): void
+    {
+        $this->payment->setSuccessUrl('https://evil.example.com/phish');
+        $serviceResponse = $this->service->cancel();
+
+        $this->assertEquals(Director::absoluteBaseURL(), $serviceResponse->getTargetUrl());
+    }
+
+    public function testExternalReturnUrlAllowedWhenConfigured(): void
+    {
+        Config::modify()->set(PaymentService::class, 'allow_external_return_urls', true);
+        $this->payment->setSuccessUrl('https://partner.example.com/done');
+        $serviceResponse = $this->service->cancel();
+
+        $this->assertEquals('https://partner.example.com/done', $serviceResponse->getTargetUrl());
+    }
+
+    public function testSiteReturnUrlIsKept(): void
+    {
+        $this->payment->setSuccessUrl('shop/complete');
+        $serviceResponse = $this->service->cancel();
+
+        $this->assertEquals('shop/complete', $serviceResponse->getTargetUrl());
     }
 
     public function testGateway(): void

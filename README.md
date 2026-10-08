@@ -37,7 +37,7 @@ It is not too difficult to write your own gateway integration either, if needed.
 [Composer](http://doc.silverstripe.org/framework/en/installation/composer) is currently the only supported way to set up this module:
 
 ```
-composer require silverstripe/silverstripe-omnipay ^3@dev
+composer require silverstripe/silverstripe-omnipay
 ```
 
 You will also need to pull in your payment adapter of choice. Have a look at http://omnipay.thephpleague.com/gateways/official/ 
@@ -50,6 +50,11 @@ composer require omnipay/paypal
 ```
 
 There's also short guide how to enable [manual payments](docs/en/ManualPaymentSetup.md) or [PayPal Express](docs/en/PayPalExpressSetup.md) available.
+
+### Upgrading
+
+Upgrading from 5.x or older? Read the [upgrading guide](docs/en/Upgrading.md). Since 6.1 the module migrates
+payment messages created with 5.x or older automatically.
 
 ## Configuration
 

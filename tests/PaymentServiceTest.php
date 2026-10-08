@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace SilverStripe\Omnipay\Tests;
 
 use Omnipay\Common\GatewayFactory;
+use Omnipay\PayPal\Message\AbstractRequest as PayPalAbstractRequest;
 use Omnipay\Common\Message\AbstractResponse;
 use Omnipay\Common\AbstractGateway;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
@@ -112,6 +113,48 @@ class PaymentServiceTest extends FunctionalTest
 
         // The dummy parameter should not be in there
         $this->assertNotContains('DummyParameter', array_keys($gateway->getParameters()));
+    }
+
+    public function testGatewayParametersCannotBeOverriddenByData(): void
+    {
+        Config::modify()->set(GatewayInfo::class, 'PayPal_Express', [
+            'parameters' => [
+                'username' => 'api.user',
+                'password' => 'api-password',
+                'signature' => 'api-signature',
+            ]
+        ]);
+        $this->payment->Gateway = 'PayPal_Express';
+
+        // Data as it would come from a registration form with a ConfirmedPasswordField (see issue #188)
+        $data = [
+            'FirstName' => 'Fred',
+            'Password' => ['_Password' => 'redfred', '_ConfirmPassword' => 'redfred'],
+            'USERNAME' => 'someone-else',
+            'test_mode' => true,
+            'description' => 'Order #1',
+            'clientIp' => '127.0.0.1',
+        ];
+
+        $gatherGatewayData = new \ReflectionMethod($this->service, 'gatherGatewayData');
+        $gatewayData = $gatherGatewayData->invoke($this->service, $data);
+
+        $this->assertArrayNotHasKey('Password', $gatewayData);
+        $this->assertArrayNotHasKey('USERNAME', $gatewayData);
+        $this->assertArrayNotHasKey('test_mode', $gatewayData);
+        $this->assertSame('Order #1', $gatewayData['description']);
+        $this->assertSame('Fred', $gatewayData['card']->getFirstName());
+
+        $request = $this->service->oGateway()->purchase($gatewayData);
+        $this->assertInstanceOf(PayPalAbstractRequest::class, $request);
+        $this->assertSame('api.user', $request->getUsername());
+        $this->assertSame('api-password', $request->getPassword());
+        $this->assertFalse($request->getTestMode());
+
+        // Protection can be disabled via config
+        Config::modify()->set(PaymentService::class, 'protect_gateway_parameters', false);
+        $gatewayData = $gatherGatewayData->invoke($this->service, $data);
+        $this->assertArrayHasKey('Password', $gatewayData);
     }
 
     // Test a successful notification

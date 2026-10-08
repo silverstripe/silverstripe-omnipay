@@ -173,6 +173,16 @@ whitelisted user input to `PurchaseService` and the underlying omnipay gateways.
 data can be injected is by using `Form->getData()` rather than acessing `$_REQUEST` directly, since this will only
 return you data for fields originally defined in the form.
 
+Keys in the data that would override a gateway parameter (e.g. `username`, `password`, `signature`, `testMode`, or
+anything configured under the gateway's `parameters`) are removed before the data reaches the gateway, so a form field
+such as a member `Password` can't replace your gateway credentials. If you really need to override gateway parameters
+per request, use an extension hook such as `onBeforePurchase`, or disable the filtering with:
+
+```yaml
+SilverStripe\Omnipay\Service\PaymentService:
+  protect_gateway_parameters: false
+```
+
 ## Debugging payments
 
 Please read the [logging documentation](docs/en/Logging.md) on how to set up logging.

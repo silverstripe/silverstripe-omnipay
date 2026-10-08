@@ -165,7 +165,7 @@ abstract class PaymentService
     {
         $gatewayName = $this->payment->Gateway;
 
-        $gateway = $this->getGatewayFactory()->create($gatewayName);
+        $gateway = $this->getGatewayFactory()->create(GatewayInfo::getGatewayClass($gatewayName));
 
         if (!$gateway instanceof AbstractGateway) {
             throw new \RuntimeException(sprintf('Gateway "%s" must extend AbstractGateway', $gatewayName));

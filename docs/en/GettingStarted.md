@@ -93,13 +93,18 @@ class PaymentController extends Controller
             FieldList::create(FormAction::create(
                 "doSubmit",
                 _t("Checkout.PayNow", "Pay Now")
-            ))
+            )),
+            $factory->getValidator()
         );
     }
 }
 ```
 
 Fields have been appropriately grouped, in case you only want to retrieve the credit card related fields, for example.
+
+`$factory->getValidator()` returns a form validator that requires the gateway's required fields (see below), and
+checks the card number (Luhn checksum), expiry date and security code if those fields are in the form. Pass extra
+required field names as an array: `$factory->getValidator(['company'])`.
 
 ### Required Fields
 

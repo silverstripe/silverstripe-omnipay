@@ -113,8 +113,11 @@ class PurchaseService extends PaymentService
 
         $gateway = $this->oGateway();
         if (!$gateway->supportsCompletePurchase()) {
-            throw new InvalidConfigurationException(
-                sprintf('The gateway "%s" doesn\'t support completePurchase', $this->payment->Gateway)
+            return $this->completeWithoutGatewayMethod(
+                $isNotification,
+                'Captured',
+                self::MESSAGE_COMPLETE_PURCHASE_ERROR,
+                'completePurchase'
             );
         }
 

@@ -115,10 +115,13 @@ class CleanupAbandonedPaymentsTask extends BuildTask
     {
         $cutoff = date('Y-m-d H:i:s', DBDatetime::now()->getTimestamp() - $days * 86400);
 
-        return Payment::get()->filter([
+        /** @var DataList<Payment> $payments */
+        $payments = Payment::get()->filter([
             'Status' => static::config()->get('statuses'),
             'LastEdited:LessThan' => $cutoff,
             'TransactionReference' => [null, ''],
         ]);
+
+        return $payments;
     }
 }

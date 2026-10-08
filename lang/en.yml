@@ -38,6 +38,8 @@ en:
     Expired: 'The card expiry date is invalid or in the past'
     InvalidCvv: 'Please enter a valid security code'
     InvalidNumber: 'Please enter a valid card number'
+  SilverStripe\Omnipay\GatewayFieldsFactory:
+    StripePaymentElementGroupTitle: 'Payment details'
   SilverStripe\Omnipay\PaymentForm:
     BillingAddress1: Address
     BillingAddress2: 'Address line 2'

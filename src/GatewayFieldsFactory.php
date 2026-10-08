@@ -4,8 +4,12 @@ namespace SilverStripe\Omnipay;
 
 use SilverStripe\Omnipay\Forms\GatewayFieldsValidator;
 use Omnipay\Common\CreditCard;
+use Omnipay\Common\Helper;
 use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\Omnipay\Stripe\StripeGatewayFieldsProvider;
 use SilverStripe\Forms\DropdownField;
 use SilverStripe\Forms\EmailField;
 use SilverStripe\Forms\FieldGroup;
@@ -16,11 +20,29 @@ use SilverStripe\Forms\TextField;
 /**
  * Helper for generating gateway fields, based on best practices.
  *
+ * Gateways that collect payment details client-side (eg. with a hosted card widget) can replace the standard
+ * card fields with a {@link GatewayFieldsProvider}, configured via `gateway_fields_providers`. Out of the box,
+ * {@link StripeGatewayFieldsProvider} renders a Stripe Payment Element for `Stripe_PaymentIntents`.
  */
 class GatewayFieldsFactory
 {
     use Configurable;
+    use Extensible;
     use Injectable;
+
+    /**
+     * @config Map of gateways to the {@link GatewayFieldsProvider} that supplies their card fields.
+     *
+     * Keys can be a gateway name (as configured in {@link GatewayInfo}), an Omnipay short name
+     * (eg. `Stripe_PaymentIntents`) or an Omnipay gateway class name. Gateways configured with a
+     * `gateway_class` use the provider of that class, unless they have an entry of their own.
+     * Set an entry to `null` to disable a provider.
+     *
+     * @var array<string, class-string<GatewayFieldsProvider>|null>
+     */
+    private static array $gateway_fields_providers = [
+        'Stripe_PaymentIntents' => StripeGatewayFieldsProvider::class,
+    ];
 
     /** @var list<string> */
     protected array $fieldGroups = [
@@ -32,6 +54,19 @@ class GatewayFieldsFactory
     ];
 
     protected ?string $gateway = null;
+
+    /**
+     * Optional amount (major units, e.g. dollars) for gateways that create a PaymentIntent when rendering
+     * the payment form (e.g. Stripe Payment Element).
+     */
+    protected ?float $paymentAmount = null;
+
+    /**
+     * Optional ISO 4217 currency code for {@link $paymentAmount}.
+     */
+    protected ?string $paymentCurrency = null;
+
+    protected ?GatewayFieldsProvider $gatewayFieldsProvider = null;
 
     protected bool $groupDateFields = true;
 
@@ -68,7 +103,8 @@ class GatewayFieldsFactory
         'shippingCountry',
         'shippingPhone',
         'email',
-        'company'
+        'company',
+        'paymentMethod',
     ];
 
     /**
@@ -112,6 +148,7 @@ class GatewayFieldsFactory
     public function setGateway(?string $gateway)
     {
         $this->gateway = $gateway;
+        $this->gatewayFieldsProvider = $this->resolveGatewayFieldsProvider();
         $this->buildRenameMap();
         return $this;
     }
@@ -132,6 +169,100 @@ class GatewayFieldsFactory
     }
 
     /**
+     * Set the payment amount for the current form (major currency units). Used when building a Stripe PaymentIntent
+     * for the Payment Element.
+     *
+     * @return $this
+     */
+    public function setPaymentAmount(?float $amount): static
+    {
+        $this->paymentAmount = $amount;
+
+        return $this;
+    }
+
+    public function getPaymentAmount(): ?float
+    {
+        return $this->paymentAmount;
+    }
+
+    /**
+     * Set the payment currency (ISO 4217, e.g. `USD`).
+     *
+     * @return $this
+     */
+    public function setPaymentCurrency(?string $currency): static
+    {
+        $this->paymentCurrency = $currency;
+
+        return $this;
+    }
+
+    public function getPaymentCurrency(): ?string
+    {
+        return $this->paymentCurrency;
+    }
+
+    /**
+     * @return GatewayFieldsProvider|null Resolved from {@link self::$gateway_fields_providers} for the current gateway.
+     */
+    public function getGatewayFieldsProvider(): ?GatewayFieldsProvider
+    {
+        return $this->gatewayFieldsProvider;
+    }
+
+    /**
+     * Resolve the {@link GatewayFieldsProvider} for the given gateway, see {@link self::$gateway_fields_providers}.
+     */
+    public static function getGatewayFieldsProviderForGateway(?string $gateway): ?GatewayFieldsProvider
+    {
+        if (!$gateway) {
+            return null;
+        }
+
+        $map = self::config()->get('gateway_fields_providers');
+        if (!is_array($map)) {
+            return null;
+        }
+
+        if (array_key_exists($gateway, $map)) {
+            $class = $map[$gateway];
+        } else {
+            $class = null;
+            $gatewayClass = self::normalizeGatewayClass(GatewayInfo::getGatewayClass($gateway));
+            foreach ($map as $key => $value) {
+                if (self::normalizeGatewayClass((string) $key) === $gatewayClass) {
+                    $class = $value;
+                    break;
+                }
+            }
+        }
+
+        if (!is_string($class) || !is_subclass_of($class, GatewayFieldsProvider::class)) {
+            return null;
+        }
+
+        /** @var GatewayFieldsProvider */
+        return Injector::inst()->get($class);
+    }
+
+    /**
+     * Get the fully qualified class name (without leading backslash) of an Omnipay gateway short name or class name.
+     */
+    public static function normalizeGatewayClass(string $gateway): string
+    {
+        return ltrim(Helper::getGatewayClassName($gateway), '\\');
+    }
+
+    /**
+     * @return GatewayFieldsProvider|null
+     */
+    protected function resolveGatewayFieldsProvider(): ?GatewayFieldsProvider
+    {
+        return self::getGatewayFieldsProviderForGateway($this->gateway);
+    }
+
+    /**
      * Get all the fields from the defined Field-Groups (via constructor or @see setFieldGroups)
      *
      * @return FieldList
@@ -141,6 +272,14 @@ class GatewayFieldsFactory
         $fields = FieldList::create();
 
         foreach ($this->fieldGroups as $group) {
+            if ($group === 'Card'
+                && $this->gatewayFieldsProvider
+                && $this->gatewayFieldsProvider->providesCardFields($this)
+            ) {
+                $fields->merge($this->gatewayFieldsProvider->getCardFields($this));
+                continue;
+            }
+
             if (method_exists($this, 'get' . $group . 'Fields')) {
                 $fields->merge($this->{'get' . $group . 'Fields'}());
             }
@@ -156,7 +295,7 @@ class GatewayFieldsFactory
     public function getCardFields()
     {
         $months = [];
-        //generate list of months
+
         for ($x = 1; $x <= 12; $x++) {
             $date = new \DateTime();
             $date->setTimestamp(mktime(0, 0, 0, $x, 1));
@@ -216,7 +355,7 @@ class GatewayFieldsFactory
         ];
 
         $this->cullForGateway($fields);
-        //optionally group date fields
+
         if ($this->groupDateFields) {
             if (isset($fields[ 'startMonth' ]) && isset($fields[ 'startYear' ])) {
                 $fields[ 'startMonth' ] = FieldGroup::create(

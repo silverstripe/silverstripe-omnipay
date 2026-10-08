@@ -21,6 +21,7 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\GatewayInfo;
+use SilverStripe\Omnipay\Stripe\StripeGatewayFieldsProvider;
 use SilverStripe\Omnipay\Helper\ErrorHandling;
 use SilverStripe\Omnipay\Helper\Logging;
 use SilverStripe\Omnipay\Model\Message\PaymentMessage;
@@ -181,6 +182,32 @@ abstract class PaymentService
     }
 
     /**
+     * True when the payment uses {@link \Omnipay\Stripe\PaymentIntentsGateway}.
+     */
+    protected function isStripePaymentIntentsGateway(): bool
+    {
+        return StripeGatewayFieldsProvider::isPaymentIntentsGateway($this->payment->Gateway);
+    }
+
+    /**
+     * Remember the PaymentIntent of a Stripe Payment Intents response that redirects the customer (eg. for
+     * 3-D Secure), so the PaymentIntent can be confirmed when the customer returns. Doesn't write the payment.
+     */
+    protected function storeStripePaymentIntentReference(mixed $response): void
+    {
+        if (!$this->isStripePaymentIntentsGateway() || !is_object($response)
+            || !method_exists($response, 'getPaymentIntentReference')
+        ) {
+            return;
+        }
+
+        $reference = $response->getPaymentIntentReference();
+        if (is_string($reference) && $reference !== '') {
+            $this->payment->TransactionReference = $reference;
+        }
+    }
+
+    /**
      * Handle a notification via gateway->acceptNotification.
      *
      * This just invokes `acceptNotification` on the gateway (if available) and wraps the return value in
@@ -330,6 +357,23 @@ abstract class PaymentService
             'notifyUrl' => $this->getEndpointUrl("notify")
         ]);
 
+        if ($this->isStripePaymentIntentsGateway()) {
+            // Confirm the PaymentIntent when it's created, otherwise its status stays requires_confirmation and
+            // the gateway reports a failure without a message (see Omnipay\Stripe\Message\PaymentIntents\Response)
+            if (!isset($gatewaydata['confirm'])) {
+                $gatewaydata['confirm'] = true;
+            }
+
+            // completePurchase/completeAuthorize confirm the PaymentIntent that was stored when the customer was
+            // redirected (see storeStripePaymentIntentReference). Never take it from the incoming data, so a
+            // PaymentIntent of another payment can't be used to complete this one.
+            unset($gatewaydata['paymentIntentReference']);
+            $reference = (string) $this->payment->TransactionReference;
+            if (str_starts_with($reference, 'pi_')) {
+                $gatewaydata['paymentIntentReference'] = $reference;
+            }
+        }
+
         // Often, the shop will want to pass in a transaction ID (order #, etc), but if there's
         // not one we need to set it as Ominpay requires this.
         if (!isset($gatewaydata['transactionId'])) {
@@ -343,10 +387,12 @@ abstract class PaymentService
             if (empty($gatewaydata[$tokenKey])) {
                 $gatewaydata['card'] = $this->getCreditCard($data);
             } elseif ($tokenKey !== 'token') {
-                // some gateways (eg. braintree) use a different key but we need
-                // to normalize that for omnipay
-                $gatewaydata['token'] = $gatewaydata[$tokenKey];
-                unset($gatewaydata[$tokenKey]);
+                // some gateways (eg. braintree) use a different key but we need to normalize that for omnipay.
+                // Stripe Payment Intents expects the payment method ID (pm_…) as `paymentMethod`, so leave it as is.
+                if (!($tokenKey === 'paymentMethod' && $this->isStripePaymentIntentsGateway())) {
+                    $gatewaydata['token'] = $gatewaydata[$tokenKey];
+                    unset($gatewaydata[$tokenKey]);
+                }
             }
         }
 
@@ -534,27 +580,27 @@ abstract class PaymentService
 
         if (is_string($data)) {
             $output = [
-                'Message' => $data
+                'Message' => mb_substr($data, 0, 254)
             ];
         } elseif (is_array($data)) {
             $output = $data;
         } elseif ($data instanceof \Exception) {
             $output = [
-                'Message' => $data->getMessage(),
+                'Message' => mb_substr($data->getMessage(), 0, 254),
                 'Code' => (string) $data->getCode(),
                 'Exception' => get_class($data),
                 'Backtrace' => $data->getTraceAsString()
             ];
         } elseif ($data instanceof AbstractResponse) {
             $output = [
-                'Message' => $data->getMessage(),
+                'Message' => mb_substr($data->getMessage() ?? '', 0, 254),
                 'Code' => $data->getCode(),
                 'Reference' => $data->getTransactionReference(),
                 'Data' => $data->getData()
             ];
         } elseif ($data instanceof ResponseInterface) {
             $output = [
-                'Message' => $data->getMessage(),
+                'Message' => mb_substr($data->getMessage() ?? '', 0, 254),
                 'Code' => $data->getCode(),
                 'Reference' => $data->getTransactionReference(),
                 'Data' => $data->getData()
@@ -580,7 +626,7 @@ abstract class PaymentService
             ];
         } elseif ($data instanceof NotificationInterface) {
             $output = [
-                'Message' => $data->getMessage(),
+                'Message' => mb_substr($data->getMessage() ?? '', 0, 254),
                 'Code' => $data->getTransactionStatus(),
                 'Reference' => $data->getTransactionReference(),
                 'Data' => $data->getData()

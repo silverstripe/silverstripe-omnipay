@@ -15,6 +15,11 @@ Here's a list of all hooks available to extensions.
  - `onCancelled` called then a payment was cancelled by the user (eg. user cancelled offsite payment). This is not an action that goes through Omnipay, so there's no parameter here.
  - `updateCMSFields` standard SilverStripe hook to update CMS fields.
  
+### GatewayFieldsFactory
+
+ - `updateStripePaymentElementFields` called when the [Stripe Payment Element](StripePaymentElementSetup.md) fields have been created. You'll get the `FieldList` as first and the gateway name as second parameter.
+ - `updateStripePaymentElementOptions` called when the options for `stripe.elements()` of the [Stripe Payment Element](StripePaymentElementSetup.md) have been created. You'll get the options (an array, passed by reference) as first and the gateway name as second parameter.
+
 ### PaymentGatewayController
 
  - `updatePaymentFromRequest` called for every request that goes to the PaymentGatewayController. Can be used to return a Payment object from the request data. Needed for enabling [static routes](StaticRoutes.md)

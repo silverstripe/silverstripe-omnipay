@@ -72,6 +72,7 @@ class AuthorizeService extends PaymentService
 
         if ($serviceResponse->isRedirect() || $serviceResponse->isAwaitingNotification()) {
             $this->payment->Status = 'PendingAuthorization';
+            $this->storeStripePaymentIntentReference($response);
             $this->payment->write();
 
             $this->createMessage(

@@ -49,7 +49,7 @@ For example, if your site uses PayPal you would also need to run:
 composer require omnipay/paypal
 ```
 
-There's also short guide how to enable [manual payments](docs/en/ManualPaymentSetup.md) or [PayPal Express](docs/en/PayPalExpressSetup.md) available.
+There are also short guides on how to enable [manual payments](docs/en/ManualPaymentSetup.md), [PayPal Express](docs/en/PayPalExpressSetup.md) or the [Stripe Payment Element](docs/en/StripePaymentElementSetup.md).
 
 ### Upgrading
 

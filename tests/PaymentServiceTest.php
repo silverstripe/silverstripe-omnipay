@@ -178,6 +178,65 @@ class PaymentServiceTest extends FunctionalTest
         $this->assertEquals('EXAMPLEUSER', $this->service->oGateway()->getParameters()['username']);
     }
 
+    public function testStripePaymentIntentsGatewayData(): void
+    {
+        Config::modify()->set(GatewayInfo::class, 'Stripe_Donations', [
+            'gateway_class' => 'Stripe_PaymentIntents',
+            'token_key' => 'paymentMethod',
+            'parameters' => [
+                'apiKey' => 'sk_test_secret',
+                'stripe_publishable_key' => 'pk_test_publishable',
+            ],
+        ]);
+        $this->payment->Gateway = 'Stripe_Donations';
+
+        $gatherGatewayData = new \ReflectionMethod($this->service, 'gatherGatewayData');
+        $gatewayData = $gatherGatewayData->invoke($this->service, ['paymentMethod' => 'pm_123']);
+
+        // The payment method ID is passed through as is, not converted to a token
+        $this->assertSame('pm_123', $gatewayData['paymentMethod']);
+        $this->assertArrayNotHasKey('token', $gatewayData);
+        // The PaymentIntent is confirmed when it's created
+        $this->assertTrue($gatewayData['confirm']);
+
+        /** @var \Omnipay\Stripe\Message\PaymentIntents\PurchaseRequest $request */
+        $request = $this->service->oGateway()->purchase($gatewayData);
+        $this->assertSame('pm_123', $request->getPaymentMethod());
+        $this->assertTrue($request->getConfirm());
+        $this->assertSame('sk_test_secret', $request->getApiKey());
+
+        // An explicit confirm value is kept
+        $gatewayData = $gatherGatewayData->invoke($this->service, ['paymentMethod' => 'pm_123', 'confirm' => false]);
+        $this->assertFalse($gatewayData['confirm']);
+    }
+
+    public function testTokenKeyIsNormalizedForOtherGateways(): void
+    {
+        Config::modify()->set(GatewayInfo::class, 'Dummy', [
+            'token_key' => 'paymentMethod',
+        ]);
+        $this->payment->Gateway = 'Dummy';
+
+        $gatherGatewayData = new \ReflectionMethod($this->service, 'gatherGatewayData');
+        $gatewayData = $gatherGatewayData->invoke($this->service, ['paymentMethod' => 'abc']);
+
+        $this->assertSame('abc', $gatewayData['token']);
+        $this->assertArrayNotHasKey('paymentMethod', $gatewayData);
+        $this->assertArrayNotHasKey('confirm', $gatewayData);
+    }
+
+    public function testLongMessagesAreTruncated(): void
+    {
+        $this->payment->write();
+        $createMessage = new \ReflectionMethod($this->service, 'createMessage');
+
+        $message = $createMessage->invoke($this->service, 'PurchaseError', str_repeat('é', 300));
+        $this->assertSame(254, mb_strlen($message->Message));
+
+        $message = $createMessage->invoke($this->service, 'PurchaseError', new \Exception(str_repeat('x', 300)));
+        $this->assertSame(254, mb_strlen($message->Message));
+    }
+
     // Test a successful notification
     public function testHandleNotificationSuccess(): void
     {

@@ -77,6 +77,7 @@ class PurchaseService extends PaymentService
 
         if ($serviceResponse->isRedirect() || $serviceResponse->isAwaitingNotification()) {
             $this->payment->Status = 'PendingPurchase';
+            $this->storeStripePaymentIntentReference($response);
             $this->payment->write();
 
             $this->createMessage(

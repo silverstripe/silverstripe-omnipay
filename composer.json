@@ -21,7 +21,8 @@
         "squizlabs/php_codesniffer": "^4.0",
         "cambis/silverstan": "^2.1",
         "phpstan/phpstan": "^2.1",
-        "omnipay/sagepay": "^3"
+        "omnipay/sagepay": "^3",
+        "omnipay/stripe": "^3.2"
     },
     "autoload": {
         "psr-4": {
@@ -32,7 +33,10 @@
     "extra" : {
         "branch-alias": {
             "dev-main": "6.x-dev"
-        }
+        },
+        "expose": [
+            "client"
+        ]
     },
     "scripts": {
         "lint": "phpcs -s src/ tests/",
@@ -42,7 +46,8 @@
         "test": "phpunit"
     },
     "suggest": {
-        "bummzack/silverstripe-omnipay-ui": "Adds UI Components to manage payments in the SilverStripe CMS."
+        "bummzack/silverstripe-omnipay-ui": "Adds UI Components to manage payments in the SilverStripe CMS.",
+        "omnipay/stripe": "Stripe gateways, including Stripe_PaymentIntents for the Stripe Payment Element."
     },
     "minimum-stability": "dev",
     "prefer-stable": true,

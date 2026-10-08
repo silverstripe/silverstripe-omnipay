@@ -25,13 +25,19 @@ class ServiceFactory
     /*
      * Different constants for commonly used intents.
      */
-    const INTENT_AUTHORIZE  = "authorize";
-    const INTENT_CREATECARD = "createcard";
-    const INTENT_PURCHASE   = "purchase";
-    const INTENT_REFUND     = "refund";
-    const INTENT_VOID       = "void";
-    const INTENT_CAPTURE    = "capture";
-    const INTENT_PAYMENT    = "payment";
+    public const INTENT_AUTHORIZE  = "authorize";
+
+    public const INTENT_CREATECARD = "createcard";
+
+    public const INTENT_PURCHASE   = "purchase";
+
+    public const INTENT_REFUND     = "refund";
+
+    public const INTENT_VOID       = "void";
+
+    public const INTENT_CAPTURE    = "capture";
+
+    public const INTENT_PAYMENT    = "payment";
 
     /**
      * Create a service for the given payment and intent.
@@ -49,7 +55,7 @@ class ServiceFactory
      * @return PaymentService
      * @throws InvalidConfigurationException when creation of the service failed due to misconfiguration
      */
-    public function getService(Payment $payment, $intent)
+    public function getService(Payment $payment, string $intent): PaymentService
     {
         $method = 'create' . ucfirst($intent) . 'Service';
         $values = $this->extend($method, $payment);
@@ -88,7 +94,7 @@ class ServiceFactory
      *
      * @throws InvalidConfigurationException
      */
-    protected function createPaymentService(Payment $payment)
+    protected function createPaymentService(Payment $payment): PaymentService
     {
         return $this->getService(
             $payment,

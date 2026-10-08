@@ -68,10 +68,13 @@ class GatewayInfo
 {
     use Configurable;
 
-    const OFF = 'off';
-    const FULL = 'full';
-    const PARTIAL = 'partial';
-    const MULTIPLE = 'multiple';
+    public const OFF = 'off';
+
+    public const FULL = 'full';
+
+    public const PARTIAL = 'partial';
+
+    public const MULTIPLE = 'multiple';
 
     /**
      * Get the available configured payment types, optionally with i18n readable names.
@@ -181,17 +184,17 @@ class GatewayInfo
         }
 
         $factory = new GatewayFactory();
-        $gateway = $factory->create(self::getGatewayClass($gateway));
+        $gatewayInst = $factory->create(self::getGatewayClass($gateway));
 
         // Some offsite gateways don't separate between authorize and complete requests,
         // so we need a different way to determine they're off site in the first place
         // without kicking off a purchase request within Omnipay.
-        if (method_exists($gateway, 'isOffsite')) {
-            return !!$gateway->isOffsite();
+        if (method_exists($gatewayInst, 'isOffsite')) {
+            return !!$gatewayInst->isOffsite();
         }
 
-        if ($gateway instanceof AbstractGateway) {
-            return ($gateway->supportsCompletePurchase() || $gateway->supportsCompleteAuthorize());
+        if ($gatewayInst instanceof AbstractGateway) {
+            return ($gatewayInst->supportsCompletePurchase() || $gatewayInst->supportsCompleteAuthorize());
         }
 
         return false;
@@ -443,15 +446,20 @@ class GatewayInfo
             $fields = $requiredFields;
         }
 
-        //always require the following for on-site gateways (and not manual)
-        if (!self::isOffsite($gateway) && !self::isManual($gateway)) {
+        // A GatewayFieldsProvider (eg. Stripe Payment Element) defines its own required card fields.
+        // Otherwise, always require the standard card fields for on-site gateways (and not manual).
+        $provider = GatewayFieldsFactory::getGatewayFieldsProviderForGateway($gateway);
+        $providerCardFields = $provider?->getRequiredCardFieldsForGateway($gateway);
+        if ($providerCardFields !== null) {
+            $fields = array_merge($fields, $providerCardFields);
+        } elseif (!self::isOffsite($gateway) && !self::isManual($gateway)) {
             $fields = array_merge(
                 $fields,
                 ['name', 'number', 'expiryMonth', 'expiryYear', 'cvv']
             );
         }
 
-        return array_unique($fields);
+        return array_values(array_unique($fields));
     }
 
     /**
@@ -463,6 +471,7 @@ class GatewayInfo
     public static function getParameters(string $gateway): ?array
     {
         $params = self::getConfigSetting($gateway, 'parameters');
+
         if (!is_array($params)) {
             return null;
         }

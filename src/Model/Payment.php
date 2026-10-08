@@ -101,6 +101,12 @@ final class Payment extends DataObject implements PermissionProvider
     private static $payment_identifier_length = 30;
 
     /**
+     * Minimum length of the payment identifier. The identifier is the only credential needed to call the
+     * payment endpoints, so it must not be guessable.
+     */
+    const MIN_IDENTIFIER_LENGTH = 16;
+
+    /**
      * The allowed payment gateways
      * @config
      *
@@ -112,7 +118,7 @@ final class Payment extends DataObject implements PermissionProvider
     {
         $fields = FieldList::create(
             TextField::create('MoneyValue', $this->fieldLabel('Money'), $this->dbObject('Money')->Nice()),
-            TextField::create('GatewayTitle', $this->fieldLabel('Gateway'), 'Gateway'),
+            TextField::create('GatewayTitle', $this->fieldLabel('Gateway'), $this->getGatewayTitle()),
             TextField::create('PaymentStatus', $this->fieldLabel('Status')),
             TextField::create('Identifier', $this->fieldLabel('Identifier'))
                 ->setDescription(_t(
@@ -517,6 +523,33 @@ final class Payment extends DataObject implements PermissionProvider
     }
 
     /**
+     * Payments are financial records, so they can't be created, edited or deleted via the CMS by default.
+     * Use an extension implementing `canCreate` to override.
+     * @param Member|null $member
+     * @param array<string, mixed> $context
+     */
+    public function canCreate($member = null, $context = [])
+    {
+        return $this->extendedCan(__FUNCTION__, $member, $context) ?? false;
+    }
+
+    /**
+     * @param Member|null $member
+     */
+    public function canEdit($member = null)
+    {
+        return $this->extendedCan(__FUNCTION__, $member) ?? false;
+    }
+
+    /**
+     * @param Member|null $member
+     */
+    public function canDelete($member = null)
+    {
+        return $this->extendedCan(__FUNCTION__, $member) ?? false;
+    }
+
+    /**
      * Provide payment related permissions. The permissions are:
      * * `REFUND_PAYMENTS` can refund payments
      * * `CAPTURE_PAYMENTS` can capture payments
@@ -605,6 +638,7 @@ final class Payment extends DataObject implements PermissionProvider
         $gateway = $gateway ?: $this->Gateway;
         $length = GatewayInfo::getConfigSetting($gateway, 'payment_identifier_length') ?:
             static::config()->get('payment_identifier_length');
+        $length = max((int) $length, self::MIN_IDENTIFIER_LENGTH);
 
         /** @var RandomGenerator $generator */
         $generator = Injector::inst()->get(RandomGenerator::class);

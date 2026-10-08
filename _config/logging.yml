@@ -10,11 +10,22 @@ SilverStripe\Core\Injector\Injector:
 SilverStripe\Omnipay\Helper\Logging:
   loggingBlacklist:
     - card
-    - token
-    - cvv
-    - cvc
+    - cardnumber
+    - cardreference
     - number
+    - pan
+    - cvv
+    - cvv2
+    - cvc
+    - securitycode
+    - issuenumber
+    - expirymonth
+    - expiryyear
+    - token
     - password
+    - secret
+    - apikey
+    - signature
 
 # Example how to set up a logger for omnipay that logs to a separate log-file named "omnipay.log"
 # SilverStripe\Core\Injector\Injector:

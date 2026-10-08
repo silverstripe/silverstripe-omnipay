@@ -118,6 +118,27 @@ class PaymentGatewayControllerTest extends FunctionalTest
         $this->assertEquals('Void', $payment->Status, 'Payment should be void');
     }
 
+    public function testCancelEndpointIgnoresAuthorizedPayment(): void
+    {
+        // An authorized payment has gateway-side state, so the public cancel endpoint must not void it
+        $this->get("paymentendpoint/51efcc0e94718dd80d97b1281762a9bc/cancel");
+
+        $payment = Payment::get()->filter('Identifier', '51efcc0e94718dd80d97b1281762a9bc')->first();
+        $this->assertEquals('Authorized', $payment->Status, 'Authorized payment should not be voided');
+    }
+
+    public function testStaticRouteRejectsPaymentOfOtherGateway(): void
+    {
+        PaymentGatewayController::add_extension(PaymentGatewayControllerTestExtension::class);
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', ['use_static_route' => true]);
+
+        // The extension resolves the payment by id, but this one belongs to the "Manual" gateway
+        $response = $this->get('paymentendpoint/gateway/PaymentExpress_PxPay?id=ce3a0b03349078d8e85d1de8ded3f0&action=cancel');
+        $this->assertEquals(404, $response->getStatusCode());
+
+        PaymentGatewayController::remove_extension(PaymentGatewayControllerTestExtension::class);
+    }
+
     public function testInvalidAction(): void
     {
         // Try to access a valid payment, but bad action

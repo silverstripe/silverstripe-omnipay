@@ -5,6 +5,7 @@ namespace SilverStripe\Omnipay\Model\Message;
 use SilverStripe\Omnipay\Migration\PaymentMessageMigrator;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
+use SilverStripe\ORM\FieldType\DBVarchar;
 use SilverStripe\Security\Security;
 use SilverStripe\Security\Member;
 use SilverStripe\Omnipay\Model\Payment;
@@ -94,6 +95,48 @@ class PaymentMessage extends DataObject
         foreach (PaymentMessageMigrator::create()->migrate() as $step => $count) {
             DB::alteration_message("Payment messages: {$step} ({$count})", 'changed');
         }
+    }
+
+    /**
+     * Values often come from remote gateways; truncate them to the column size, so an over-long value can't
+     * make the write fail (and leave the payment stuck mid-flow).
+     */
+    public function setField(string $fieldName, mixed $value): static
+    {
+        if (is_string($value) && isset(static::config()->get('db')[$fieldName])) {
+            $dbField = $this->dbObject($fieldName);
+            if ($dbField instanceof DBVarchar && mb_strlen($value) > $dbField->getSize()) {
+                $value = mb_substr($value, 0, $dbField->getSize());
+            }
+        }
+
+        return parent::setField($fieldName, $value);
+    }
+
+    /**
+     * Payment messages are an audit log, so they can't be created, edited or deleted via the CMS by default.
+     * @param Member|null $member
+     * @param array<string, mixed> $context
+     */
+    public function canCreate($member = null, $context = [])
+    {
+        return $this->extendedCan(__FUNCTION__, $member, $context) ?? false;
+    }
+
+    /**
+     * @param Member|null $member
+     */
+    public function canEdit($member = null)
+    {
+        return $this->extendedCan(__FUNCTION__, $member) ?? false;
+    }
+
+    /**
+     * @param Member|null $member
+     */
+    public function canDelete($member = null)
+    {
+        return $this->extendedCan(__FUNCTION__, $member) ?? false;
     }
 
     public function i18n_singular_name()

@@ -1,7 +1,7 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <html lang="en">
     <head>
-        <meta http-equiv="refresh" content="2;url={$ReturnURL}" />
+        <meta http-equiv="refresh" content="2;url={$ReturnURL.ATT}" />
         <title><%t SilverStripe\Omnipay\Extensions\WorldPayExtension.Processing "Processing" %></title>
     </head>
 
@@ -14,7 +14,7 @@
             </p>
 
             <p>
-                <a href="{$ReturnURL}"><%t SilverStripe\Omnipay\Extensions\WorldPayExtension.ReturnToStore "Return To Merchant's Store" %></a>
+                <a href="{$ReturnURL.ATT}"><%t SilverStripe\Omnipay\Extensions\WorldPayExtension.ReturnToStore "Return To Merchant's Store" %></a>
             </p>
 
             <WPDISPLAY ITEM="banner">

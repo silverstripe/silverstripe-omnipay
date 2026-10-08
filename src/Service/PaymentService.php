@@ -14,6 +14,7 @@ use Omnipay\Common\Message\RequestInterface;
 use Omnipay\Common\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use SilverStripe\Control\Controller;
+use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Extensible;
 use SilverStripe\Core\Injector\Injectable;
@@ -64,6 +65,25 @@ abstract class PaymentService
      * @config
      */
     private static bool $protect_gateway_parameters = true;
+
+    /**
+     * Payment states from which {@see cancel()} may void a payment.
+     * @config
+     * @var list<string>
+     */
+    private static array $cancellable_states = [
+        'Created',
+        'PendingPurchase',
+        'PendingAuthorization',
+        'PendingCreateCard',
+    ];
+
+    /**
+     * Whether SuccessUrl / FailureUrl may point to another host. When false, off-site
+     * URLs are replaced with the site base URL to prevent open redirects.
+     * @config
+     */
+    private static bool $allow_external_return_urls = false;
 
     /**
      * @var array<string, string>
@@ -137,11 +157,17 @@ abstract class PaymentService
      */
     public function cancel(): ServiceResponse
     {
-        if (!$this->payment->IsComplete()) {
-            $this->payment->Status = 'Void';
-            $this->payment->write();
-            ErrorHandling::safeExtend($this->payment, 'onCancelled');
+        // Only payments awaiting the customer at an offsite gateway can be cancelled. Other states (eg. Authorized,
+        // PendingCapture, PendingRefund) have gateway-side state that a local void wouldn't reverse.
+        if (!in_array($this->payment->Status, static::config()->get('cancellable_states'), true)) {
+            return $this->generateServiceResponse(
+                ServiceResponse::SERVICE_CANCELLED | ServiceResponse::SERVICE_ERROR
+            );
         }
+
+        $this->payment->Status = 'Void';
+        $this->payment->write();
+        ErrorHandling::safeExtend($this->payment, 'onCancelled');
 
         return $this->generateServiceResponse(ServiceResponse::SERVICE_CANCELLED);
     }
@@ -344,8 +370,8 @@ abstract class PaymentService
         }
 
         //set the client IP address, if not already set
-        if (!isset($data['clientIp'])) {
-            $data['clientIp'] = Controller::curr()->getRequest()->getIP();
+        if (!isset($data['clientIp']) && ($controller = Controller::curr())) {
+            $data['clientIp'] = $controller->getRequest()->getIP();
         }
 
         $gatewaydata = array_merge($data, [
@@ -551,17 +577,39 @@ abstract class PaymentService
 
         // redirects and notifications don't need a target URL.
         if (!$response->isNotification() && !$response->isRedirect()) {
-            $response->setTargetUrl(
+            $response->setTargetUrl($this->sanitizeReturnUrl(
                 ($response->isError() || $response->isCancelled())
                     ? $this->payment->FailureUrl
                     : $this->payment->SuccessUrl
-            );
+            ));
         }
 
         // Hook to update service response via extensions. This can be used to customize the service response
         ErrorHandling::safeExtend($this, 'updateServiceResponse', $response);
 
         return $response;
+    }
+
+    /**
+     * Ensure a success/failure URL points to this site, unless `allow_external_return_urls` is enabled.
+     * Off-site URLs are replaced with the site base URL to prevent open redirects.
+     */
+    protected function sanitizeReturnUrl(?string $url): ?string
+    {
+        if (empty($url)
+            || static::config()->get('allow_external_return_urls')
+            || Director::is_site_url($url)
+        ) {
+            return $url;
+        }
+
+        $this->logger?->warning(sprintf(
+            'Refusing to redirect payment %s to off-site URL "%s"; using the site base URL instead.',
+            $this->payment->Identifier,
+            $url
+        ));
+
+        return Director::absoluteBaseURL();
     }
 
     /**
@@ -650,7 +698,7 @@ abstract class PaymentService
         }
 
         if ($data instanceof \Exception) {
-            $this->exceptionLogger->error($data->getMessage(), ['exception' => $data]);
+            $this->exceptionLogger?->error($data->getMessage(), ['exception' => $data]);
         } else {
             $this->logToFile($output, $type);
         }
@@ -671,7 +719,7 @@ abstract class PaymentService
      */
     protected function logToFile(mixed $data, string $type = ''): void
     {
-        $this->logger->log(
+        $this->logger?->log(
             $this->isErrorMessageType($type) ? 'error' : 'info',
             // Log title
             sprintf('%s (%s)', $type, $this->payment->Gateway),

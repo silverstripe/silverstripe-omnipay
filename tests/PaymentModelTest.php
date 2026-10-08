@@ -374,6 +374,15 @@ class PaymentModelTest extends FunctionalTest
         $payment = Payment::create();
         $payment->setGateway('IdentifierFifteen');
         $payment->write();
-        $this->assertSame(15, strlen($payment->Identifier));
+        // lengths below the minimum are raised to the minimum
+        $this->assertSame(Payment::MIN_IDENTIFIER_LENGTH, strlen($payment->Identifier));
+
+        Config::modify()->merge(GatewayInfo::class, 'IdentifierTwentyFive', [
+            'payment_identifier_length' => 25,
+        ]);
+        $payment = Payment::create();
+        $payment->setGateway('IdentifierTwentyFive');
+        $payment->write();
+        $this->assertSame(25, strlen($payment->Identifier));
     }
 }

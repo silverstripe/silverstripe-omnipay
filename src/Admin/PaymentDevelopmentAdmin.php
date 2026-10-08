@@ -9,6 +9,8 @@ use SilverStripe\Omnipay\GatewayInfo;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Dev\DebugView;
+use SilverStripe\Security\Permission;
+use SilverStripe\Security\Security;
 
 /**
  * Development tools for payments
@@ -17,6 +19,23 @@ use SilverStripe\Dev\DebugView;
  */
 class PaymentDevelopmentAdmin extends Controller
 {
+    protected function init(): void
+    {
+        parent::init();
+
+        if (!$this->canInit()) {
+            Security::permissionFailure($this);
+        }
+    }
+
+    /**
+     * Only allow access in dev mode or for users with dev admin permissions.
+     */
+    public function canInit(): bool
+    {
+        return Director::isDev() || Permission::check(['ADMIN', 'ALL_DEV_ADMIN']);
+    }
+
     public function index(): void
     {
         $renderer = DebugView::create();
@@ -48,8 +67,8 @@ class PaymentDevelopmentAdmin extends Controller
 
         foreach ($types as $gateway) {
             echo '<tr>' .
-                '<td>' . $gateway->getShortName() . '</td>' .
-                '<td>' . $gateway->getName() . '</td>' .
+                '<td>' . htmlspecialchars($gateway->getShortName(), ENT_QUOTES) . '</td>' .
+                '<td>' . htmlspecialchars($gateway->getName(), ENT_QUOTES) . '</td>' .
                 '<td>' . ($gateway->supportsPurchase() ? 'yes' : '') . '</td>' .
                 '<td>' . ($gateway->supportsAuthorize() ? 'yes' : '') . '</td>' .
                 '<td>' . ($gateway->supportsCompleteAuthorize() ? 'yes' : '') . '</td>' .

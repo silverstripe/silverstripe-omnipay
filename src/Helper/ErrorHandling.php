@@ -45,7 +45,7 @@ class ErrorHandling
 
         set_error_handler(function ($severity, $message, $file, $line) {
             throw new \ErrorException($message, 0, $severity, $file, $line);
-        }, E_WARNING & E_USER_WARNING & E_ERROR & E_USER_ERROR & E_RECOVERABLE_ERROR);
+        }, E_WARNING | E_USER_WARNING | E_USER_ERROR | E_RECOVERABLE_ERROR);
 
         $retVal = [];
         try {
@@ -82,7 +82,7 @@ class ErrorHandling
     {
         set_error_handler(function ($severity, $message, $file, $line) {
             throw new \ErrorException($message, 0, $severity, $file, $line);
-        }, E_WARNING & E_USER_WARNING & E_ERROR & E_USER_ERROR & E_RECOVERABLE_ERROR);
+        }, E_WARNING | E_USER_WARNING | E_USER_ERROR | E_RECOVERABLE_ERROR);
 
         try {
             $retVal = $method();

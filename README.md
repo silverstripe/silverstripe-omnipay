@@ -183,6 +183,28 @@ SilverStripe\Omnipay\Service\PaymentService:
   protect_gateway_parameters: false
 ```
 
+## Cleaning up abandoned payments
+
+Payments stay in a pending state (e.g. `PendingPurchase`) when a customer never returns from an offsite gateway. The
+`CleanupAbandonedPaymentsTask` lists these payments, and removes them (along with their messages) when run with
+`--delete`:
+
+```bash
+vendor/bin/sake tasks:CleanupAbandonedPaymentsTask
+vendor/bin/sake tasks:CleanupAbandonedPaymentsTask --delete --days=7
+```
+
+By default, payments that are `Created`, `PendingAuthorization`, `PendingPurchase` or `PendingCreateCard` and haven't
+been modified for 3 days are considered abandoned. Payments that have a transaction reference are always kept. Both
+the statuses and the age can be configured:
+
+```yaml
+SilverStripe\Omnipay\Tasks\CleanupAbandonedPaymentsTask:
+  max_age_days: 7
+  statuses:
+    - PendingPurchase
+```
+
 ## Debugging payments
 
 Please read the [logging documentation](docs/en/Logging.md) on how to set up logging.

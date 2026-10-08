@@ -2,6 +2,7 @@
 
 namespace SilverStripe\Omnipay\Service;
 
+use SilverStripe\Omnipay\Helper\PaymentMoney;
 use SilverStripe\Omnipay\Exception\InvalidStateException;
 use SilverStripe\Omnipay\Exception\InvalidConfigurationException;
 use SilverStripe\Omnipay\Model\Payment;
@@ -116,5 +117,26 @@ abstract class NotificationCompleteService extends PaymentService
         // reset the payment to the start-state
         $this->payment->Status = $this->startState;
         $this->payment->write();
+    }
+
+    /**
+     * Negate a decimal amount in the currency of this payment.
+     */
+    protected function negate(string|int|float $amount): string
+    {
+        return PaymentMoney::toDecimal(
+            PaymentMoney::toMoney($amount, (string) $this->payment->getCurrency())->negative()
+        );
+    }
+
+    /**
+     * Add two decimal amounts in the currency of this payment.
+     */
+    protected function sum(string|int|float $amountA, string|int|float $amountB): string
+    {
+        $currency = (string) $this->payment->getCurrency();
+        return PaymentMoney::toDecimal(
+            PaymentMoney::toMoney($amountA, $currency)->add(PaymentMoney::toMoney($amountB, $currency))
+        );
     }
 }

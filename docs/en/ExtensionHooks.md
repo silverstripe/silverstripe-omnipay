@@ -29,6 +29,7 @@ Here's a list of all hooks available to extensions.
 
  - `updateServiceResponse` every service response that is being generated from the different services will be passed through this callback. You'll get the `ServiceResponse` as parameter.
  - `updatePartialPayment` whenever a partial payment is being generated "from" the main payment, this extension will be called. You'll get the new partial `Payment` as the first and the "original/parent" `Payment` as a second parameter.
+ - `updateLogLevel` called before a payment message is logged. You'll get the PSR-3 log level (by reference, set it to `null` to not log the message), the message type and the message data as parameters. See [Logging](Logging.md#changing-the-log-level-of-payment-messages).
 
 ##### The `updateServiceResponse` hook
 

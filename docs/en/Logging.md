@@ -68,6 +68,50 @@ SilverStripe\Omnipay\Helper\Logging:
 
 You can extend the blacklist in your project config by adding additional field names that are specific to your payment gateway implementation.
 
+## Changing the log level of payment messages
+
+Every payment message is logged: error message types (eg. `PurchaseError`, `CompletePurchaseError`) as `error`,
+everything else as `info`. Not every error message type is an application error though. When a customer abandons
+an offsite payment, the gateway can still notify the site that this attempt expired or was cancelled. That
+notification is stored as a `CompletePurchaseError` and logged as `error`, so a site that mails its errors gets an
+error mail for an order that the customer then simply paid with a new attempt.
+
+Use the `updateLogLevel` extension hook to pick a different [PSR-3 level](https://www.php-fig.org/psr/psr-3/) for
+such messages, or set the level to `null` to not log the message at all. The payment message itself is always
+stored. The hook gets the level (by reference), the message type and the message data: the same array that is
+stored and logged, including the raw gateway response under `Data`. An unknown level falls back to the default.
+
+Example for Mollie, where the gateway response has a `status`:
+
+```php
+use Psr\Log\LogLevel;
+use SilverStripe\Core\Extension;
+use SilverStripe\Omnipay\Service\PurchaseService;
+
+class PaymentLogLevelExtension extends Extension
+{
+    public function updateLogLevel(?string &$level, string $type, mixed $data): void
+    {
+        $status = $data['Data']['status'] ?? null;
+        if ($type === PurchaseService::MESSAGE_COMPLETE_PURCHASE_ERROR
+            && in_array($status, ['open', 'pending', 'canceled', 'expired', 'failed'], true)
+        ) {
+            // the customer didn't finish this payment attempt (or the bank declined it): not an application error
+            $level = LogLevel::NOTICE;
+        }
+    }
+}
+```
+
+```yml
+SilverStripe\Omnipay\Service\PurchaseService:
+  extensions:
+    - PaymentLogLevelExtension
+```
+
+Errors from the gateway API itself (eg. an invalid API key) have no such status, so they are still logged as
+`error`. Exceptions are logged through the exception logger and are not affected by this hook.
+
 ## Disable non-fatal error logging
 
 In production environments, it is often desirable to disable logging anything that isn't an application error. This can be achieved

@@ -13,6 +13,7 @@ use Omnipay\Common\Message\NotificationInterface;
 use Omnipay\Common\Message\RequestInterface;
 use Omnipay\Common\Message\ResponseInterface;
 use Psr\Log\LoggerInterface;
+use Psr\Log\LogLevel;
 use SilverStripe\Control\Controller;
 use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Configurable;
@@ -714,18 +715,62 @@ abstract class PaymentService
 
     /**
      * Helper function for logging gateway requests
+     *
+     * Error message types are logged as "error", everything else as "info". Extensions can change the level
+     * with the `updateLogLevel` hook (or set it to `null` to not log the message at all; the payment message
+     * itself is always stored). See docs/en/Logging.md.
+     *
      * @param mixed $data Data to log.
      * @param string $type Message type string.
      */
     protected function logToFile(mixed $data, string $type = ''): void
     {
+        $level = $this->getLogLevel($data, $type);
+        if ($level === null) {
+            return;
+        }
+
         $this->logger?->log(
-            $this->isErrorMessageType($type) ? 'error' : 'info',
+            $level,
             // Log title
             sprintf('%s (%s)', $type, $this->payment->Gateway),
             // Log context (just output the data)
             Logging::prepareForLogging($data)
         );
+    }
+
+    /**
+     * The PSR-3 log level for a payment message, or null to not log it.
+     *
+     * @param mixed $data The message data (the same data that is stored on the payment message).
+     * @param string $type Message type string.
+     */
+    protected function getLogLevel(mixed $data, string $type): ?string
+    {
+        $default = $this->isErrorMessageType($type) ? LogLevel::ERROR : LogLevel::INFO;
+
+        // pass copies, so an extension can't change what is logged
+        $level = $default;
+        $messageType = $type;
+        $messageData = $data;
+        ErrorHandling::safeExtend($this, 'updateLogLevel', $level, $messageType, $messageData);
+
+        if ($level === null) {
+            return null;
+        }
+
+        // an unknown level would make the logger throw and stop the payment message from being written
+        $levels = [
+            LogLevel::EMERGENCY,
+            LogLevel::ALERT,
+            LogLevel::CRITICAL,
+            LogLevel::ERROR,
+            LogLevel::WARNING,
+            LogLevel::NOTICE,
+            LogLevel::INFO,
+            LogLevel::DEBUG,
+        ];
+        return is_string($level) && in_array($level, $levels, true) ? $level : $default;
     }
 
     protected function isErrorMessageType(string $type): bool

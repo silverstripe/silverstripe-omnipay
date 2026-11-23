@@ -73,7 +73,7 @@ class PurchaseService extends PaymentService
 
         ErrorHandling::safeExtend($this, 'onAfterSendPurchase', $request, $response);
 
-        $serviceResponse = $this->wrapOmnipayResponse($response);
+        $serviceResponse = $this->wrapInitialOmnipayResponse($response);
 
         if ($serviceResponse->isRedirect() || $serviceResponse->isAwaitingNotification()) {
             $this->payment->Status = 'PendingPurchase';
@@ -124,6 +124,10 @@ class PurchaseService extends PaymentService
 
         // purchase and completePurchase should use the same data
         $gatewayData = $this->gatherGatewayData($data);
+        $this->addStoredTransactionReference(
+            $gatewayData,
+            [self::MESSAGE_PURCHASE_REDIRECT_RESPONSE, self::MESSAGE_AWAITING_PURCHASE_RESPONSE]
+        );
 
         $this->beforeCompletePurchase($gatewayData);
         $request = $gateway->completePurchase($gatewayData);

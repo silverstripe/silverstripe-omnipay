@@ -234,6 +234,52 @@ abstract class PaymentService
     }
 
     /**
+     * Pass the transaction reference the gateway returned when it redirected the customer (or started waiting for a
+     * notification) to the completing request, for gateways that need it there (eg. Mollie's `tr_` id for
+     * completePurchase). The reference is taken from this payment's own logged response, never from the incoming
+     * request, and only when the caller didn't supply one. Stripe Payment Intents uses its own paymentIntentReference.
+     *
+     * @param array<string, mixed> $gatewayData
+     * @param list<string> $messageTypes the response message types that carry the reference
+     */
+    protected function addStoredTransactionReference(array &$gatewayData, array $messageTypes): void
+    {
+        if (!empty($gatewayData['transactionReference']) || $this->isStripePaymentIntentsGateway()
+            || !$this->payment->isInDB()
+        ) {
+            return;
+        }
+
+        $messages = $this->payment->Messages()->filter('Type', $messageTypes)->sort('ID', 'DESC');
+        foreach ($messages as $message) {
+            $reference = (string) $message->Reference;
+            if ($reference !== '') {
+                $gatewayData['transactionReference'] = $reference;
+                return;
+            }
+        }
+    }
+
+    /**
+     * Wrap the response to the request that starts a payment (purchase or authorize). With async notifications, a
+     * response that waits for the gateway is pending, but a definite refusal (not successful, no redirect and not
+     * pending at the gateway, eg. a rejected API request) is an error: no notification will follow it, so the shop
+     * must not treat the payment as underway.
+     */
+    protected function wrapInitialOmnipayResponse(ResponseInterface $omnipayResponse): ServiceResponse
+    {
+        if (GatewayInfo::shouldUseAsyncNotifications($this->payment->Gateway)
+            && !$omnipayResponse->isSuccessful()
+            && !$omnipayResponse->isRedirect()
+            && !(method_exists($omnipayResponse, 'isPending') && $omnipayResponse->isPending())
+        ) {
+            return $this->generateServiceResponse(ServiceResponse::SERVICE_ERROR, $omnipayResponse);
+        }
+
+        return $this->wrapOmnipayResponse($omnipayResponse);
+    }
+
+    /**
      * Handle a notification via gateway->acceptNotification.
      *
      * This just invokes `acceptNotification` on the gateway (if available) and wraps the return value in

@@ -69,7 +69,7 @@ class CreateCardService extends PaymentService
 
         ErrorHandling::safeExtend($this, 'onAfterSendCreateCard', $request, $response);
 
-        $serviceResponse = $this->wrapOmnipayResponse($response);
+        $serviceResponse = $this->wrapInitialOmnipayResponse($response);
 
         if ($serviceResponse->isRedirect() || $serviceResponse->isAwaitingNotification()) {
             $this->payment->Status = 'PendingCreateCard';
@@ -120,6 +120,10 @@ class CreateCardService extends PaymentService
 
         // purchase and completePurchase should use the same data
         $gatewayData = $this->gatherGatewayData($data);
+        $this->addStoredTransactionReference(
+            $gatewayData,
+            [self::MESSAGE_CREATE_CARD_REDIRECT_RESPONSE, self::MESSAGE_AWAITING_CREATE_CARD_RESPONSE]
+        );
 
         $this->extend('onBeforeCompleteCreateCard', $gatewayData);
         /** @var RequestInterface $request */

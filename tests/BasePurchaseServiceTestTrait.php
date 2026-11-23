@@ -734,6 +734,85 @@ trait BasePurchaseServiceTestTrait
         $this->assertEquals($payment->Status, $this->completeStatus);
     }
 
+    public function testCompleteGetsTheTransactionReferenceOfTheRedirect(): void
+    {
+        $redirect = $this->createMock(Response::class);
+        $redirect->method('isRedirect')->willReturn(true);
+        $redirect->method('getRedirectResponse')->willReturn(new RedirectResponse('https://gateway.tld/pay'));
+        $redirect->method('getTransactionReference')->willReturn('tr_ABC123');
+        $initialRequest = $this->createMock(PxPayPurchaseRequest::class);
+        $initialRequest->method('send')->willReturn($redirect);
+
+        $completed = $this->createMock(Response::class);
+        $completed->method('isSuccessful')->willReturn(true);
+        $completeRequest = $this->createMock(PxPayCompleteAuthorizeRequest::class);
+        $completeRequest->method('send')->willReturn($completed);
+
+        $completeData = null;
+        $stubGateway = $this->getMockBuilder(TestOffsiteGateway::class)
+            ->onlyMethods(['getName', $this->omnipayMethod, $this->omnipayCompleteMethod])
+            ->getMock();
+        $stubGateway->method($this->omnipayMethod)->willReturn($initialRequest);
+        $stubGateway->method($this->omnipayCompleteMethod)->willReturnCallback(
+            function (array $data) use (&$completeData, $completeRequest) {
+                $completeData = $data;
+                return $completeRequest;
+            }
+        );
+
+        $payment = $this->payment->setGateway('PaymentExpress_PxPay');
+        $payment->setFailureUrl('my/cancel/url')->setSuccessUrl('my/return/url');
+        $service = $this->getService($payment);
+        $service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
+
+        $this->assertTrue($service->initiate()->isRedirect());
+        $service->complete();
+
+        // the gateway's own reference from the redirect is passed back to complete the payment (eg. Mollie)
+        $this->assertSame('tr_ABC123', $completeData['transactionReference'] ?? null);
+        $this->assertEquals($this->completeStatus, $payment->Status);
+    }
+
+    /**
+     * @return array<string, array{bool, bool}>
+     */
+    public static function asyncInitialResponseProvider(): array
+    {
+        return [
+            'refused by the gateway' => [false, true],
+            'pending at the gateway' => [true, false],
+        ];
+    }
+
+    #[DataProvider('asyncInitialResponseProvider')]
+    public function testAsyncRefusedInitialRequestIsAnError(bool $gatewayPending, bool $expectError): void
+    {
+        Config::modify()->merge(GatewayInfo::class, 'PaymentExpress_PxPay', ['use_async_notification' => true]);
+
+        $response = $this->createMock(Response::class);
+        $response->method('isSuccessful')->willReturn(false);
+        $response->method('isRedirect')->willReturn(false);
+        $response->method('isPending')->willReturn($gatewayPending);
+        $response->method('getMessage')->willReturn('The webhook URL is unreachable');
+        $request = $this->createMock(PxPayPurchaseRequest::class);
+        $request->method('send')->willReturn($response);
+
+        $stubGateway = $this->getMockBuilder(TestOffsiteGateway::class)
+            ->onlyMethods(['getName', $this->omnipayMethod])
+            ->getMock();
+        $stubGateway->method($this->omnipayMethod)->willReturn($request);
+
+        $payment = $this->payment->setGateway('PaymentExpress_PxPay');
+        $service = $this->getService($payment);
+        $service->setGatewayFactory($this->stubGatewayFactory($stubGateway));
+
+        $serviceResponse = $service->initiate();
+
+        $this->assertSame($expectError, $serviceResponse->isError());
+        $this->assertSame(!$expectError, $serviceResponse->isAwaitingNotification());
+        $this->assertSame($expectError ? 'Created' : $this->pendingStatus, $payment->Status);
+    }
+
     protected function buildPaymentGatewayStub($endpoint, Closure $successFunc, $sendMustFail = false)
     {
         //--------------------------------------------------------------------------------------------------------------

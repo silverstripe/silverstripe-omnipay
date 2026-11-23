@@ -68,7 +68,7 @@ class AuthorizeService extends PaymentService
 
         ErrorHandling::safeExtend($this, 'onAfterSendAuthorize', $request, $response);
 
-        $serviceResponse = $this->wrapOmnipayResponse($response);
+        $serviceResponse = $this->wrapInitialOmnipayResponse($response);
 
         if ($serviceResponse->isRedirect() || $serviceResponse->isAwaitingNotification()) {
             $this->payment->Status = 'PendingAuthorization';
@@ -120,6 +120,10 @@ class AuthorizeService extends PaymentService
 
         // purchase and completePurchase should use the same data
         $gatewayData = $this->gatherGatewayData($data);
+        $this->addStoredTransactionReference(
+            $gatewayData,
+            [self::MESSAGE_AUTHORIZE_REDIRECT_RESPONSE, self::MESSAGE_AWAITING_AUTHORIZE_RESPONSE]
+        );
 
         $this->extend('onBeforeCompleteAuthorize', $gatewayData);
         $request = $gateway->completeAuthorize($gatewayData);

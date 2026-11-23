@@ -13,7 +13,7 @@
     "require-dev": {
         "guzzlehttp/psr7": "^2.5",
         "silverstripe/versioned" : "*",
-        "phpunit/phpunit": "^11",
+        "phpunit/phpunit": "^11.5",
         "php-http/guzzle7-adapter": "^1",
         "omnipay/paypal": "^3",
         "omnipay/dummy": "^3",
